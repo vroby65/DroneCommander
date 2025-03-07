@@ -1,1 +1,1 @@
-
+This section contains the texture files used in the project. These textures enhance the visual appearance of the 3D environment, providing realistic surfaces for the drone, ground, and other elements in the simulation.
