@@ -38,10 +38,6 @@ To run Drone Commander locally, simply clone the repository and open `index.html
 4. Click **Stop** to halt execution and reset the simulation.
 5. Save and Load programs for future use.
 
-## Screenshot
-
-(Insert a screenshot of the interface here)
-
 ## Example Programs
 
 ### Takeoff and Land
