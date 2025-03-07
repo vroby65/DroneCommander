@@ -1,4 +1,5 @@
 # Drone Commander 
+![immagine](https://github.com/user-attachments/assets/f9d4a8c0-0b53-4d6d-be6f-f0aa037bcde2)
 
 ## Overview
 
@@ -44,50 +45,15 @@ To run Drone Commander locally, simply clone the repository and open `index.html
 ## Example Programs
 
 ### Takeoff and Land
+![immagine](https://github.com/user-attachments/assets/1daa4553-e4e5-4649-817e-86136fc48bee)
 
-```xml
-<xml xmlns="https://developers.google.com/blockly/xml">
-  <block type="take_off"></block>
-  <block type="wait">
-    <value name="DIST">
-      <shadow type="math_number">
-        <field name="NUM">2</field>
-      </shadow>
-    </value>
-  </block>
-  <block type="land"></block>
-</xml>
-```
 
 ### Move Forward and Turn
+![immagine](https://github.com/user-attachments/assets/16e1369c-1941-4176-9a8c-0812cb470725)
 
-```xml
-<xml xmlns="https://developers.google.com/blockly/xml">
-  <block type="take_off"></block>
-  <block type="walk">
-    <value name="DIST">
-      <shadow type="math_number">
-        <field name="NUM">5</field>
-      </shadow>
-    </value>
-  </block>
-  <block type="set_angle">
-    <value name="ANGLE">
-      <shadow type="math_number">
-        <field name="NUM">90</field>
-      </shadow>
-    </value>
-  </block>
-  <block type="walk">
-    <value name="DIST">
-      <shadow type="math_number">
-        <field name="NUM">5</field>
-      </shadow>
-    </value>
-  </block>
-  <block type="land"></block>
-</xml>
-```
+### keyboard drive
+![immagine](https://github.com/user-attachments/assets/df4a548e-9acf-4fa0-881b-b888c8874cb1)
+
 
 ## License
 
