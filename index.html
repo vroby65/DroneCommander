@@ -1,0 +1,1089 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" href="Drone Commander.png">
+  <title>Drone Commander - Ottimizzato</title>
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: sans-serif;
+      overflow: hidden;
+    }
+    #container {
+      display: flex;
+      height: 100%;
+      width: 100%;
+    }
+    #leftPanel {
+      width: calc(100% - 500px);
+      padding: 10px;
+      box-sizing: border-box;
+      background: #f0f0f0;
+      overflow: auto;
+    }
+    #divider {
+      width: 5px;
+      background-color: #ccc;
+      cursor: ew-resize;
+    }
+    #rightPanel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+        button {
+          font-size: 16px; 
+          line-height: 1;
+          padding: 5px 10px;
+          margin:2px;
+          vertical-align: middle;
+          margin-right: 5px;
+        }
+    }
+    #webglContainer {
+      flex: 3;
+      position: relative;
+      overflow: hidden;
+      background: #ddd;
+    }
+    #statusPanel {
+      flex: 1;
+      background: #ddd;
+      padding: 10px;
+      overflow: auto;
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+      height: 75px;
+      font-size: 12px;
+    }
+    #statusPanel table {
+      width: calc(100% - 50px);
+    }
+    #statusPanel input {
+      width: 50px;
+    }
+    #blocklyDiv {
+      height: calc(100% - 50px);
+      width: 100%;
+      border: 1px solid #ccc;
+    }
+    #menu {        
+      margin-bottom: 10px;
+      img {
+        margin-top: -23px;
+        margin-bottom: -23px;
+      }
+    }
+    button{
+      margin-right:5px;
+    }
+  </style>
+  <!-- Include Blockly -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/blockly/10.0.0/blockly_compressed.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/blockly/10.0.0/blocks_compressed.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/blockly/10.0.0/msg/en.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/blockly/10.0.0/javascript_compressed.min.js"></script>
+  <!-- Include Three.js -->
+ <script src="https://unpkg.com/three@0.147.0/build/three.min.js"></script>
+  <script src="https://unpkg.com/three@0.147.0/examples/js/loaders/STLLoader.js"></script>  
+  
+</head>
+<body>
+  <div id="container">
+    <div id="leftPanel">
+      <div id="menu">
+        <img src="Drone Commander.png" width="64px">    
+        <button id="newBtn">New</button>
+        <button id="loadBtn">Load</button>
+        <button id="saveBtn">Save</button>
+
+        <input type="file" id="fileInput" style="display:none">
+      </div>
+      <div id="blocklyDiv"></div>
+    </div>
+    <div id="divider"></div>
+    <div id="rightPanel">
+      <div>  
+        <button id="toggleWebglBtn" >🗖</button>  
+        <button id="runBtn" ><font color='green'>▶</font></button>
+        <button id="stopBtn" disabled ><font color='red'>■</font></button>
+      </div>
+      <div id="webglContainer"></div>
+      <div id="statusPanel">
+        <table>
+          <tr>
+            <td>X:</td><td><input type="number" id="x" value="0" step="0.1"></td>
+            <td>Z:</td><td><input type="number" id="z" value="0" step="0.1"></td>
+          </tr>
+          <tr>
+            <td>Altitude:</td><td><input type="number" id="altitude" value="1.5" step="0.1"></td>
+            <td>Direction:</td><td><input type="number" id="direction" value="0" step="1"></td>
+          </tr>
+          <tr>
+            <td colspan="2">Status: <span id="flightStatus">On Ground</span></td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    window.onload = function() {
+      // --- Definition of custom blocks ---
+      Blockly.defineBlocksWithJsonArray([
+        {
+          "type": "take_off",
+          "message0": "take off",
+          "previousStatement": null,
+          "nextStatement": null,
+          "colour": 20,
+          "tooltip": "Drone take off"
+        },
+        {
+          "type": "land",
+          "message0": "land",
+          "previousStatement": null,
+          "nextStatement": null,
+          "colour": 20,
+          "tooltip": "Drone land"
+        },
+        {
+          "type": "set_altitude",
+          "message0": "set altitude %1",
+          "args0": [
+            { "type": "input_value", "name": "ALTITUDE", "check": "Number" }
+          ],
+          "previousStatement": null,
+          "nextStatement": null,
+          "colour": 20,
+          "tooltip": "Set drone altitude"
+        },
+        {
+          "type": "change_altitude",
+          "message0": "change altitude %1",
+          "args0": [
+            { "type": "input_value", "name": "ALTITUDE", "check": "Number" }
+          ],
+          "previousStatement": null,
+          "nextStatement": null,
+          "colour": 20,
+          "tooltip": "Change drone altitude"
+        },
+        {
+          "type": "set_angle",
+          "message0": "set angle %1",
+          "args0": [
+            { "type": "input_value", "name": "ANGLE", "check": "Number" }
+          ],
+          "previousStatement": null,
+          "nextStatement": null,
+          "colour": 20,
+          "tooltip": "Set drone angle"
+        },
+        {
+          "type": "change_angle",
+          "message0": "change angle %1",
+          "args0": [
+            { "type": "input_value", "name": "ANGLE", "check": "Number" }
+          ],
+          "previousStatement": null,
+          "nextStatement": null,
+          "colour": 20,
+          "tooltip": "Change drone angle"
+        },
+        {
+          "type": "slide",
+          "message0": "slide %1",
+          "args0": [
+            { "type": "input_value", "name": "SLIDE", "check": "Number" }
+          ],
+          "previousStatement": null,
+          "nextStatement": null,
+          "colour": 20,
+          "tooltip": "Slide the drone"
+        },
+        {
+          "type": "walk",
+          "message0": "walk %1",
+          "args0": [
+            { "type": "input_value", "name": "DIST", "check": "Number" }
+          ],
+          "previousStatement": null,
+          "nextStatement": null,
+          "colour": 20,
+          "tooltip": "Move the drone forward"
+        },
+        {
+          "type": "wait",
+          "message0": "wait %1",
+          "args0": [
+            {
+              "type": "input_value",
+              "name": "DIST",
+              "check": "Number"
+            }
+          ],
+          "previousStatement": null,
+          "nextStatement": null,
+          "colour": 20,
+          "tooltip": "Drone wait"
+        },
+        {
+          "type": "sensor_keypressed",
+          "message0": "key %1 pressed",
+          "args0": [
+            {
+              "type": "field_dropdown",
+              "name": "KEY",
+              "options": [
+                ["Arrow Up", "ARROW_UP"], ["Arrow Down", "ARROW_DOWN"], 
+                ["Arrow Left", "ARROW_LEFT"], ["Arrow Right", "ARROW_RIGHT"],
+                ["Space", "SPACE"], ["Return", "RETURN"], 
+                ["A", "A"], ["B", "B"], ["C", "C"], ["D", "D"], ["E", "E"], 
+                ["F", "F"], ["G", "G"], ["H", "H"], ["I", "I"], ["J", "J"], 
+                ["K", "K"], ["L", "L"], ["M", "M"], ["N", "N"], ["O", "O"], 
+                ["P", "P"], ["Q", "Q"], ["R", "R"], ["S", "S"], ["T", "T"], 
+                ["U", "U"], ["V", "V"], ["W", "W"], ["X", "X"], ["Y", "Y"], 
+                ["Z", "Z"] 
+              ]
+            }
+          ],
+          "output": "Boolean",
+          "colour": 90,
+          "tooltip": "Return true if key was pressed",
+          "helpUrl": ""
+        },
+        {
+          "type": "sensor_x",
+          "message0": "X",
+          "output": "Numeric",
+          "colour": 90,
+          "tooltip": "Return X drone coordinate",
+          "helpUrl": ""
+        },
+        {
+          "type": "sensor_z",
+          "message0": "Z",
+          "output": "Numeric",
+          "colour": 90,
+          "tooltip": "Return Z drone coordinate",
+          "helpUrl": ""
+        },
+        {
+          "type": "sensor_altitude",
+          "message0": "Altitude",
+          "output": "Numeric",
+          "colour": 90,
+          "tooltip": "Return Altitude drone coordinate",
+          "helpUrl": ""
+        },
+        {
+          "type": "sensor_direction",
+          "message0": "Direction",
+          "output": "Numeric",
+          "colour": 90,
+          "tooltip": "Return Direction drone coordinate",
+          "helpUrl": ""
+        }        
+      ]);
+
+      // --- Generators for custom blocks ---
+      // --- Drone ---
+      Blockly.JavaScript.forBlock['take_off'] = block => 'delay=2020;drone.takeOff();\n';
+      Blockly.JavaScript.forBlock['land'] = block => 'delay=2020;drone.land();\n';
+      Blockly.JavaScript.forBlock['set_altitude'] = block => {
+        var altitude = Blockly.JavaScript.valueToCode(block, 'ALTITUDE', Blockly.JavaScript.ORDER_ATOMIC) || '0';
+        return 'delay=' + altitude + '* 200;drone.setAltitude(' + altitude + ');\n';
+      };
+      Blockly.JavaScript.forBlock['change_altitude'] = block => {
+        var altitude = Blockly.JavaScript.valueToCode(block, 'ALTITUDE', Blockly.JavaScript.ORDER_ATOMIC) || '0';
+        return 'delay=' + Math.abs(altitude.replace(/[()]/g,'')) + '* 200;drone.changeAltitude(' + altitude + ');\n';
+      };
+      Blockly.JavaScript.forBlock['set_angle'] = block => {
+        var angle = Blockly.JavaScript.valueToCode(block, 'ANGLE', Blockly.JavaScript.ORDER_ATOMIC) || '0';
+        return 'delay=2020;drone.setAngle(' + angle + ');\n';
+      };
+      Blockly.JavaScript.forBlock['change_angle'] = block => {
+        var angle = Blockly.JavaScript.valueToCode(block, 'ANGLE', Blockly.JavaScript.ORDER_ATOMIC) || '0';
+        return 'delay=2020;drone.changeAngle(' + angle + ');\n';
+      };
+      Blockly.JavaScript.forBlock['slide'] = block => {
+        var slide = Blockly.JavaScript.valueToCode(block, 'SLIDE', Blockly.JavaScript.ORDER_ATOMIC) || '0';
+        return 'delay=' + Math.abs(slide.replace(/[()]/g, '')) + '*250;drone.slide(' + slide + ');\n';
+      };
+      Blockly.JavaScript.forBlock['walk'] = block => {
+        var dist = Blockly.JavaScript.valueToCode(block, 'DIST', Blockly.JavaScript.ORDER_ATOMIC) || '0';
+        return 'delay=' + Math.abs(dist.replace(/[()]/g, '')) + '*250;drone.walk(' + dist + ');\n';
+      };
+      Blockly.JavaScript.forBlock['wait'] = block => {
+        var dist = Blockly.JavaScript.valueToCode(block, 'DIST', Blockly.JavaScript.ORDER_ATOMIC) || '0';
+        return 'delay='+ (dist *1000) +'\n';
+      };
+
+      //--- Sensor ---
+      Blockly.JavaScript.forBlock['sensor_keypressed'] = block => {
+        var key = block.getFieldValue('KEY');
+        var code = "isKeyPressed('" + key + "')";
+        return [code, Blockly.JavaScript.ORDER_NONE];
+      };
+      Blockly.JavaScript.forBlock['sensor_x'] = block => {
+        var code = "-drone.mesh.position.z.toFixed(2)";
+        return [code, Blockly.JavaScript.ORDER_NONE];
+      };
+      Blockly.JavaScript.forBlock['sensor_z'] = block => {
+        var code = "-drone.mesh.position.x.toFixed(2)";
+        return [code, Blockly.JavaScript.ORDER_NONE];
+      };
+      Blockly.JavaScript.forBlock['sensor_altitude'] = block => {
+        var code = "drone.altitude.toFixed(2)";
+        return [code, Blockly.JavaScript.ORDER_NONE];
+      };
+      Blockly.JavaScript.forBlock['sensor_direction'] = block => {
+        var code = "-drone.direction.toFixed(2)";
+        return [code, Blockly.JavaScript.ORDER_NONE];
+      };
+
+
+
+
+      // --- Global variables ---
+      let workspace, scene, camera, renderer, drone;
+      let isResizing = false;
+      let run=false
+      let delay=100;
+      const container = document.getElementById("container");
+      const leftPanel = document.getElementById("leftPanel");
+      const divider = document.getElementById("divider");
+      const webglContainer = document.getElementById('webglContainer');
+      let propellers = [];
+
+      // --- Camera control ---
+      let isRightMouseDown = false;
+      let isLeftMouseDown = false;
+      const cameraOffset = new THREE.Vector3(0, 5, 10);
+
+      let prevMousePos = { x: 0, y: 0 };
+      let cameraAngle = { x: 0, y: 0 };
+
+      // --- Command Queue ---
+      const commandQueue = [];
+      const addCommand = cmdFunction => {
+        commandQueue.push(cmdFunction);
+        if (commandQueue.length === 1) processQueue();
+      };
+      const processQueue = () => {
+        if (!commandQueue.length) return;
+        const cmd = commandQueue.shift();
+        cmd(processQueue);
+      };
+
+      
+      const animateProperty = (setter, from, to, duration, onComplete) => {
+        const startTime = performance.now();
+        const step = timestamp => {
+          const progress = Math.min((timestamp - startTime) / duration, 1);
+          setter(from + (to - from) * progress);
+          if (progress < 1) {
+            requestAnimationFrame(step);
+          } else if (onComplete) {
+            onComplete();
+          }
+        };
+        requestAnimationFrame(step);
+      };
+			
+       // --- Events for camera control ---
+      webglContainer.addEventListener('contextmenu', e => e.preventDefault());
+      webglContainer.addEventListener('mousedown', e => {
+        if (e.button === 2) isRightMouseDown = true;
+        if (event.button === 1) {
+          cameraAngle.x +=Math.PI/2;                    
+        }
+        if (e.button === 0){ 
+          isLeftMouseDown = true;
+          camera.position.set(4, 0, 4);
+          cameraAngle.x = Math.PI/2;          
+          cameraAngle.y = 0;          
+        }
+        prevMousePos.x = e.clientX;
+        prevMousePos.y = e.clientY;
+      });
+      document.addEventListener('mouseup', () => {
+        isRightMouseDown = false;
+        isLeftMouseDown = false;
+      });
+      document.addEventListener('mousemove', e => {
+        const dx = e.clientX - prevMousePos.x;
+        const dy = e.clientY - prevMousePos.y;
+
+        if (isRightMouseDown) {
+          cameraAngle.x += dx * 0.01;
+          cameraAngle.y = Math.min(Math.max(cameraAngle.y + dy * 0.01, -Math.PI/2), Math.PI/2);
+        }
+        
+        if (isLeftMouseDown) {
+        }
+        
+        prevMousePos.x = e.clientX;
+        prevMousePos.y = e.clientY;
+      });
+      webglContainer.addEventListener('wheel', e => {
+        e.preventDefault();
+        const zoomFactor = 1 + e.deltaY * 0.001;
+        cameraOffset.multiplyScalar(zoomFactor);
+      });      
+
+      // --- Updating the WebGL canvas with debouncing ---
+      const updateWebGLCanvas = () => {
+        const containerWidth = webglContainer.clientWidth;
+        const containerHeight = webglContainer.clientHeight;
+        const DESIRED_ASPECT = 4 / 3;
+        let newWidth, newHeight;
+        if (containerWidth / containerHeight > DESIRED_ASPECT) {
+          newHeight = containerHeight;
+          newWidth = containerHeight * DESIRED_ASPECT;
+        } else {
+          newWidth = containerWidth;
+          newHeight = containerWidth / DESIRED_ASPECT;
+        }
+        renderer.setSize(newWidth, newHeight);
+        renderer.domElement.style.cssText = `
+          width: ${newWidth}px;
+          height: ${newHeight}px;
+          position: absolute;
+          left: ${(containerWidth - newWidth) / 2}px;
+          top: 0px;
+        `;
+        camera.aspect = newWidth / newHeight;
+        camera.updateProjectionMatrix();
+      };
+      let resizeTimeout;
+      window.addEventListener('resize', () => {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(updateWebGLCanvas, 100);
+      });
+
+      // --- Initialization of Blockly ---
+      const initBlockly = () => {
+        const toolbox = {
+          "kind": "categoryToolbox",
+          "contents": [
+            { "kind": "category", "name": "Logic", "colour": "210", "contents": [
+                { "kind": "block", "type": "controls_if" },
+                { "kind": "block", "type": "logic_compare" },
+                { "kind": "block", "type": "logic_operation" },
+                { "kind": "block", "type": "logic_negate" },
+                { "kind": "block", "type": "logic_boolean" },
+                { "kind": "block", "type": "logic_null" },
+                { "kind": "block", "type": "logic_ternary" }
+              ]
+            },
+            { "kind": "category", "name": "Loops", "colour": "120", "contents": [
+                { "kind": "block", "type": "controls_repeat_ext" },
+                { "kind": "block", "type": "controls_whileUntil" },
+                { "kind": "block", "type": "controls_for" },
+                { "kind": "block", "type": "controls_forEach" },
+                { "kind": "block", "type": "controls_flow_statements" }
+              ]
+            },
+            { "kind": "category", "name": "Math", "colour": "230", "contents": [
+                { "kind": "block", "type": "math_number" },
+                { "kind": "block", "type": "math_arithmetic" },
+                { "kind": "block", "type": "math_single" },
+                { "kind": "block", "type": "math_trig" },
+                { "kind": "block", "type": "math_constant" },
+                { "kind": "block", "type": "math_number_property" },
+                { "kind": "block", "type": "math_round" },
+                { "kind": "block", "type": "math_on_list" },
+                { "kind": "block", "type": "math_modulo" },
+                { "kind": "block", "type": "math_constrain" },
+                { "kind": "block", "type": "math_random_int" },
+                { "kind": "block", "type": "math_random_float" }
+              ]
+            },
+            { "kind": "category", "name": "Text", "colour": "160", "contents": [
+                { "kind": "block", "type": "text" },
+                { "kind": "block", "type": "text_join" },
+                { "kind": "block", "type": "text_append" },
+                { "kind": "block", "type": "text_length" },
+                { "kind": "block", "type": "text_isEmpty" },
+                { "kind": "block", "type": "text_indexOf" },
+                { "kind": "block", "type": "text_charAt" },
+                { "kind": "block", "type": "text_getSubstring" },
+                { "kind": "block", "type": "text_changeCase" },
+                { "kind": "block", "type": "text_trim" },
+                { "kind": "block", "type": "text_print" }
+              ]
+            },
+            { "kind": "category", "name": "Lists", "colour": "260", "contents": [
+                { "kind": "block", "type": "lists_create_with" },
+                { "kind": "block", "type": "lists_repeat" },
+                { "kind": "block", "type": "lists_length" },
+                { "kind": "block", "type": "lists_isEmpty" },
+                { "kind": "block", "type": "lists_indexOf" },
+                { "kind": "block", "type": "lists_getIndex" },
+                { "kind": "block", "type": "lists_setIndex" },
+                { "kind": "block", "type": "lists_getSublist" },
+                { "kind": "block", "type": "lists_split" },
+                { "kind": "block", "type": "lists_sort" }
+              ]
+            },
+            { "kind": "category", "name": "Variables", "colour": "330", "custom": "VARIABLE" },
+            { "kind": "category", "name": "Functions", "colour": "290", "custom": "PROCEDURE" },
+            { "kind": "category","name": "Sensor","colour": "90","contents": [
+                { "kind": "block", "type": "sensor_keypressed" },
+                { "kind": "block", "type": "sensor_x" },
+                { "kind": "block", "type": "sensor_z" },
+                { "kind": "block", "type": "sensor_altitude" },
+                { "kind": "block", "type": "sensor_direction" }
+                
+              ]
+            },  
+            { "kind": "category", "name": "Drone", "colour": "20", "contents": [
+                { "kind": "block", "type": "take_off" },
+                { "kind": "block", "type": "land" },
+                { "kind": "block", "type": "set_altitude" },
+                { "kind": "block", "type": "change_altitude" },
+                { "kind": "block", "type": "set_angle" },
+                { "kind": "block", "type": "change_angle" },
+                { "kind": "block", "type": "slide" },
+                { "kind": "block", "type": "walk" },
+                { "kind": "block", "type": "wait" }
+              ]
+            }
+          ]
+        };
+        workspace = Blockly.inject('blocklyDiv', { toolbox });
+      };
+
+      // --- Keypress handler ---
+      var pressedKeys = {};
+      document.addEventListener('keydown', function(event) {
+        pressedKeys[event.key] = true;
+      });
+      document.addEventListener('keyup', function(event) {
+        pressedKeys[event.key] = false;
+      });
+      function isKeyPressed(key) {
+          const normalizedKey = key.toLowerCase(); // Rendi il testo maiuscolo
+
+          // Mappa per gestire SPACE e frecce direzionali
+          const keyMap = {
+              "space": " ",
+              "return": "Return",
+              "arrow_up": "ArrowUp",
+              "arrow_down": "ArrowDown",
+              "arrow_left": "ArrowLeft",
+              "arrow_right": "ArrowRight"
+          };
+
+          // Se il tasto è nella mappa, usa il valore mappato, altrimenti usa il tasto normale
+          const keyToCheck = keyMap[normalizedKey] || normalizedKey;
+
+          return !!pressedKeys[keyToCheck];
+      }
+
+      // --- Initialization of Three.js and drone configuration ---
+      const initThree = () => {
+        scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x87ceeb);
+        camera = new THREE.PerspectiveCamera(75, 4/3, 0.1, 1000);
+        camera.position.set(4, 0, 4);
+        cameraAngle.x =Math.PI/2;
+        renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        webglContainer.appendChild(renderer.domElement);
+        cameraOffset.multiplyScalar(2.5);
+
+        //const ambientLight = new THREE.AmbientLight(0x404040, 0.5); // luce soffusa
+        //scene.add(ambientLight);
+
+
+        const light = new THREE.DirectionalLight(0xffffff, 1.0);
+        light.position.set(0, 100, 0);
+        light.castShadow = true;
+        scene.add(light);
+        light.shadow.mapSize.set(8192, 8192);
+        light.shadow.camera.near = 0.5;
+        light.shadow.camera.far = 500;
+        light.shadow.camera.left = -55;
+        light.shadow.camera.right = 55;
+        light.shadow.camera.top = 55;
+        light.shadow.camera.bottom = -55;
+
+        const textureLoader = new THREE.TextureLoader();
+        textureLoader.load(
+          'textures/grass.jpg',
+          function(texture) {
+            texture.wrapS = THREE.RepeatWrapping; // Permette la ripetizione orizzontale
+            texture.wrapT = THREE.RepeatWrapping; // Permette la ripetizione verticale
+            texture.anisotropy = 16; // Migliora la qualità della texture
+
+            const planeSize = 640; // Dimensione del piano
+            const textureSize = 256; // Supponiamo che la texture sia 256x256 px
+
+            // Imposta il numero di ripetizioni della texture in base alla dimensione del piano
+            texture.repeat.set(planeSize / textureSize, planeSize / textureSize);
+
+            const planeMaterial = new THREE.MeshLambertMaterial({
+              map: texture,
+              bumpMap: texture,
+              bumpScale: 0.3
+            });
+
+            const plane = new THREE.Mesh(new THREE.PlaneGeometry(planeSize, planeSize), planeMaterial);
+            plane.rotation.x = -Math.PI / 2;
+            plane.receiveShadow = true;
+            scene.add(plane);
+          },
+          undefined,
+          function(err) {
+            console.error('Error in texture download', err);
+          }
+        );
+        
+        const piattaformaLoader = new THREE.TextureLoader();
+        piattaformaLoader.load(
+          'textures/piattaforma.png',
+          function(texture) {
+
+            const planeMaterial = new THREE.MeshLambertMaterial({
+              map: texture,
+              transparent: true
+            });
+            const plane = new THREE.Mesh(new THREE.PlaneGeometry(16, 16), planeMaterial);
+            plane.rotation.x = -Math.PI / 2;
+            plane.position.y=0.3;
+            plane.receiveShadow = true;
+            scene.add(plane);
+          },
+          undefined,
+          function(err) {
+            console.error('Error in texture download', err);
+          }
+        );
+        
+        
+                
+        function addPropellers() {
+            if (!drone.mesh) {
+                console.error("Il drone non è stato caricato, impossibile aggiungere le eliche!");
+                return;
+            }
+
+            const loader = new THREE.STLLoader();
+            loader.load('models/elica.stl', (propellerGeometry) => {
+              //propellerGeometry.computeVertexNormals();  
+              const propellerMaterial = new THREE.MeshPhongMaterial({ color: 0xFF0000 });
+            
+              const positions = [
+                  { x:-580, z:-620 },  
+                  { x: 600, z:-600 }, 
+                  { x:-580, z: 630 },
+                  { x: 620, z: 620 } 
+              ];
+
+              drone.propellers = []; 
+
+              positions.forEach((pos, index) => {
+                  const propeller = new THREE.Mesh(propellerGeometry, propellerMaterial);
+                  propeller.position.set(pos.x, 200.0, pos.z); 
+                  propeller.geometry.translate(0, -8, 0);
+
+                  drone.mesh.add(propeller);
+                  drone.propellers.push(propeller);
+              });
+            });
+        }
+                
+        var object;
+        const loader = new THREE.STLLoader();
+        loader.load('models/drone.stl', (geometry) => {
+            geometry.computeVertexNormals();  
+            const material = new THREE.MeshPhongMaterial({ color: 0x404040 });
+            const object = new THREE.Mesh(geometry, material);
+            object.scale.set(0.005, 0.005, 0.005);
+            object.position.set(0, 1.4, 0);
+            object.castShadow = true;
+            scene.add(object);
+
+            drone.mesh = object;
+            addPropellers();
+        });
+
+        drone = {
+          mesh: object, 
+          propellers: [],
+          flying: false,
+          altitude: 1.5,
+          direction: 0,
+          takeOff(callback) {
+            if (!this.flying) {
+              addCommand(next => {
+                this.flying = true;
+                const startAltitude = this.altitude;
+                this.propellerInterval = setInterval(
+                  () => {
+                    if (this.propellers) {
+                      this.propellers.forEach(
+                        prop => {
+                          prop.rotation.y += 2.00;
+                        } 
+                      );
+                    }
+                  }
+                  , 16
+                );
+                animateProperty(
+                  val => { 
+                    this.mesh.position.y = val; this.altitude = val; updateStatus(); 
+                  },
+                  startAltitude, 10.0, 2000,
+                  () => { 
+                    updateStatus(); next(); if (callback) callback(); 
+                  }
+                );
+              });
+            } else if (callback) callback();
+          },
+          land(callback) {
+            if (this.flying) {
+              addCommand(
+                next => {
+                  const startAltitude = this.altitude;
+                  animateProperty(
+                    val => { 
+                      this.mesh.position.y = val; this.altitude = val; updateStatus(); 
+                    },
+                    startAltitude, 1.50, 2000,
+                    () => { 
+                      this.flying = false;
+                      clearInterval(this.propellerInterval); 
+                      updateStatus();
+                      next();
+                      if (callback) callback();
+                    }
+                  );
+                }
+              );
+            } else if (callback) callback();
+          },
+          setAltitude(value, callback) {
+            if (this.flying) {
+              addCommand(next => {
+                const startAltitude = this.altitude;
+                animateProperty(
+                  val => { 
+                    this.mesh.position.y = val; this.altitude = val; updateStatus(); 
+                  },
+                  startAltitude, value, Math.abs(value) * 200,
+                  () => { 
+                    next(); if (callback) callback(); 
+                  }
+                );
+              });
+            } else if (callback) callback();
+          },
+          changeAltitude(value, callback) {
+            if (this.flying) {
+              addCommand(next => {
+                const startAltitude = this.altitude;
+                const targetAltitude = startAltitude + value;
+
+                animateProperty(
+                  val => { this.mesh.position.y = val; this.altitude = val; updateStatus(); },
+                  startAltitude, targetAltitude, Math.abs(value) * 200,
+                  () => {
+                    next();
+                    if (callback) callback();
+                  }
+                );
+              });
+            } else if (callback) callback();
+          },          
+          setAngle(angle, callback) {
+            if (this.flying) {
+              addCommand(next => {
+                const normalizedAngle = ((angle % 360) + 360) % 360; 
+                  animateProperty(
+                    val => {
+                      this.direction = normalizedAngle * -val;
+                      this.mesh.rotation.y = THREE.MathUtils.degToRad(this.direction);
+                      updateStatus();
+                    },
+                    0, 1, 2000,
+                    () => { next(); if (callback) callback(); }
+                  );
+                });
+            } else if (callback) callback();
+          },
+          changeAngle(angle, callback) {
+            if (this.flying) {
+              addCommand(next => {
+                const startDir = this.direction;
+                animateProperty(
+                  val => {
+                    let newDirection = startDir - angle * val;
+                    this.direction = ((newDirection % 360) + 360) % 360; 
+                    this.mesh.rotation.y = THREE.MathUtils.degToRad(this.direction);
+                    updateStatus();
+                  },
+                  0, 1, 2000,
+                  () => { next(); if (callback) callback(); }
+                );
+              });
+            } else if (callback) callback();
+          },
+          slide(distance, callback) {
+            if (this.flying) {
+              addCommand(next => {
+                const startX = this.mesh.position.x;
+                const startZ = this.mesh.position.z;
+                const rad = THREE.MathUtils.degToRad(this.direction );
+                this.mesh.rotation.y = THREE.MathUtils.degToRad(this.direction);
+                        animateProperty(
+                          val => { 
+                            this.mesh.rotation.x = THREE.MathUtils.degToRad(-10 * Math.sign(distance) ) * val;
+                          },
+                          0, 1, 100, 
+                          () => { 
+                            animateProperty(
+                              val => {
+                                this.mesh.position.x = startX - Math.sin(rad) * distance * val;
+                                this.mesh.position.z = startZ - Math.cos(rad) * distance * val;
+                                updateStatus();
+                              },
+                              0, 1, Math.abs(distance) * 200,
+                              () => {
+                                animateProperty(
+                                  val => { 
+                                    this.mesh.rotation.x = THREE.MathUtils.degToRad(20 * Math.sign(distance)) * val;
+                                  },
+                                  0, 1, 100, 
+                                  () => {
+                                    animateProperty(
+                                      val => { 
+                                        this.mesh.rotation.x = THREE.MathUtils.degToRad(-10 * Math.sign(distance)) * (1-val);
+                                      },
+                                      0, 1, 100, 
+                                      () => { next(); if (callback) callback(); }
+                                    );
+                                  }
+                                );
+                              }
+                          );    
+                        }
+                    );
+              });
+            } else if (callback) callback();
+          },
+          walk(distance, callback) {
+            if (this.flying) {
+              addCommand(next => {
+                const startX = this.mesh.position.x;
+                const startZ = this.mesh.position.z;
+                const rad = THREE.MathUtils.degToRad(this.direction-90);
+                animateProperty(
+                  val => { 
+                    this.mesh.rotation.z = THREE.MathUtils.degToRad(10 * Math.sign(distance)) * val;
+                  },
+                  0, 1, 100, 
+                  () => { 
+                    animateProperty(
+                      val => {
+                        this.mesh.position.x = startX + Math.sin(rad) * distance * val;
+                        this.mesh.position.z = startZ + Math.cos(rad) * distance * val;
+                        updateStatus();
+                      },
+                      0, 1, Math.abs(distance) * 200,
+                      () => {
+                        animateProperty(
+                          val => { 
+                            this.mesh.rotation.z = THREE.MathUtils.degToRad(-20 * Math.sign(distance)) * val;
+                          },
+                          0, 1, 100, 
+                          () => {
+                            animateProperty(
+                              val => { 
+                                this.mesh.rotation.z = THREE.MathUtils.degToRad(10 * Math.sign(distance)) * (1-val);
+                              },
+                              0, 1, 100, 
+                              () => { next(); if (callback) callback(); }
+                            );
+                          }
+                        );
+                      }
+                    );    
+                  }
+                );
+              });
+            } else if (callback) callback();
+          }
+        }
+        setupStatusInputs();
+      }
+
+      // --- Updating the status panel ---
+      const updateStatus = () => {
+        document.getElementById('x').value = -drone.mesh.position.z.toFixed(2);
+        document.getElementById('z').value = -drone.mesh.position.x.toFixed(2);
+        document.getElementById('altitude').value = drone.altitude.toFixed(2);
+        document.getElementById('direction').value = ((-drone.direction.toFixed(0) % 360) + 360) % 360 ;
+        document.getElementById('flightStatus').innerText = drone.flying ? "In Flight" : "On Ground";
+      };
+
+      const setupStatusInputs = () => {
+        document.getElementById('z').addEventListener('change', e => {
+          drone.mesh.position.x = -parseFloat(e.target.value);
+        });
+        document.getElementById('x').addEventListener('change', e => {
+          drone.mesh.position.z = -parseFloat(e.target.value);
+        });
+        document.getElementById('altitude').addEventListener('change', e => {
+          drone.mesh.position.y = parseFloat(e.target.value);
+        });
+        document.getElementById('direction').addEventListener('change', e => {
+          drone.mesh.rotation.y = THREE.MathUtils.degToRad( parseFloat(-e.target.value));        
+        });
+      };
+
+      // --- Animation loop ---
+      const animate = () => {
+        requestAnimationFrame(animate);
+        if (drone && drone.mesh) {
+          const offset = cameraOffset.clone();
+          const spherical = new THREE.Spherical().setFromVector3(offset);
+          spherical.theta += cameraAngle.x;
+          spherical.phi += cameraAngle.y;
+          spherical.makeSafe();
+          offset.setFromSpherical(spherical);
+          camera.position.copy(drone.mesh.position).add(offset);
+          camera.lookAt(drone.mesh.position);
+        }
+        renderer.render(scene, camera);
+      };
+
+      // --- Scene reset ---
+      const resetScene = () => {
+        drone.mesh.position.set(0, 1.4, 0);
+        drone.mesh.rotation.y = 0;
+        drone.altitude = 1.4;
+        drone.direction = 0;
+        drone.flying = false;
+        updateStatus();
+      };
+
+       // --- Menu button handlers ---
+      document.getElementById('newBtn').addEventListener('click', () => workspace.clear());
+      document.getElementById('saveBtn').addEventListener('click', () => {
+        const xml = Blockly.Xml.workspaceToDom(workspace);
+        const xml_text = Blockly.Xml.domToPrettyText(xml);
+        const blob = new Blob([xml_text], { type: 'text/xml' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'drone_code.xml';
+        a.click();
+      });
+      document.getElementById('loadBtn').addEventListener('click', () => {
+        document.getElementById('fileInput').click();
+      });
+      document.getElementById('fileInput').addEventListener('change', event => {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = e => {
+          const xml_text = e.target.result;
+          const parser = new DOMParser();
+          const xml = parser.parseFromString(xml_text, 'text/xml');
+          workspace.clear();
+          Blockly.Xml.domToWorkspace(xml.documentElement, workspace);
+        };
+        reader.readAsText(file);
+      });
+      document.getElementById('runBtn').addEventListener('click', () => {
+        if (run==false){
+          document.getElementById("stopBtn").disabled = false;
+          document.getElementById("runBtn").disabled = true;
+          resetScene();
+          var code = Blockly.JavaScript.workspaceToCode(workspace);
+          delay = 100;
+          run=true;
+          code=code.replace(/\bfunction\b/g, 'async function');
+          code=code.replace(/\n/g, ';\n  await new Promise(r => setTimeout(r, delay));delay=10;if(run!=true)return;');
+          var wrappedCode = `
+            async function _run() {
+                ${code}
+            }
+            _run();
+          `;
+          console.log(wrappedCode);
+          eval(wrappedCode);
+        }
+      });
+      document.getElementById('stopBtn').addEventListener('click', () => {
+        if (run==true){
+          document.getElementById("stopBtn").disabled = true;
+          document.getElementById("runBtn").disabled = false;
+          commandQueue.length = 0;
+          run=false;
+          clearInterval(drone.propellerInterval);
+          //alert("program stopped");
+          setTimeout(resetScene,delay);       
+        }
+      });
+            
+      // --- Divider management for resizing ---
+      let fullScreen = false;
+      document.getElementById('toggleWebglBtn').addEventListener('click', () => {
+        const leftPanel = document.getElementById('leftPanel');
+        const divider = document.getElementById('divider');
+        const rightPanel = document.getElementById('rightPanel');
+        const statusPanel = document.getElementById('statusPanel');
+      
+        if (!fullScreen) {
+            leftPanel.style.display = 'none';
+            divider.style.display = 'none';
+            rightPanel.style.width = '100%';
+            statusPanel.style.display = 'none';
+            document.getElementById('toggleWebglBtn').innerText = "🗗";
+        } else {
+            leftPanel.style.display = '';
+            divider.style.display = '';
+            rightPanel.style.width = '';
+            statusPanel.style.display = '';
+            document.getElementById('toggleWebglBtn').innerText = "🗖";
+        }
+        fullScreen = !fullScreen;
+        updateWebGLCanvas();
+     });
+
+    
+      divider.addEventListener('mousedown', () => { isResizing = true; });
+      document.addEventListener('mousemove', e => {
+        if (!isResizing) return;
+        const containerOffsetLeft = container.offsetLeft;
+        let pointerX = e.clientX - containerOffsetLeft;
+        const minWidth = 200;
+        const maxWidth = container.clientWidth - 200;
+        pointerX = Math.max(minWidth, Math.min(pointerX, maxWidth));
+        leftPanel.style.width = pointerX + "px";
+        Blockly.svgResize(workspace);
+        updateWebGLCanvas();
+      });
+      document.addEventListener('mouseup', () => { isResizing = false; });
+
+       // --- Application initialization ---
+      initBlockly();
+      initThree();
+      updateWebGLCanvas();
+      animate();
+    };
+  </script>
+</body>
+</html>
