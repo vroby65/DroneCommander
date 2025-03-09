@@ -1,5 +1,5 @@
 # Drone Commander 
-![immagine](https://github.com/user-attachments/assets/f9d4a8c0-0b53-4d6d-be6f-f0aa037bcde2)
+![image](https://github.com/user-attachments/assets/19607562-ec93-4e99-b6c9-6a8b50a2f5bb)
 
 ## Overview
 
