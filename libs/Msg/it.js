@@ -439,7 +439,7 @@ Blockly.Msg["VARIABLES_DYNAMIC_HUE"] = "310";
 Blockly.Msg["PROCEDURES_HUE"] = "290";
 
 // Italian translation for Drone Commands
-Blockly.Msg["BKY_DRONE_TAKEOFF"] = "decola";
+Blockly.Msg["BKY_DRONE_TAKEOFF"] = "decolla";
 Blockly.Msg["BKY_DRONE_TAKEOFF_TOOLTIP"] = "Fai decollare il drone";
 
 Blockly.Msg["BKY_DRONE_LAND"] = "atterra";
