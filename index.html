@@ -25,7 +25,7 @@
         overflow: auto;
       }
       #divider {
-        width: 10px;
+        width: 5px;
         background-color: #ccc;
         cursor: ew-resize;
       }
@@ -299,31 +299,31 @@
       
       // --- Generators for custom blocks ---
       // --- Drone ---
-      Blockly.JavaScript.forBlock['take_off'] = block => 'delay=2020;drone.takeOff();\n';
-      Blockly.JavaScript.forBlock['land'] = block => 'delay=2020;drone.land();\n';
+      Blockly.JavaScript.forBlock['take_off'] = block => 'delay=2010;drone.takeOff();\n';
+      Blockly.JavaScript.forBlock['land'] = block => 'delay=2010;drone.land();\n';
       Blockly.JavaScript.forBlock['set_altitude'] = block => {
         var altitude = Blockly.JavaScript.valueToCode(block, 'ALTITUDE', Blockly.JavaScript.ORDER_ATOMIC) || '0';
-        return 'delay=' + altitude + '* 200;drone.setAltitude(' + altitude + ');\n';
+        return 'delay=' + altitude + '* 160;drone.setAltitude(' + altitude + ');\n';
       };
       Blockly.JavaScript.forBlock['change_altitude'] = block => {
         var altitude = Blockly.JavaScript.valueToCode(block, 'ALTITUDE', Blockly.JavaScript.ORDER_ATOMIC) || '0';
-        return 'delay=' + Math.abs(altitude.replace(/[()]/g,'')) + '* 200;drone.changeAltitude(' + altitude + ');\n';
+        return 'delay=' + Math.abs(altitude.replace(/[()]/g,'')) + '* 160;drone.changeAltitude(' + altitude + ');\n';
       };
       Blockly.JavaScript.forBlock['set_angle'] = block => {
         var angle = Blockly.JavaScript.valueToCode(block, 'ANGLE', Blockly.JavaScript.ORDER_ATOMIC) || '0';
-        return 'delay=2020;drone.setAngle(' + angle + ');\n';
+        return 'delay=1020;drone.setAngle(' + angle + ');\n';
       };
       Blockly.JavaScript.forBlock['change_angle'] = block => {
         var angle = Blockly.JavaScript.valueToCode(block, 'ANGLE', Blockly.JavaScript.ORDER_ATOMIC) || '0';
-        return 'delay=2020;drone.changeAngle(' + angle + ');\n';
+        return 'delay=1020;drone.changeAngle(' + angle + ');\n';
       };
       Blockly.JavaScript.forBlock['slide'] = block => {
         var slide = Blockly.JavaScript.valueToCode(block, 'SLIDE', Blockly.JavaScript.ORDER_ATOMIC) || '0';
-        return 'delay=' + Math.abs(slide.replace(/[()]/g, '')) + '*250;drone.slide(' + slide + ');\n';
+        return 'delay=' + Math.abs(slide.replace(/[()]/g, '')) + '*160;drone.slide(' + slide + ');\n';
       };
       Blockly.JavaScript.forBlock['walk'] = block => {
         var dist = Blockly.JavaScript.valueToCode(block, 'DIST', Blockly.JavaScript.ORDER_ATOMIC) || '0';
-        return 'delay=' + Math.abs(dist.replace(/[()]/g, '')) + '*250;drone.walk(' + dist + ');\n';
+        return 'delay=' + Math.abs(dist.replace(/[()]/g, '')) + '*160;drone.walk(' + dist + ');\n';
       };
       Blockly.JavaScript.forBlock['wait'] = block => {
         var dist = Blockly.JavaScript.valueToCode(block, 'DIST', Blockly.JavaScript.ORDER_ATOMIC) || '0';
@@ -775,7 +775,7 @@
                   val => { 
                     this.mesh.position.y = val; this.altitude = val; updateStatus(); 
                   },
-                  startAltitude, value, Math.abs(value) * 200,
+                  startAltitude, value, Math.abs(value) * 150,
                   () => { 
                     next(); if (callback) callback(); 
                   }
@@ -790,7 +790,7 @@
                 const targetAltitude = startAltitude + value;
                 animateProperty(
                   val => { this.mesh.position.y = val; this.altitude = val; updateStatus(); },
-                  startAltitude, targetAltitude, Math.abs(value) * 200,
+                  startAltitude, targetAltitude, Math.abs(value) * 150,
                   () => {
                     next();
                     if (callback) callback();
@@ -805,11 +805,11 @@
                 const normalizedAngle = ((angle % 360) + 360) % 360; 
                 animateProperty(
                   val => {
-                    this.direction = normalizedAngle * -val;
+                    this.direction = angle * -val ;
                     this.mesh.rotation.y = THREE.MathUtils.degToRad(this.direction);
                     updateStatus();
                   },
-                  0, 1, 2000,
+                  0, 1, 1000,
                   () => { next(); if (callback) callback(); 
                   }
                 );
@@ -827,7 +827,7 @@
                     this.mesh.rotation.y = THREE.MathUtils.degToRad(this.direction);
                     updateStatus();
                   },
-                  0, 1, 2000,
+                  0, 1, 1000,
                   () => { next(); if (callback) callback(); }
                 );
               });
@@ -852,7 +852,7 @@
                         this.mesh.position.z = startZ - Math.cos(rad) * distance * val;
                         updateStatus();
                       },
-                      0, 1, Math.abs(distance) * 200,
+                      0, 1, Math.abs(distance) * 150,
                       () => {
                         animateProperty(
                           val => { 
@@ -894,7 +894,7 @@
                         this.mesh.position.z = startZ + Math.cos(rad) * distance * val;
                         updateStatus();
                       },
-                      0, 1, Math.abs(distance) * 200,
+                      0, 1, Math.abs(distance) * 150,
                       () => {
                         animateProperty(
                           val => { 
@@ -968,6 +968,7 @@
         drone.mesh.rotation.y = 0;
         drone.altitude = 1.4;
         drone.direction = 0;
+        clearInterval(drone.propellerInterval); 
         drone.flying = false;
         updateStatus();
       };
@@ -1022,12 +1023,14 @@
       });
       document.getElementById('stopBtn').addEventListener('click', () => {
         if (run==true){
-          document.getElementById("stopBtn").disabled = true;
           document.getElementById("runBtn").disabled = false;
           commandQueue.length = 0;
           run=false;
           clearInterval(drone.propellerInterval);
+        }
+        else{
           setTimeout(resetScene,delay);       
+          document.getElementById("stopBtn").disabled = true;
         }
       });
                 
