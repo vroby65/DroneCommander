@@ -585,38 +585,76 @@
       
       // --- Drone Sound ---
 
-      let droneAudio = null;
-      const basePlaybackRate = 0.5; // Velocità di riproduzione di base
+      let audioCtx = null;
+      let droneBuffer = null;
+      let droneSource = null;
+      let gainNode = null;
+      const basePlaybackRate = 1.0; 
+      const defaultVolume = 0.05;
 
-      function initAudio(){
-        if (!droneAudio) {
-          droneAudio = new Audio('sounds/drone.mp3');
-          droneAudio.loop = true;
-          droneAudio.volume = 0.1;
-          droneAudio.playbackRate = basePlaybackRate;
+      let audioLoadPromise = null;
+
+      function initAudio() {
+        if (!audioCtx) {
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+          
+          gainNode = audioCtx.createGain();
+          gainNode.gain.value = defaultVolume;
+          gainNode.connect(audioCtx.destination);
+          
+          audioLoadPromise = fetch('sounds/drone.mp3')
+            .then(response => response.arrayBuffer())
+            .then(arrayBuffer => audioCtx.decodeAudioData(arrayBuffer))
+            .then(buffer => {
+                droneBuffer = buffer;
+                console.log("Audio caricato correttamente");
+            })
+            .catch(err => console.error("Errore nel caricamento dell'audio:", err));
         }
       }
 
       function playDroneSound() {
-          droneAudio.play().catch(err => {
-            console.error("Errore nell'avvio del suono:", err);
-          });
-        
+        if (!audioLoadPromise) {
+          console.error("initAudio non è stato chiamato!");
+          return;
+        }
+        audioLoadPromise.then(() => {
+          if (!audioCtx || !droneBuffer) {
+            console.error("Audio non inizializzato o buffer non caricato");
+            return;
+          }
+          if (droneSource) {
+            droneSource.stop();
+            droneSource.disconnect();
+          }
+          droneSource = audioCtx.createBufferSource();
+          droneSource.buffer = droneBuffer;
+          droneSource.loop = true;
+          
+          droneSource.loopStart = 0;
+          droneSource.loopEnd = droneBuffer.duration; 
+          
+          droneSource.playbackRate.value = basePlaybackRate;
+          
+          droneSource.connect(gainNode);
+          droneSource.start();
+        });
       }
 
       function stopDroneSound() {
-        if (droneAudio) {
-          droneAudio.pause();
-          droneAudio.currentTime = 0;
-          droneAudio = null;
+        if (droneSource) {
+          droneSource.stop();
+          droneSource.disconnect();
+          droneSource = null;
         }
       }
 
       function updateDroneSound(newPlaybackRate) {
-        if (droneAudio) {
-          droneAudio.playbackRate = newPlaybackRate;
+        if (droneSource) {
+          droneSource.playbackRate.value = newPlaybackRate;
         }
       }
+
       
       // --- Initialization of Three.js and drone configuration ---
       const initThree = () => {
@@ -806,7 +844,7 @@
           setAltitude(value, callback) {
             if (this.flying) {
               addCommand(next => {
-                updateDroneSound(basePlaybackRate + 3.0);
+                updateDroneSound(basePlaybackRate + 1.0);
                 const startAltitude = this.altitude;
                 animateProperty(
                   val => { 
@@ -824,7 +862,7 @@
           changeAltitude(value, callback) {
             if (this.flying) {
               addCommand(next => {
-                updateDroneSound(basePlaybackRate + 3.0);
+                updateDroneSound(basePlaybackRate + 1.0);
                 const startAltitude = this.altitude;
                 const targetAltitude = startAltitude + value;
                 animateProperty(
@@ -842,7 +880,7 @@
           setAngle(angle, callback) {
             if (this.flying) {
               addCommand(next => {
-                updateDroneSound(basePlaybackRate + 3.0);
+                updateDroneSound(basePlaybackRate + 1.0);
                 const normalizedAngle = ((angle % 360) + 360) % 360; 
                 animateProperty(
                   val => {
@@ -860,7 +898,7 @@
           changeAngle(angle, callback) {
             if (this.flying) {
               addCommand(next => {
-                updateDroneSound(basePlaybackRate + 3.0);
+                updateDroneSound(basePlaybackRate + 1.0);
                 const startDir = this.direction;
                 animateProperty(
                   val => {
@@ -878,7 +916,7 @@
           slide(distance, callback) {
             if (this.flying) {
               addCommand(next => {
-                updateDroneSound(basePlaybackRate + 3.0);
+                updateDroneSound(basePlaybackRate + 1.0);
                 const startX = this.mesh.position.x;
                 const startZ = this.mesh.position.z;
                 const rad = THREE.MathUtils.degToRad(this.direction );
@@ -923,7 +961,7 @@
           walk(distance, callback) {
             if (this.flying) {
               addCommand(next => {
-                updateDroneSound(basePlaybackRate + 3.0);
+                updateDroneSound(basePlaybackRate + 1.0);
                 const startX = this.mesh.position.x;
                 const startZ = this.mesh.position.z;
                 const rad = THREE.MathUtils.degToRad(this.direction-90);
