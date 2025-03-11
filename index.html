@@ -398,7 +398,7 @@
       };
 
       // --- Events for camera control ---
-      webglContainer.addEventListener('contextmenu', e => e.preventDefault());
+      webglContainer.addEventListener('contextmenu', e => e.preventDefault(), { passive: true });
       webglContainer.addEventListener('mousedown', e => {
         if (e.button === 2) isRightMouseDown = true;
         if (event.button === 1) {
@@ -412,11 +412,11 @@
         }
         prevMousePos.x = e.clientX;
         prevMousePos.y = e.clientY;
-      });
+      }, { passive: true });
       document.addEventListener('mouseup', () => {
         isRightMouseDown = false;
         isLeftMouseDown = false;
-      });
+      }, { passive: true });
       document.addEventListener('mousemove', e => {
         const dx = e.clientX - prevMousePos.x;
         const dy = e.clientY - prevMousePos.y;
@@ -430,12 +430,12 @@
         
         prevMousePos.x = e.clientX;
         prevMousePos.y = e.clientY;
-      });
+      }, { passive: true });
       webglContainer.addEventListener('wheel', e => {
         e.preventDefault();
         const zoomFactor = 1 + e.deltaY * 0.001;
         cameraOffset.multiplyScalar(zoomFactor);
-      });      
+      }, { passive: true });      
 
       // --- Updating the WebGL canvas with debouncing ---
       const updateWebGLCanvas = () => {
@@ -465,7 +465,7 @@
       window.addEventListener('resize', () => {
         clearTimeout(resizeTimeout);
         resizeTimeout = setTimeout(updateWebGLCanvas, 100);
-      });
+      }, { passive: true });
 
       // --- Initialization of Blockly ---
       const initBlockly = () => {
@@ -564,10 +564,10 @@
       var pressedKeys = {};
       document.addEventListener('keydown', function(event) {
         pressedKeys[event.key] = true;
-      });
+      }, { passive: true });
       document.addEventListener('keyup', function(event) {
         pressedKeys[event.key] = false;
-      });
+      }, { passive: true });
       function isKeyPressed(key) {
         const normalizedKey = key.toLowerCase(); 
 
@@ -582,7 +582,42 @@
         const keyToCheck = keyMap[normalizedKey] || normalizedKey;
         return !!pressedKeys[keyToCheck];
       }
+      
+      // --- Drone Sound ---
 
+      let droneAudio = null;
+      const basePlaybackRate = 0.5; // Velocità di riproduzione di base
+
+      function initAudio(){
+        if (!droneAudio) {
+          droneAudio = new Audio('sounds/drone.mp3');
+          droneAudio.loop = true;
+          droneAudio.volume = 0.1;
+          droneAudio.playbackRate = basePlaybackRate;
+        }
+      }
+
+      function playDroneSound() {
+          droneAudio.play().catch(err => {
+            console.error("Errore nell'avvio del suono:", err);
+          });
+        
+      }
+
+      function stopDroneSound() {
+        if (droneAudio) {
+          droneAudio.pause();
+          droneAudio.currentTime = 0;
+          droneAudio = null;
+        }
+      }
+
+      function updateDroneSound(newPlaybackRate) {
+        if (droneAudio) {
+          droneAudio.playbackRate = newPlaybackRate;
+        }
+      }
+      
       // --- Initialization of Three.js and drone configuration ---
       const initThree = () => {
         scene = new THREE.Scene();
@@ -616,14 +651,13 @@
         textureLoader.load(
           'textures/grass.jpg',
           function(texture) {
-            texture.wrapS = THREE.RepeatWrapping; // Permette la ripetizione orizzontale
-            texture.wrapT = THREE.RepeatWrapping; // Permette la ripetizione verticale
-            texture.anisotropy = 16; // Migliora la qualità della texture
+            texture.wrapS = THREE.RepeatWrapping; 
+            texture.wrapT = THREE.RepeatWrapping; 
+            texture.anisotropy = 16; 
 
-            const planeSize = 640; // Dimensione del piano
-            const textureSize = 256; // Supponiamo che la texture sia 256x256 px
+            const planeSize = 640; 
+            const textureSize = 256; 
 
-            // Imposta il numero di ripetizioni della texture in base alla dimensione del piano
             texture.repeat.set(planeSize / textureSize, planeSize / textureSize);
 
             const planeMaterial = new THREE.MeshLambertMaterial({
@@ -720,6 +754,7 @@
             if (!this.flying) {
               addCommand(next => {
                 this.flying = true;
+                playDroneSound();
                 const startAltitude = this.altitude;
                 this.propellerInterval = setInterval(
                   () => {
@@ -758,6 +793,7 @@
                     () => { 
                       this.flying = false;
                       clearInterval(this.propellerInterval); 
+                      stopDroneSound();
                       updateStatus();
                       next();
                       if (callback) callback();
@@ -770,6 +806,7 @@
           setAltitude(value, callback) {
             if (this.flying) {
               addCommand(next => {
+                updateDroneSound(basePlaybackRate + 3.0);
                 const startAltitude = this.altitude;
                 animateProperty(
                   val => { 
@@ -777,6 +814,7 @@
                   },
                   startAltitude, value, Math.abs(value) * 150,
                   () => { 
+                    updateDroneSound(basePlaybackRate);
                     next(); if (callback) callback(); 
                   }
                 );
@@ -786,12 +824,14 @@
           changeAltitude(value, callback) {
             if (this.flying) {
               addCommand(next => {
+                updateDroneSound(basePlaybackRate + 3.0);
                 const startAltitude = this.altitude;
                 const targetAltitude = startAltitude + value;
                 animateProperty(
                   val => { this.mesh.position.y = val; this.altitude = val; updateStatus(); },
                   startAltitude, targetAltitude, Math.abs(value) * 150,
                   () => {
+                    updateDroneSound(basePlaybackRate);
                     next();
                     if (callback) callback();
                   }
@@ -802,6 +842,7 @@
           setAngle(angle, callback) {
             if (this.flying) {
               addCommand(next => {
+                updateDroneSound(basePlaybackRate + 3.0);
                 const normalizedAngle = ((angle % 360) + 360) % 360; 
                 animateProperty(
                   val => {
@@ -810,7 +851,7 @@
                     updateStatus();
                   },
                   0, 1, 1000,
-                  () => { next(); if (callback) callback(); 
+                  () => { updateDroneSound(basePlaybackRate); next(); if (callback) callback(); 
                   }
                 );
               });
@@ -819,6 +860,7 @@
           changeAngle(angle, callback) {
             if (this.flying) {
               addCommand(next => {
+                updateDroneSound(basePlaybackRate + 3.0);
                 const startDir = this.direction;
                 animateProperty(
                   val => {
@@ -828,7 +870,7 @@
                     updateStatus();
                   },
                   0, 1, 1000,
-                  () => { next(); if (callback) callback(); }
+                  () => { updateDroneSound(basePlaybackRate); next(); if(callback) callback();}
                 );
               });
             } else if (callback) callback();
@@ -836,6 +878,7 @@
           slide(distance, callback) {
             if (this.flying) {
               addCommand(next => {
+                updateDroneSound(basePlaybackRate + 3.0);
                 const startX = this.mesh.position.x;
                 const startZ = this.mesh.position.z;
                 const rad = THREE.MathUtils.degToRad(this.direction );
@@ -860,6 +903,7 @@
                           },
                           0, 1, 100, 
                           () => {
+                            updateDroneSound(basePlaybackRate);
                             animateProperty(
                               val => { 
                                 this.mesh.rotation.x = THREE.MathUtils.degToRad(-10 * Math.sign(distance)) * (1-val);
@@ -879,6 +923,7 @@
           walk(distance, callback) {
             if (this.flying) {
               addCommand(next => {
+                updateDroneSound(basePlaybackRate + 3.0);
                 const startX = this.mesh.position.x;
                 const startZ = this.mesh.position.z;
                 const rad = THREE.MathUtils.degToRad(this.direction-90);
@@ -902,6 +947,7 @@
                           },
                           0, 1, 100, 
                           () => {
+                            updateDroneSound(basePlaybackRate);
                             animateProperty(
                               val => { 
                                 this.mesh.rotation.z = THREE.MathUtils.degToRad(10 * Math.sign(distance)) * (1-val);
@@ -934,16 +980,16 @@
       const setupStatusInputs = () => {
         document.getElementById('z').addEventListener('change', e => {
           drone.mesh.position.x = -parseFloat(e.target.value);
-        });
+        }, { passive: true });
         document.getElementById('x').addEventListener('change', e => {
           drone.mesh.position.z = -parseFloat(e.target.value);
-        });
+        }, { passive: true });
         document.getElementById('altitude').addEventListener('change', e => {
           drone.mesh.position.y = parseFloat(e.target.value);
-        });
+        }, { passive: true });
         document.getElementById('direction').addEventListener('change', e => {
           drone.mesh.rotation.y = THREE.MathUtils.degToRad( parseFloat(-e.target.value));        
-        });
+        }, { passive: true });
       };
 
       // --- Animation loop ---
@@ -974,7 +1020,7 @@
       };
 
       // --- Menu button handlers ---
-      document.getElementById('newBtn').addEventListener('click', () => workspace.clear());
+      document.getElementById('newBtn').addEventListener('click', () => workspace.clear(), { passive: true });
       document.getElementById('saveBtn').addEventListener('click', () => {
         const xml = Blockly.Xml.workspaceToDom(workspace);
         const xml_text = Blockly.Xml.domToPrettyText(xml);
@@ -983,7 +1029,7 @@
         a.href = URL.createObjectURL(blob);
         a.download = 'drone_code.xml';
         a.click();
-      });
+      }, { passive: true });
       document.getElementById('loadBtn').addEventListener('click', () => {
         document.getElementById('fileInput').click();
       });
@@ -999,9 +1045,10 @@
           Blockly.Xml.domToWorkspace(xml.documentElement, workspace);
         };
         reader.readAsText(file);
-      });
+      }, { passive: true });
       document.getElementById('runBtn').addEventListener('click', () => {
         if (run==false){
+          initAudio();
           document.getElementById("stopBtn").disabled = false;
           document.getElementById("runBtn").disabled = true;
           resetScene();
@@ -1020,19 +1067,20 @@
           console.log(wrappedCode);
           eval(wrappedCode);
         }
-      });
+      }, { passive: true });
       document.getElementById('stopBtn').addEventListener('click', () => {
         if (run==true){
           document.getElementById("runBtn").disabled = false;
           commandQueue.length = 0;
           run=false;
+          stopDroneSound();
           clearInterval(drone.propellerInterval);
         }
         else{
           setTimeout(resetScene,delay);       
           document.getElementById("stopBtn").disabled = true;
         }
-      });
+      }, { passive: true });
                 
       // --- Divider management for resizing ---
       let fullScreen = false;
@@ -1057,7 +1105,7 @@
         }
         fullScreen = !fullScreen;
         updateWebGLCanvas();
-      });
+      }, { passive: true });
 
       divider.addEventListener('mousedown', () => { isResizing = true; });
       document.addEventListener('mousemove', e => {
@@ -1070,8 +1118,8 @@
         leftPanel.style.width = pointerX + "px";
         Blockly.svgResize(workspace);
         updateWebGLCanvas();
-      });
-      document.addEventListener('mouseup', () => { isResizing = false; });
+      }, { passive: true });
+      document.addEventListener('mouseup', () => { isResizing = false; }, { passive: true });
         
       // --- Localization ---
       function loadLanguageFile(lang, callback) {
@@ -1102,7 +1150,7 @@
         loadLanguageFile(selectedLang, function() {
           updateLanguage(selectedLang);
         });
-      });
+      }, { passive: true });
         
       window.onload = function() {
           defineCustomBlocks();
