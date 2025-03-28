@@ -237,6 +237,17 @@
             "tooltip": Blockly.Msg["BKY_DRONE_WAIT_TOOLTIP"]
           },
           {
+            "type": "smoke",
+            "message0": Blockly.Msg["BKY_DRONE_SMOKE"],
+            "args0": [
+              { "type": "input_value", "name": "SMOKE", "check": "Boolean" }
+            ],
+            "previousStatement": null,
+            "nextStatement": null,
+            "colour": 20,
+            "tooltip": Blockly.Msg["BKY_DRONE_SMOKE_TOOLTIP"]
+          },
+          {
             "type": "sensor_keypressed",
             "message0": Blockly.Msg["BKY_SENSOR_KEYPRESSED"],
             "args0": [
@@ -329,6 +340,11 @@
         var dist = Blockly.JavaScript.valueToCode(block, 'DIST', Blockly.JavaScript.ORDER_ATOMIC) || '0';
         return 'delay='+ (dist *1000) +'\n';
       };
+      Blockly.JavaScript.forBlock['smoke'] = block => {
+        var smoke = Blockly.JavaScript.valueToCode(block, 'SMOKE', Blockly.JavaScript.ORDER_ATOMIC) || '0';
+        return `drone.smoke = (${smoke});\n`;
+      };
+
       //--- Sensor ---
       Blockly.JavaScript.forBlock['sensor_keypressed'] = block => {
         var key = block.getFieldValue('KEY');
@@ -361,6 +377,7 @@
       const leftPanel = document.getElementById("leftPanel");
       const divider = document.getElementById("divider");
       const webglContainer = document.getElementById('webglContainer');
+      webglContainer.addEventListener('contextmenu', e => e.preventDefault());
       let propellers = [];
 
       // --- Camera control ---
@@ -370,6 +387,7 @@
 
       let prevMousePos = { x: 0, y: 0 };
       let cameraAngle = { x: 0, y: 0 };
+
 
       // --- Command Queue ---
       const commandQueue = [];
@@ -552,7 +570,8 @@
                 { "kind": "block", "type": "change_angle" },
                 { "kind": "block", "type": "slide" },
                 { "kind": "block", "type": "walk" },
-                { "kind": "block", "type": "wait" }
+                { "kind": "block", "type": "wait" },
+                { "kind": "block", "type": "smoke" }
               ]
             }
           ]
@@ -766,7 +785,7 @@
             });
           });
         }
-                    
+
         var object;
         const loader = new THREE.STLLoader();
         loader.load('models/drone.stl', (geometry) => {
@@ -788,6 +807,7 @@
           flying: false,
           altitude: 1.5,
           direction: 0,
+          smoke: 0,
           takeOff(callback) {
             if (!this.flying) {
               addCommand(next => {
@@ -881,12 +901,17 @@
             if (this.flying) {
               addCommand(next => {
                 updateDroneSound(basePlaybackRate + 1.0);
+
                 const normalizedTarget = ((angle % 360) + 360) % 360;
                 const normalizedCurrent = ((-this.direction % 360) + 360) % 360;
+
                 let delta = normalizedTarget - normalizedCurrent;
+
                 if (delta > 180) delta -= 360;
                 if (delta < -180) delta += 360;
+
                 const startDirection = this.direction;
+
                 animateProperty(
                   val => {
                     this.direction = startDirection - delta * val;
@@ -1014,6 +1039,29 @@
         setupStatusInputs();
       }
       
+let smokeTrail = [];
+
+function createSmokeParticle(position) {
+  const geometry = new THREE.SphereGeometry(0.15, 8, 8);
+  const material = new THREE.MeshBasicMaterial({
+    color: 0x888888,
+    transparent: true,
+    opacity: 0.5,
+    depthWrite: false,
+  });
+  const sphere = new THREE.Mesh(geometry, material);
+  sphere.position.copy(position);
+  scene.add(sphere);
+  smokeTrail.push(sphere);
+
+  // Limit number of smoke particles for performance
+  //if (smokeTrail.length > 200) {
+  //  const old = smokeTrail.shift();
+  //  scene.remove(old);
+  //}
+}
+                          
+      
       // --- Updating the status panel ---
       const updateStatus = () => {
         document.getElementById('x').value = -drone.mesh.position.z.toFixed(2);
@@ -1050,6 +1098,12 @@
           offset.setFromSpherical(spherical);
           camera.position.copy(drone.mesh.position).add(offset);
           camera.lookAt(drone.mesh.position);
+          if (drone.smoke){
+            if (drone.flying && drone.mesh) {
+              const pos = drone.mesh.position.clone();
+              createSmokeParticle(pos);
+            }
+          }
         }
         renderer.render(scene, camera);
       };
@@ -1060,13 +1114,17 @@
         drone.mesh.rotation.y = 0;
         drone.altitude = 1.4;
         drone.direction = 0;
+        drone.smoke = 0; 
         clearInterval(drone.propellerInterval); 
         drone.flying = false;
         updateStatus();
+
+        smokeTrail.forEach(p => scene.remove(p));
+        smokeTrail = [];
       };
 
       // --- Menu button handlers ---
-      document.getElementById('newBtn').addEventListener('click', () => workspace.clear(), { passive: true });
+      document.getElementById('newBtn').addEventListener('click', () => workspace.clear());
       document.getElementById('saveBtn').addEventListener('click', () => {
         const xml = Blockly.Xml.workspaceToDom(workspace);
         const xml_text = Blockly.Xml.domToPrettyText(xml);
