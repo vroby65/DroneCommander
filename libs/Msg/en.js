@@ -467,6 +467,10 @@ Blockly.Msg["BKY_DRONE_WALK_TOOLTIP"] = "Move the drone forward";
 Blockly.Msg["BKY_DRONE_WAIT"] = "wait %1";
 Blockly.Msg["BKY_DRONE_WAIT_TOOLTIP"] = "Make the drone wait";
 
+Blockly.Msg["BKY_DRONE_SMOKE"] = "smoke %1";
+Blockly.Msg["BKY_DRONE_SMOKE_TOOLTIP"] = "Make the drone smoke";
+
+
 // Sensor Blocks
 Blockly.Msg["BKY_SENSOR_KEYPRESSED"] = "key %1 pressed";
 Blockly.Msg["BKY_SENSOR_KEYPRESSED_TOOLTIP"] = "Return true if key was pressed";
