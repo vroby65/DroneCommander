@@ -304,6 +304,21 @@
             "colour": 90,
             "tooltip": Blockly.Msg["BKY_SENSOR_DIRECTION_TOOLTIP"],
             "helpUrl": ""
+          },
+          {
+            "type": "start_block",
+            "message0": "Start",
+            "nextStatement": null,
+            "colour": 60,
+            "tooltip": "Inizia il programma",
+            "hat": "cap"
+          },
+          {
+            "type": "end_block",
+            "message0": "End",
+            "previousStatement": null,
+            "colour": 0,
+            "tooltip": "Termina il programma"
           }
         ]);
       }
@@ -367,6 +382,11 @@
         var code = "-drone.direction.toFixed(2)";
         return [code, Blockly.JavaScript.ORDER_NONE];
       };
+      //floor
+      Blockly.JavaScript.forBlock['start_block'] = block => '';
+      Blockly.JavaScript.forBlock['end_block'] = block => '';
+
+      
       
       // --- Global variables ---
       let workspace, scene, camera, renderer, drone;
@@ -573,7 +593,13 @@
                 { "kind": "block", "type": "wait" },
                 { "kind": "block", "type": "smoke" }
               ]
-            }
+            },
+            { "kind": "category", "name": "Flow", "colour": "60", "contents": 
+              [
+                { "kind": "block", "type": "start_block" },
+                { "kind": "block", "type": "end_block" }
+              ]
+            },
           ]
         };
         workspace = Blockly.inject('blocklyDiv', { toolbox });
@@ -1124,7 +1150,14 @@ function createSmokeParticle(position) {
       };
 
       // --- Menu button handlers ---
-      document.getElementById('newBtn').addEventListener('click', () => workspace.clear());
+     document.getElementById('newBtn').addEventListener('click', () => {
+      workspace.clear();
+        const xmlText = `<xml xmlns="https://developers.google.com/blockly/xml">
+          <block type="start_block" x="10" y="10"></block>
+          </xml>`;
+        const dom = Blockly.Xml.textToDom(xmlText);
+        Blockly.Xml.domToWorkspace(dom, workspace);
+      });
       document.getElementById('saveBtn').addEventListener('click', () => {
         const xml = Blockly.Xml.workspaceToDom(workspace);
         const xml_text = Blockly.Xml.domToPrettyText(xml);
