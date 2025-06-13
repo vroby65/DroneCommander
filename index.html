@@ -1150,11 +1150,15 @@ function createSmokeParticle(position) {
       };
 
       // --- Menu button handlers ---
-     document.getElementById('newBtn').addEventListener('click', () => {
-      workspace.clear();
-        const xmlText = `<xml xmlns="https://developers.google.com/blockly/xml"><block type="start_block" x="10" y="10"></block></xml>`;
-        const dom = Blockly.Xml.textToDom(xmlText);
-        Blockly.Xml.domToWorkspace(dom, workspace);
+      document.getElementById('newBtn').addEventListener('click', () => {
+        workspace.clear();
+        setTimeout(() => {
+          const xmlText = `<xml xmlns="https://developers.google.com/blockly/xml">
+            <block type="start_block" x="10" y="10"></block>
+          </xml>`;
+          const dom = Blockly.Xml.textToDom(xmlText);
+          Blockly.Xml.domToWorkspace(dom, workspace);
+        }, 0);
       });
       document.getElementById('saveBtn').addEventListener('click', () => {
         const xml = Blockly.Xml.workspaceToDom(workspace);
