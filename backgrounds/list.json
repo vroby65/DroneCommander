@@ -1,0 +1,5 @@
+[
+  { "name": "Campo di volo", "file": "campo.json" },
+  { "name": "Pista urbana", "file": "citta.json" },
+  { "name": "Isola tropicale", "file": "isola.json" }
+]

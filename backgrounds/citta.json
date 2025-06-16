@@ -1,0 +1,18 @@
+{
+  "objects": [
+    {
+      "model": "palazzo.stl",
+      "texture": "building.png",
+      "position": { "x": 30, "y": 0, "z": 10 },
+      "rotation": { "x": 0, "y": 0, "z": 0 },
+      "scale": 0.1
+    },
+    {
+      "model": "auto.stl",
+      "texture": "car.png",
+      "position": { "x": -20, "y": 0, "z": 5 },
+      "rotation": { "x": 0, "y": 90, "z": 0 },
+      "scale": 0.05
+    }
+  ]
+}

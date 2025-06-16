@@ -89,8 +89,16 @@
     <script src="libs/Msg/en.js"></script>
     <script src="libs/javascript_compressed.min.js"></script>
     <!-- Include Three.js -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.124.0/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.124.0/examples/js/loaders/STLLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.124.0/examples/js/loaders/MTLLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.124.0/examples/js/loaders/OBJLoader.js"></script>
+<!--
     <script src="libs/three.min.js"></script>
     <script src="libs/STLLoader.js"></script>  
+    <script src="libs/MTLLoader.js"></script>  
+-->
+    
   </head>
   <body>
     <div id="container">
@@ -108,6 +116,9 @@
           <button id="newBtn">New</button>
           <button id="loadBtn">Load</button>
           <button id="saveBtn">Save</button>
+          <select id="scenarioSelect">
+            <option value="">Default</option>
+          </select>
 
           <input type="file" id="fileInput" style="display:none">
         </div>
@@ -700,6 +711,63 @@
         }
       }
 
+      function loadScenario(file) {
+        resetScene();
+
+        // Rimuove tutti gli oggetti tranne quelli marcati come 'keep' (es. drone)
+        scene.children = scene.children.filter(child => child.userData.type === 'keep');
+
+        if (!file) return;
+
+        fetch('backgrounds/' + file)
+          .then(response => {
+            if (!response.ok) throw new Error(`HTTP error ${response.status}`);
+            return response.json();
+          })
+          .then(data => {
+            data.objects.forEach(obj => {
+              const mtlLoader = new THREE.MTLLoader();
+              mtlLoader.setPath('models/');
+              mtlLoader.load(obj.material, materials => {
+                materials.preload();
+
+                const objLoader = new THREE.OBJLoader();
+                objLoader.setMaterials(materials);
+                objLoader.setPath('models/');
+                objLoader.load(obj.model, object => {
+                  object.traverse(child => {
+                    if (child.isMesh) {
+                      child.castShadow = true;
+                      child.receiveShadow = true;
+                      child.userData.type = 'scenario';
+                    }
+                  });
+
+                  const scale = obj.scale || 1;
+                  object.scale.set(scale, scale, scale);
+
+                  if (obj.position) {
+                    object.position.set(obj.position.x, obj.position.y, obj.position.z);
+                  }
+
+                  if (obj.rotation) {
+                    object.rotation.set(
+                      THREE.MathUtils.degToRad(obj.rotation.x || 0),
+                      THREE.MathUtils.degToRad(obj.rotation.y || 0),
+                      THREE.MathUtils.degToRad(obj.rotation.z || 0)
+                    );
+                  }
+
+                  scene.add(object);
+                },
+                undefined,
+                err => console.warn(`❌ OBJ "${obj.model}" non caricato:`, err));
+              },
+              err => console.warn(`❌ MTL "${obj.material}" non caricato:`, err));
+            });
+          })
+          .catch(err => console.error('Errore caricando lo scenario:', err));
+      }
       
       // --- Initialization of Three.js and drone configuration ---
       const initThree = () => {
@@ -714,13 +782,15 @@
         webglContainer.appendChild(renderer.domElement);
         cameraOffset.multiplyScalar(2.5);
 
-        //const ambientLight = new THREE.AmbientLight(0x404040, 0.5); // luce soffusa
-        //scene.add(ambientLight);
+        const ambientLight = new THREE.AmbientLight(0x404040, 0.5); // luce soffusa
+        ambientLight.userData.type = 'keep';
+        scene.add(ambientLight);
 
 
         const light = new THREE.DirectionalLight(0xffffff, 1.0);
         light.position.set(0, 100, 0);
         light.castShadow = true;
+        light.userData.type = 'keep';
         scene.add(light);
         light.shadow.mapSize.set(8192, 8192);
         light.shadow.camera.near = 0.5;
@@ -753,6 +823,7 @@
             const plane = new THREE.Mesh(new THREE.PlaneGeometry(planeSize, planeSize), planeMaterial);
             plane.rotation.x = -Math.PI / 2;
             plane.receiveShadow = true;
+            plane.userData.type = 'keep';
             scene.add(plane);
           },
           undefined,
@@ -774,6 +845,7 @@
             plane.position.y=0.3;
             plane.receiveShadow = true;
             scene.add(plane);
+            plane.userData.type = 'keep';
           },
           undefined,
           function(err) {
@@ -824,6 +896,7 @@
           scene.add(object);
 
           drone.mesh = object;
+          drone.mesh.userData.type = 'keep';
           addPropellers();
         });
 
@@ -1291,7 +1364,28 @@ function createSmokeParticle(position) {
           updateLanguage(selectedLang);
         });
       }, { passive: true });
-        
+      
+      document.getElementById('scenarioSelect').addEventListener('change', function() {
+        const selectedScenario = this.value;
+        loadScenario(selectedScenario);
+      });
+              
+      function loadScenarioList() {
+        fetch('backgrounds/list.json')
+          .then(response => response.json())
+          .then(data => {
+            const scenarioSelect = document.getElementById('scenarioSelect');
+            scenarioSelect.innerHTML = '<option value="">Default</option>';
+            data.forEach(scenario => {
+              const option = document.createElement('option');
+              option.value = scenario.file;
+              option.text = scenario.name;
+              scenarioSelect.appendChild(option);
+            });
+          })
+          .catch(err => console.error('Errore caricando la lista degli scenari:', err));
+      }
+
       window.onload = function() {
           defineCustomBlocks();
           initBlockly();
@@ -1303,6 +1397,7 @@ function createSmokeParticle(position) {
           loadLanguageFile(savedLang, function() {
             updateLanguage(savedLang);
           });
+          loadScenarioList();
       };
     </script>
   </body>

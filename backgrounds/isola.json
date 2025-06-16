@@ -1,0 +1,18 @@
+{
+  "objects": [
+    {
+      "model": "palma.stl",
+      "texture": "palm.png",
+      "position": { "x": 5, "y": 0, "z": -15 },
+      "rotation": { "x": 0, "y": 0, "z": 0 },
+      "scale": 0.04
+    },
+    {
+      "model": "barca.stl",
+      "texture": "boat.png",
+      "position": { "x": -10, "y": 0, "z": -30 },
+      "rotation": { "x": 0, "y": 45, "z": 0 },
+      "scale": 0.03
+    }
+  ]
+}
