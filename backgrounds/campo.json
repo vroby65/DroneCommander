@@ -3,16 +3,16 @@
     {
       "model": "albero.obj",
       "material": "albero.mtl",
-      "position": { "x": 50, "y": 40, "z": -50 },
+      "position": { "x": 50, "y": 4, "z": -50 },
       "rotation": { "x": 0, "y": 0, "z": 0 },
-      "scale": 40
+      "scale": 4
     },
     {
       "model": "panchina.obj",
       "material": "panchina.mtl",
-      "position": { "x": -5, "y": 12, "z": 55 },
+      "position": { "x": -5, "y": 9, "z": 55 },
       "rotation": { "x": 0, "y": 0, "z": 0 },
-      "scale": 20
+      "scale": 15
     }
   ]
 }

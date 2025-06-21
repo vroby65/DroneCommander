@@ -1,12 +1,15 @@
-# Blender 4.0.0 MTL File: 'None'
-# www.blender.org
-
-newmtl Material.001
-Ns 250.000000
-Ka 1.000000 1.000000 1.000000
-Ks 0.500000 0.500000 0.500000
-Ke 0.000000 0.000000 0.000000
-Ni 1.450000
-d 1.000000
+# MTL written from D:\Cloud\Projects\Personal\Turbosquid\Lowpoly_Trees\Publish_Sample\Lowpoly_tree_sample.obj
+newmtl Bark
+Kd 0.207595 0.138513 0.055181
+Ns 256
+d 1
 illum 2
-map_Kd albero.png
+Ka 0 0 0
+Ks 0 0 0
+newmtl Tree
+Kd 0.256861 0.440506 0.110769
+Ns 256
+d 1
+illum 3
+Ka 0 0 0
+Ks 0 0 0
