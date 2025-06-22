@@ -1,4 +1,6 @@
 {
+  "groundTexture": "sand.jpg",
+  "hillHeight": -35,
   "objects": [
     {
       "model": "palma.stl",

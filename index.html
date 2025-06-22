@@ -715,67 +715,138 @@
         }
       }
 
-      function loadScenario(file) {
-        resetScene();
+function loadScenario(file) {
+  resetScene();
 
-        // Rimuove tutti gli oggetti tranne quelli marcati come 'keep' (es. drone)
-        scene.children = scene.children.filter(child => child.userData.type === 'keep');
+  // Rimuove tutti gli oggetti tranne quelli marcati come 'keep'
+  scene.children = scene.children.filter(child => child.userData.type === 'keep');
 
-        if (!file) return;
+  if (!file) return;
 
-        fetch('backgrounds/' + file)
-          .then(response => {
-            if (!response.ok) throw new Error(`HTTP error ${response.status}`);
-            return response.json();
-          })
-          .then(data => {
-            data.objects.forEach(obj => {
-              const mtlLoader = new THREE.MTLLoader();
-              mtlLoader.setPath('models/');
-              mtlLoader.load(obj.material, materials => {
-                materials.preload();
+  fetch('backgrounds/' + file)
+    .then(response => {
+      if (!response.ok) throw new Error(`HTTP error ${response.status}`);
+      return response.json();
+    })
+    .then(data => {
+      // --- CARICAMENTO TERRENO ---
+      const textureName = data.groundTexture || 'grass.jpg';
+      const hillHeight = data.hillHeight || 25; 
 
-                const objLoader = new THREE.OBJLoader();
-                objLoader.setMaterials(materials);
-                objLoader.setPath('models/');
-                objLoader.load(obj.model, object => {
-                  object.traverse(child => {
-                    if (child.isMesh) {
-                      child.castShadow = true;
-                      child.receiveShadow = true;
-                      child.userData.type = 'scenario';
-                    }
-                  });
+      const textureLoader = new THREE.TextureLoader();
+      textureLoader.load(
+        'textures/' + textureName,
+        function(texture) {
+          texture.wrapS = THREE.RepeatWrapping;
+          texture.wrapT = THREE.RepeatWrapping;
+          texture.anisotropy = 16;
 
-                  const scale = obj.scale || 1;
-                  object.scale.set(scale, scale, scale);
+          const planeSize = 4100;
+          const textureSize = 1024;
+          texture.repeat.set(planeSize / textureSize, planeSize / textureSize);
 
-                  if (obj.position) {
-                    object.position.set(obj.position.x, obj.position.y, obj.position.z);
-                  }
+          // Rimuove terreni precedenti
+          const oldPlanes = scene.children.filter(obj => obj.userData.ground);
+          oldPlanes.forEach(p => {
+            scene.remove(p);
+            if (p.geometry) p.geometry.dispose();
+            if (p.material) p.material.dispose();
+          });
 
-                  if (obj.rotation) {
-                    object.rotation.set(
-                      THREE.MathUtils.degToRad(obj.rotation.x || 0),
-                      THREE.MathUtils.degToRad(obj.rotation.y || 0),
-                      THREE.MathUtils.degToRad(obj.rotation.z || 0)
-                    );
-                  }
+          // ✅ CREA la geometria con segmenti
+          const geometry = new THREE.PlaneGeometry(planeSize, planeSize, 32, 32);
+          //console.log(geometry);
 
-                  scene.add(object);
-                },
-                undefined,
-                err => console.warn(`❌ OBJ "${obj.model}" non caricato:`, err));
-              },
-              err => console.warn(`❌ MTL "${obj.material}" non caricato:`, err));
+          // ✅ MODIFICA le Z per creare colline
+          const vertices = geometry.vertices;
+          const radius = 200; // zona piatta di raggio 100 attorno a (0,0)
+
+          for (let i = 0; i < vertices.length; i++) {
+            const v = vertices[i];
+            const distance = Math.sqrt(v.x * v.x + v.y * v.y);
+
+            if (distance < radius) {
+              v.z = 0; // zona piatta centrale
+            } else {
+              const rx = Math.random() * (1.0 - 0.001) + 0.001;
+              const ry = Math.random() * (1.0 - 0.001) + 0.001;
+              v.z = hillHeight * Math.sin(v.x * rx) * Math.cos(v.y * ry);
+            }
+          }
+          geometry.computeFaceNormals();
+          geometry.computeVertexNormals();
+
+          // CREA il piano con materiale
+          const planeMaterial = new THREE.MeshLambertMaterial({
+            map: texture,
+            bumpMap: texture,
+            bumpScale: 0.6
+          });
+
+          const plane = new THREE.Mesh(geometry, planeMaterial);
+          plane.rotation.x = -Math.PI / 2;
+          plane.receiveShadow = true;
+          plane.userData.type = 'keep';
+          plane.userData.ground = true;
+          scene.add(plane);
+        },
+        undefined,
+        function(err) {
+          console.error('Errore caricando la texture del terreno:', err);
+        }
+      );
+
+      // --- CARICAMENTO OGGETTI OBJ/MTL ---
+      if (!data.objects) return;
+
+      data.objects.forEach(obj => {
+        const mtlLoader = new THREE.MTLLoader();
+        mtlLoader.setPath('models/');
+        mtlLoader.load(obj.material, materials => {
+          materials.preload();
+
+          const objLoader = new THREE.OBJLoader();
+          objLoader.setMaterials(materials);
+          objLoader.setPath('models/');
+          objLoader.load(obj.model, object => {
+            object.traverse(child => {
+              if (child.isMesh) {
+                child.castShadow = true;
+                child.receiveShadow = true;
+                child.userData.type = 'scenario';
+              }
             });
-          })
-          .catch(err => console.error('Errore caricando lo scenario:', err));
-      }
-      
+
+            const scale = obj.scale || 1;
+            object.scale.set(scale, scale, scale);
+
+            if (obj.position) {
+              object.position.set(obj.position.x, obj.position.y, obj.position.z);
+            }
+
+            if (obj.rotation) {
+              object.rotation.set(
+                THREE.MathUtils.degToRad(obj.rotation.x || 0),
+                THREE.MathUtils.degToRad(obj.rotation.y || 0),
+                THREE.MathUtils.degToRad(obj.rotation.z || 0)
+              );
+            }
+
+            scene.add(object);
+          },
+          undefined,
+          err => console.warn(`❌ OBJ "${obj.model}" non caricato:`, err));
+        },
+        err => console.warn(`❌ MTL "${obj.material}" non caricato:`, err));
+      });
+    })
+    .catch(err => console.error('Errore caricando lo scenario:', err));
+}
+
       // --- Initialization of Three.js and drone configuration ---
       const initThree = () => {
         scene = new THREE.Scene();
+        scene.fog = new THREE.Fog(0x87ceeb, 200, 2500);
         scene.background = new THREE.Color(0x87ceeb);
         camera = new THREE.PerspectiveCamera(75, 4/3, 0.1, 1000000);
         camera.position.set(4, 0, 4);
@@ -839,7 +910,7 @@
             const plane = new THREE.Mesh(new THREE.PlaneGeometry(planeSize, planeSize), planeMaterial);
             plane.rotation.x = -Math.PI / 2;
             plane.receiveShadow = true;
-            plane.userData.type = 'keep';
+            //plane.userData.type = 'keep';
             scene.add(plane);
           },
           undefined,
@@ -856,7 +927,7 @@
               map: texture,
               transparent: true
             });
-            const plane = new THREE.Mesh(new THREE.PlaneGeometry(16, 16), planeMaterial);
+            const plane = new THREE.Mesh(new THREE.PlaneGeometry(16, 16, 256, 256), planeMaterial);
             plane.rotation.x = -Math.PI / 2;
             plane.position.y=0.3;
             plane.receiveShadow = true;

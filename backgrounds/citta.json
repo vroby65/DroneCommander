@@ -1,18 +1,62 @@
 {
+  "groundTexture": "town.jpg",
+  "hillHeight": 0.1,
   "objects": [
     {
-      "model": "palazzo.stl",
-      "texture": "building.png",
-      "position": { "x": 30, "y": 0, "z": 10 },
+      "model": "little_house_with_a_g_0430133251_refine.obj",
+      "material": "little_house_with_a_g_0430133251_refine.mtl",
+      "position": { "x": -200, "y": 35, "z": -100 },
       "rotation": { "x": 0, "y": 0, "z": 0 },
-      "scale": 0.1
+      "scale": 50
     },
     {
-      "model": "auto.stl",
-      "texture": "car.png",
-      "position": { "x": -20, "y": 0, "z": 5 },
+      "model": "little_house_with_a_g_0430133251_refine.obj",
+      "material": "little_house_with_a_g_0430133251_refine.mtl",
+      "position": { "x": -200, "y": 35, "z": 0 },
+      "rotation": { "x": 0, "y": 0, "z": 0 },
+      "scale": 50
+    },
+    {
+      "model": "little_house_with_a_g_0430133251_refine.obj",
+      "material": "little_house_with_a_g_0430133251_refine.mtl",
+      "position": { "x": -200, "y": 35, "z": 100 },
+      "rotation": { "x": 0, "y": 0, "z": 0 },
+      "scale": 50
+    },
+    {
+      "model": "little_house_with_a_g_0430133251_refine.obj",
+      "material": "little_house_with_a_g_0430133251_refine.mtl",
+      "position": { "x": -300, "y": 35, "z": -100 },
+      "rotation": { "x": 0, "y": 180, "z": 0 },
+      "scale": 50
+    },
+    {
+      "model": "little_house_with_a_g_0430133251_refine.obj",
+      "material": "little_house_with_a_g_0430133251_refine.mtl",
+      "position": { "x": -300, "y": 35, "z": 0 },
+      "rotation": { "x": 0, "y": 180, "z": 0 },
+      "scale": 50
+    },
+    {
+      "model": "little_house_with_a_g_0430133251_refine.obj",
+      "material": "little_house_with_a_g_0430133251_refine.mtl",
+      "position": { "x": -300, "y": 35, "z": 100 },
+      "rotation": { "x": 0, "y": 180, "z": 0 },
+      "scale": 50
+    },
+    {
+      "model": "2cv_car_yellow_0430162344_refine.obj",
+      "material": "2cv_car_yellow_0430162344_refine.mtl",
+      "position": { "x": -150, "y": 6, "z": -20 },
       "rotation": { "x": 0, "y": 90, "z": 0 },
-      "scale": 0.05
+      "scale": 15
+    },
+    {
+      "model": "2cv_car_yellow_0430162344_refine.obj",
+      "material": "2cv_car_yellow_0430162344_refine.mtl",
+      "position": { "x": -50, "y": 6, "z": 20 },
+      "rotation": { "x": 0, "y": -90, "z": 0 },
+      "scale": 15
     }
   ]
 }

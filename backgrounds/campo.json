@@ -1,5 +1,14 @@
 {
+  "groundTexture": "grass.jpg",
+  "hillHeight": 50,
   "objects": [
+    {
+      "model": "panchina.obj",
+      "material": "panchina.mtl",
+      "position": { "x": -5, "y": 9, "z": 55 },
+      "rotation": { "x": 0, "y": 0, "z": 0 },
+      "scale": 15
+    },
     {
       "model": "albero.obj",
       "material": "albero.mtl",
@@ -8,11 +17,88 @@
       "scale": 4
     },
     {
-      "model": "panchina.obj",
-      "material": "panchina.mtl",
-      "position": { "x": -5, "y": 9, "z": 55 },
+      "model": "albero.obj",
+      "material": "albero.mtl",
+      "position": { "x": -500, "y": 0, "z": -300 },
+      "rotation": { "x": 0, "y": 15, "z": 0 },
+      "scale": 3.8
+    },
+    {
+      "model": "albero.obj",
+      "material": "albero.mtl",
+      "position": { "x": -480, "y": 0, "z": -280 },
+      "rotation": { "x": 0, "y": 48, "z": 0 },
+      "scale": 3.5
+    },
+    {
+      "model": "albero.obj",
+      "material": "albero.mtl",
+      "position": { "x": -510, "y": 0, "z": -310 },
+      "rotation": { "x": 0, "y": 10, "z": 0 },
+      "scale": 3.7
+    },
+    {
+      "model": "albero.obj",
+      "material": "albero.mtl",
+      "position": { "x": 700, "y": 0, "z": 250 },
       "rotation": { "x": 0, "y": 0, "z": 0 },
-      "scale": 15
-    }
+      "scale": 4.2
+    },
+    {
+      "model": "albero.obj",
+      "material": "albero.mtl",
+      "position": { "x": 720, "y": 0, "z": 240 },
+      "rotation": { "x": 0, "y": 20, "z": 0 },
+      "scale": 4.0
+    },
+    {
+      "model": "albero.obj",
+      "material": "albero.mtl",
+      "position": { "x": 710, "y": 0, "z": 270 },
+      "rotation": { "x": 0, "y": 50, "z": 0 },
+      "scale": 4.1
+    },
+    {
+      "model": "albero.obj",
+      "material": "albero.mtl",
+      "position": { "x": -200, "y": 0, "z": 800 },
+      "rotation": { "x": 0, "y": 10, "z": 0 },
+      "scale": 4.2
+    },
+    {
+      "model": "albero.obj",
+      "material": "albero.mtl",
+      "position": { "x": -180, "y": 0, "z": 810 },
+      "rotation": { "x": 0, "y": 40, "z": 0 },
+      "scale": 3.9
+    },
+    {
+      "model": "albero.obj",
+      "material": "albero.mtl",
+      "position": { "x": -190, "y": 0, "z": 780 },
+      "rotation": { "x": 0, "y": 5, "z": 0 },
+      "scale": 3.8
+    },
+    {
+      "model": "albero.obj",
+      "material": "albero.mtl",
+      "position": { "x": 300, "y": 0, "z": -600 },
+      "rotation": { "x": 0, "y": 60, "z": 0 },
+      "scale": 4.1
+    },
+    {
+      "model": "albero.obj",
+      "material": "albero.mtl",
+      "position": { "x": 320, "y": 0, "z": -620 },
+      "rotation": { "x": 0, "y": 35, "z": 0 },
+      "scale": 3.6
+    },
+    {
+      "model": "albero.obj",
+      "material": "albero.mtl",
+      "position": { "x": 290, "y": 0, "z": -610 },
+      "rotation": { "x": 0, "y": 25, "z": 0 },
+      "scale": 4.0
+    }    
   ]
 }
