@@ -1,20 +1,13 @@
 {
-  "groundTexture": "sand.jpg",
-  "hillHeight": -35,
+  "groundTexture": "sea.jpg",
+  "hillHeight": 0.1,
   "objects": [
-    {
-      "model": "palma.stl",
-      "texture": "palm.png",
-      "position": { "x": 5, "y": 0, "z": -15 },
-      "rotation": { "x": 0, "y": 0, "z": 0 },
-      "scale": 0.04
-    },
-    {
-      "model": "barca.stl",
-      "texture": "boat.png",
-      "position": { "x": -10, "y": 0, "z": -30 },
-      "rotation": { "x": 0, "y": 45, "z": 0 },
-      "scale": 0.03
-    }
+    { "model": "isoletta.obj", "material": "isoletta.mtl", "position": { "x": -300, "y": 50, "z": -250 }, "rotation": { "x": 0, "y": 0, "z": 0 }, "scale": 500 },
+    { "model": "isoletta.obj", "material": "isoletta.mtl", "position": { "x": 400, "y": 50, "z": -200 }, "rotation": { "x": 0, "y": 90, "z": 0 }, "scale": 480 },
+    { "model": "isoletta.obj", "material": "isoletta.mtl", "position": { "x": -150, "y": 50, "z": 300 }, "rotation": { "x": 0, "y": 45, "z": 0 }, "scale": 520 },
+    { "model": "isoletta.obj", "material": "isoletta.mtl", "position": { "x": 250, "y": 50, "z": 250 }, "rotation": { "x": 0, "y": 30, "z": 0 }, "scale": 490 },
+    { "model": "isoletta.obj", "material": "isoletta.mtl", "position": { "x": -400, "y": 50, "z": 200 }, "rotation": { "x": 0, "y": 60, "z": 0 }, "scale": 510 },
+
+    { "model": "barca.obj", "material": "barca.mtl", "position": { "x": 600, "y": 20, "z": -600 }, "rotation": { "x": 0, "y": 135, "z": 0 }, "scale": 100 }
   ]
 }
