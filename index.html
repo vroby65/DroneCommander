@@ -82,6 +82,35 @@
       button{
         margin-right:5px;
       }
+      
+      .blocklyTreeLabel {
+        padding: 4px 8px;
+        font-size: 16px;
+        font-weight: bold;
+        font-family: "Segoe UI", sans-serif;
+      }
+
+      .blocklyTreeRow {
+        background: none !important;
+        border-radius: 0 !important;
+        margin-bottom: 2px;
+      }
+
+      .blocklyTreeRow:hover {
+        background-color: #e0e0e0 !important;
+      }
+
+      .blocklyToolboxCategory[data-category-id="logic"] > .blocklyTreeRow > .blocklyTreeLabel { color: #4B9CD3; }
+      .blocklyToolboxCategory[data-category-id="loops"] > .blocklyTreeRow > .blocklyTreeLabel { color: #F7C948; }
+      .blocklyToolboxCategory[data-category-id="math"] > .blocklyTreeRow > .blocklyTreeLabel { color: #F86624; }
+      .blocklyToolboxCategory[data-category-id="text"] > .blocklyTreeRow > .blocklyTreeLabel { color: #8C6BB1; }
+      .blocklyToolboxCategory[data-category-id="lists"] > .blocklyTreeRow > .blocklyTreeLabel { color: #3AAFB9; }
+      .blocklyToolboxCategory[data-category-id="variables"] > .blocklyTreeRow > .blocklyTreeLabel { color: #FF8C42; }
+      .blocklyToolboxCategory[data-category-id="functions"] > .blocklyTreeRow > .blocklyTreeLabel { color: #DB5461; }
+      .blocklyToolboxCategory[data-category-id="drone"] > .blocklyTreeRow > .blocklyTreeLabel { color: #20A39E; }
+      .blocklyToolboxCategory[data-category-id="sensors"] > .blocklyTreeRow > .blocklyTreeLabel { color: #90BE6D; }
+      .blocklyToolboxCategory[data-category-id="flow"] > .blocklyTreeRow > .blocklyTreeLabel { color: #888888; }
+      
     </style>
     <!-- Include Blockly -->
     <script src="libs/blockly_compressed.min.js"></script>
@@ -97,6 +126,7 @@
     <script src="libs/three.min.js"></script>
     <script src="libs/STLLoader.js"></script>  
     <script src="libs/MTLLoader.js"></script>  
+    <script src="libs/OBJLoader.js"></script>  
 -->
     
   </head>
@@ -333,34 +363,77 @@
           }
         ]);
       }
+
+      const makecodeTheme = Blockly.Theme.defineTheme('makecode', {
+        base: Blockly.Themes.Classic,
+        blockStyles: {
+          logic_blocks: { colourPrimary: "#4B9CD3" },
+          loops_blocks: { colourPrimary: "#F7C948" },
+          math_blocks: { colourPrimary: "#F86624" },
+          text_blocks: { colourPrimary: "#8C6BB1" },
+          list_blocks: { colourPrimary: "#3AAFB9" },
+          variable_blocks: { colourPrimary: "#FF8C42" },
+          procedure_blocks: { colourPrimary: "#DB5461" },
+          drone_blocks: { colourPrimary: "#20A39E" },
+          sensor_blocks: { colourPrimary: "#90BE6D" }
+        },
+        categoryStyles: {
+          logic_category: { colour: "#4B9CD3" },
+          loops_category: { colour: "#F7C948" },
+          math_category: { colour: "#F86624" },
+          text_category: { colour: "#8C6BB1" },
+          lists_category: { colour: "#3AAFB9" },
+          variables_category: { colour: "#FF8C42" },
+          functions_category: { colour: "#DB5461" },
+          drone_category: { colour: "#20A39E" },
+          sensors_category: { colour: "#90BE6D" },
+          flow_category: { colour: "#888" }
+        },
+        fontStyle: {
+          family: 'Segoe UI, sans-serif',
+          size: 14
+        },
+        componentStyles: {
+          workspaceBackgroundColour: "#ffffff",
+          toolboxBackgroundColour: "#eeeeee",
+          toolboxForegroundColour: "#000000",
+          flyoutBackgroundColour: "#f0f0f0",
+          flyoutForegroundColour: "#000000",
+          flyoutOpacity: 1,
+          scrollbarColour: "#cccccc",
+          insertionMarkerColour: "#000000",
+          insertionMarkerOpacity: 0.3,
+          cursorColour: "#d0d0d0"
+        }
+      });
       
       // --- Generators for custom blocks ---
       // --- Drone ---
-      Blockly.JavaScript.forBlock['take_off'] = block => 'delay=2010;drone.takeOff();\n';
-      Blockly.JavaScript.forBlock['land'] = block => 'delay=2010;drone.land();\n';
+      Blockly.JavaScript.forBlock['take_off'] = block => 'delay=510;drone.takeOff();\n';
+      Blockly.JavaScript.forBlock['land'] = block => 'delay=1010;drone.land();\n';
       Blockly.JavaScript.forBlock['set_altitude'] = block => {
         var altitude = Blockly.JavaScript.valueToCode(block, 'ALTITUDE', Blockly.JavaScript.ORDER_ATOMIC) || '0';
-        return 'delay=' + altitude + '* 160;drone.setAltitude(' + altitude + ');\n';
+        return 'delay=' + altitude + '* 52;drone.setAltitude(' + altitude + ');\n';
       };
       Blockly.JavaScript.forBlock['change_altitude'] = block => {
         var altitude = Blockly.JavaScript.valueToCode(block, 'ALTITUDE', Blockly.JavaScript.ORDER_ATOMIC) || '0';
-        return 'delay=' + Math.abs(altitude.replace(/[()]/g,'')) + '* 160;drone.changeAltitude(' + altitude + ');\n';
+        return 'delay=' + Math.abs(altitude.replace(/[()]/g,'')) + '* 52;drone.changeAltitude(' + altitude + ');\n';
       };
       Blockly.JavaScript.forBlock['set_angle'] = block => {
         var angle = Blockly.JavaScript.valueToCode(block, 'ANGLE', Blockly.JavaScript.ORDER_ATOMIC) || '0';
-        return 'delay=1020;drone.setAngle(' + angle + ');\n';
+        return 'delay=505;drone.setAngle(' + angle + ');\n';
       };
       Blockly.JavaScript.forBlock['change_angle'] = block => {
         var angle = Blockly.JavaScript.valueToCode(block, 'ANGLE', Blockly.JavaScript.ORDER_ATOMIC) || '0';
-        return 'delay=1020;drone.changeAngle(' + angle + ');\n';
+        return 'delay=505;drone.changeAngle(' + angle + ');\n';
       };
       Blockly.JavaScript.forBlock['slide'] = block => {
         var slide = Blockly.JavaScript.valueToCode(block, 'SLIDE', Blockly.JavaScript.ORDER_ATOMIC) || '0';
-        return 'delay=' + Math.abs(slide.replace(/[()]/g, '')) + '*160;drone.slide(' + slide + ');\n';
+        return 'delay=' + Math.abs(slide.replace(/[()]/g, '')) + '*52;drone.slide(' + slide + ');\n';
       };
       Blockly.JavaScript.forBlock['walk'] = block => {
         var dist = Blockly.JavaScript.valueToCode(block, 'DIST', Blockly.JavaScript.ORDER_ATOMIC) || '0';
-        return 'delay=' + Math.abs(dist.replace(/[()]/g, '')) + '*160;drone.walk(' + dist + ');\n';
+        return 'delay=' + Math.abs(dist.replace(/[()]/g, '')) + '*52;drone.walk(' + dist + ');\n';
       };
       Blockly.JavaScript.forBlock['wait'] = block => {
         var dist = Blockly.JavaScript.valueToCode(block, 'DIST', Blockly.JavaScript.ORDER_ATOMIC) || '0';
@@ -525,7 +598,7 @@
         const toolbox = {
           "kind": "categoryToolbox",
           "contents": [
-            { "kind": "category", "name": Blockly.Msg["BKY_CATEGORY_LOGIC"], "colour": "210", "contents": [
+            { "kind": "category", "name": Blockly.Msg["BKY_CATEGORY_LOGIC"], "colour": "210", "categorId": "logic", "contents": [
                 { "kind": "block", "type": "controls_if" },
                 { "kind": "block", "type": "logic_compare" },
                 { "kind": "block", "type": "logic_operation" },
@@ -535,7 +608,7 @@
                 { "kind": "block", "type": "logic_ternary" }
               ]
             },
-            { "kind": "category", "name": Blockly.Msg["BKY_CATEGORY_LOOPS"], "colour": "120", "contents": [
+            { "kind": "category", "name": Blockly.Msg["BKY_CATEGORY_LOOPS"], "colour": "120", "categorId": "loops", "contents": [
                 { "kind": "block", "type": "controls_repeat_ext" },
                 { "kind": "block", "type": "controls_whileUntil" },
                 { "kind": "block", "type": "controls_for" },
@@ -543,7 +616,7 @@
                 { "kind": "block", "type": "controls_flow_statements" }
               ]
             },
-            { "kind": "category", "name": Blockly.Msg["BKY_CATEGORY_MATH"], "colour": "230", "contents": [
+            { "kind": "category", "name": Blockly.Msg["BKY_CATEGORY_MATH"], "colour": "230", "categorId": "math", "contents": [
                 { "kind": "block", "type": "math_number" },
                 { "kind": "block", "type": "math_arithmetic" },
                 { "kind": "block", "type": "math_single" },
@@ -558,7 +631,7 @@
                 { "kind": "block", "type": "math_random_float" }
               ]
             },
-            { "kind": "category", "name": Blockly.Msg["BKY_CATEGORY_TEXT"], "colour": "160", "contents": [
+            { "kind": "category", "name": Blockly.Msg["BKY_CATEGORY_TEXT"], "colour": "160", "categorId": "text", "contents": [
                 { "kind": "block", "type": "text" },
                 { "kind": "block", "type": "text_join" },
                 { "kind": "block", "type": "text_append" },
@@ -572,7 +645,7 @@
                 { "kind": "block", "type": "text_print" }
               ]
             },
-            { "kind": "category", "name": Blockly.Msg["BKY_CATEGORY_LISTS"], "colour": "260", "contents": [
+            { "kind": "category", "name": Blockly.Msg["BKY_CATEGORY_LISTS"], "colour": "260", "categorId": "lists", "contents": [
                 { "kind": "block", "type": "lists_create_with" },
                 { "kind": "block", "type": "lists_repeat" },
                 { "kind": "block", "type": "lists_length" },
@@ -585,9 +658,9 @@
                 { "kind": "block", "type": "lists_sort" }
               ]
             },
-            { "kind": "category", "name": Blockly.Msg["BKY_CATEGORY_VARIABLES"], "colour": "330", "custom": "VARIABLE" },
-            { "kind": "category", "name": Blockly.Msg["BKY_CATEGORY_FUNCTIONS"], "colour": "290", "custom": "PROCEDURE" },
-            { "kind": "category","name": Blockly.Msg["BKY_CATEGORY_SENSORS"],"colour": "90","contents": [
+            { "kind": "category", "name": Blockly.Msg["BKY_CATEGORY_VARIABLES"], "colour": "330", "categorId": "variables", "custom": "VARIABLE" },
+            { "kind": "category", "name": Blockly.Msg["BKY_CATEGORY_FUNCTIONS"], "colour": "290", "categorId": "functions", "custom": "PROCEDURE" },
+            { "kind": "category","name": Blockly.Msg["BKY_CATEGORY_SENSORS"],"colour": "90", "categorId": "sensors", "contents": [
                 { "kind": "block", "type": "sensor_keypressed" },
                 { "kind": "block", "type": "sensor_x" },
                 { "kind": "block", "type": "sensor_z" },
@@ -595,7 +668,7 @@
                 { "kind": "block", "type": "sensor_direction" }
               ]
             },  
-            { "kind": "category", "name": Blockly.Msg["BKY_CATEGORY_DRONE"], "colour": "20", "contents": 
+            { "kind": "category", "name": Blockly.Msg["BKY_CATEGORY_DRONE"], "colour": "20", "categorId": "drone", "contents": 
               [
                 { "kind": "block", "type": "take_off" },
                 { "kind": "block", "type": "land" },
@@ -609,7 +682,7 @@
                 { "kind": "block", "type": "smoke" }
               ]
             },
-            { "kind": "category", "name": "Flow", "colour": "60", "contents": 
+            { "kind": "category", "name": "Flow", "colour": "60", "categorId": "flow", "contents": 
               [
                 { "kind": "block", "type": "start_block" },
                 { "kind": "block", "type": "end_block" }
@@ -617,7 +690,11 @@
             },
           ]
         };
-        workspace = Blockly.inject('blocklyDiv', { toolbox });
+        workspace = Blockly.inject('blocklyDiv', {
+           toolbox,
+           renderer: 'zelos',
+           theme: Blockly.Themes.makecode 
+        });
       };
 
       // --- Keypress handler ---
@@ -1016,7 +1093,7 @@ function loadScenario(file) {
                   val => { 
                     this.mesh.position.y = val; this.altitude = val; updateStatus(); 
                   },
-                  startAltitude, 10.0, 2000,
+                  startAltitude, 10.0, 500,
                   () => { 
                     updateStatus(); next(); if (callback) callback(); 
                   }
@@ -1033,7 +1110,7 @@ function loadScenario(file) {
                     val => { 
                       this.mesh.position.y = val; this.altitude = val; updateStatus(); 
                     },
-                    startAltitude, 1.50, 2000,
+                    startAltitude, 1.50, 1000,
                     () => { 
                       this.flying = false;
                       clearInterval(this.propellerInterval); 
@@ -1056,7 +1133,7 @@ function loadScenario(file) {
                   val => { 
                     this.mesh.position.y = val; this.altitude = val; updateStatus(); 
                   },
-                  startAltitude, value, Math.abs(value) * 150,
+                  startAltitude, value, Math.abs(value) * 50,
                   () => { 
                     updateDroneSound(basePlaybackRate);
                     next(); if (callback) callback(); 
@@ -1073,7 +1150,7 @@ function loadScenario(file) {
                 const targetAltitude = startAltitude + value;
                 animateProperty(
                   val => { this.mesh.position.y = val; this.altitude = val; updateStatus(); },
-                  startAltitude, targetAltitude, Math.abs(value) * 150,
+                  startAltitude, targetAltitude, Math.abs(value) * 50,
                   () => {
                     updateDroneSound(basePlaybackRate);
                     next();
@@ -1104,7 +1181,7 @@ function loadScenario(file) {
                     this.mesh.rotation.y = THREE.MathUtils.degToRad(this.direction);
                     updateStatus();
                   },
-                  0, 1, 1000,
+                  0, 1, 500,
                   () => {
                     updateDroneSound(basePlaybackRate);
                     next();
@@ -1126,7 +1203,7 @@ function loadScenario(file) {
                     this.mesh.rotation.y = THREE.MathUtils.degToRad(this.direction);
                     updateStatus();
                   },
-                  0, 1, 1000,
+                  0, 1, 500,
                   () => { updateDroneSound(basePlaybackRate); next(); if(callback) callback();}
                 );
               });
@@ -1152,7 +1229,7 @@ function loadScenario(file) {
                         this.mesh.position.z = startZ - Math.cos(rad) * distance * val;
                         updateStatus();
                       },
-                      0, 1, Math.abs(distance) * 150,
+                      0, 1, Math.abs(distance) * 50,
                       () => {
                         animateProperty(
                           val => { 
@@ -1196,7 +1273,7 @@ function loadScenario(file) {
                         this.mesh.position.z = startZ + Math.cos(rad) * distance * val;
                         updateStatus();
                       },
-                      0, 1, Math.abs(distance) * 150,
+                      0, 1, Math.abs(distance) * 50,
                       () => {
                         animateProperty(
                           val => { 
