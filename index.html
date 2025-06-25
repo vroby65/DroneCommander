@@ -798,8 +798,11 @@ function loadScenario(file) {
   // Rimuove tutti gli oggetti tranne quelli marcati come 'keep'
   scene.children = scene.children.filter(child => child.userData.type === 'keep');
 
-  if (!file) return;
-
+  if (!file) {
+    location.reload();
+    return;
+  }
+  
   fetch('backgrounds/' + file)
     .then(response => {
       if (!response.ok) throw new Error(`HTTP error ${response.status}`);
@@ -829,6 +832,20 @@ function loadScenario(file) {
             if (p.geometry) p.geometry.dispose();
             if (p.material) p.material.dispose();
           });
+          
+          // --- IMPOSTAZIONI FOGLIA ---
+          if (data.fog) {
+            const color = new THREE.Color(data.fog.color || 0x87ceeb);
+            const near = data.fog.near !== undefined ? data.fog.near : 200;
+            const far = data.fog.far !== undefined ? data.fog.far : 2500;
+            scene.fog = new THREE.Fog(color, near, far);
+            scene.background = color;
+          } else {
+            // Se non specificato, usa il default
+            const defaultColor = new THREE.Color(0x87ceeb);
+            scene.fog = new THREE.Fog(defaultColor, 200, 2500);
+            scene.background = defaultColor;
+          }
 
           // ✅ CREA la geometria con segmenti
           const geometry = new THREE.PlaneGeometry(planeSize, planeSize, 32, 32);

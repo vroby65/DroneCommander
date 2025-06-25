@@ -1,6 +1,11 @@
 {
   "groundTexture": "town.jpg",
   "hillHeight": 0.1,
+  "fog": {
+    "color": "#b0d0ff",
+    "near": 1000,
+    "far": 4500
+  },
   "objects": [
     {
       "model": "city.obj",

@@ -1,6 +1,11 @@
 {
   "groundTexture": "sea.jpg",
   "hillHeight": 0.1,
+  "fog": {
+    "color": "#b0d0ff",
+    "near": 100,
+    "far": 1500
+  },
   "objects": [
     { "model": "isoletta.obj", "material": "isoletta.mtl", "position": { "x": -300, "y": 50, "z": -250 }, "rotation": { "x": 0, "y": 0, "z": 0 }, "scale": 500 },
     { "model": "isoletta.obj", "material": "isoletta.mtl", "position": { "x": 400, "y": 50, "z": -200 }, "rotation": { "x": 0, "y": 90, "z": 0 }, "scale": 480 },
