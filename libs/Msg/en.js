@@ -470,6 +470,9 @@ Blockly.Msg["BKY_DRONE_WAIT_TOOLTIP"] = "Make the drone wait";
 Blockly.Msg["BKY_DRONE_SMOKE"] = "smoke %1";
 Blockly.Msg["BKY_DRONE_SMOKE_TOOLTIP"] = "Make the drone smoke";
 
+Blockly.Msg["BKY_DRONE_SPEED"] = "speed %1";
+Blockly.Msg["BKY_DRONE_SPEEK_TOOLTIP"] = "set the drone speed (from 0 to 10)";
+
 
 // Sensor Blocks
 Blockly.Msg["BKY_SENSOR_KEYPRESSED"] = "key %1 pressed";
@@ -493,6 +496,15 @@ Blockly.Msg["BKY_SENSOR_ALTITUDE_TOOLTIP"] = "Return Altitude drone coordinate";
 
 Blockly.Msg["BKY_SENSOR_DIRECTION"] = "Direction";
 Blockly.Msg["BKY_SENSOR_DIRECTION_TOOLTIP"] = "Return Direction drone coordinate";
+
+Blockly.Msg["BKY_SENSOR_SPEED"] = "speed";
+Blockly.Msg["BKY_SENSOR_SPEED_TOOLTIP"] = "Returns the drone speed";
+
+
+// Flow
+Blockly.Msg["BKY_FLOW_START_TOOLTIP"] = "program start";
+Blockly.Msg["BKY_FLOW_END_TOOLTIP"] = "program stop";
+
 
 // menu
 Blockly.Msg.BKY_NEW = "New";

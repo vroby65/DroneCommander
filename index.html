@@ -283,6 +283,17 @@
             "tooltip": Blockly.Msg["BKY_DRONE_SMOKE_TOOLTIP"]
           },
           {
+            "type": "set_speed",
+            "message0": Blockly.Msg["BKY_DRONE_SPEED"],
+            "args0": [
+              { "type": "input_value", "name": "SPEED", "check": "Number" }
+            ],
+            "previousStatement": null,
+            "nextStatement": null,
+            "colour": 20,
+            "tooltip": "Imposta la velocità di avanzamento del drone"
+          },          
+          {
             "type": "sensor_keypressed",
             "message0": Blockly.Msg["BKY_SENSOR_KEYPRESSED"],
             "args0": [
@@ -341,11 +352,19 @@
             "helpUrl": ""
           },
           {
+            "type": "sensor_speed",
+            "message0": Blockly.Msg["BKY_SENSOR_SPEED"],
+            "output": "Number",
+            "colour": 90,
+            "tooltip": Blockly.Msg["BKY_SENSOR_SPEED_TOOLTIP"],
+            "helpUrl": ""
+          },
+          {
             "type": "start_block",
             "message0": "Start",
             "nextStatement": null,
             "colour": 60,
-            "tooltip": "Inizia il programma",
+            "tooltip": Blockly.Msg["BKY_FLOW_START_TOOLTIP"],
             "hat": "cap"
           },
           {
@@ -353,7 +372,7 @@
             "message0": "End",
             "previousStatement": null,
             "colour": 0,
-            "tooltip": "Termina il programma"
+            "tooltip": Blockly.Msg["BKY_FLOW_END_TOOLTIP"]
           }
         ]);
       }
@@ -427,7 +446,7 @@
       };
       Blockly.JavaScript.forBlock['walk'] = block => {
         var dist = Blockly.JavaScript.valueToCode(block, 'DIST', Blockly.JavaScript.ORDER_ATOMIC) || '0';
-        return 'delay=' + Math.abs(dist.replace(/[()]/g, '')) + '*52;drone.walk(' + dist + ');\n';
+        return 'delay=' + Math.abs(dist.replace(/[()]/g, '')) + '*52/drone.speed;drone.walk(' + dist + ');\n';
       };
       Blockly.JavaScript.forBlock['wait'] = block => {
         var dist = Blockly.JavaScript.valueToCode(block, 'DIST', Blockly.JavaScript.ORDER_ATOMIC) || '0';
@@ -437,7 +456,11 @@
         var smoke = Blockly.JavaScript.valueToCode(block, 'SMOKE', Blockly.JavaScript.ORDER_ATOMIC) || '0';
         return `drone.smoke = (${smoke});\n`;
       };
-
+      Blockly.JavaScript.forBlock['set_speed'] = block => {
+        var speed = Blockly.JavaScript.valueToCode(block, 'SPEED', Blockly.JavaScript.ORDER_ATOMIC) || '1';
+        return `drone.speed = ${speed};\n`;
+      };
+      
       //--- Sensor ---
       Blockly.JavaScript.forBlock['sensor_keypressed'] = block => {
         var key = block.getFieldValue('KEY');
@@ -460,12 +483,14 @@
         var code = "-drone.direction.toFixed(2)";
         return [code, Blockly.JavaScript.ORDER_NONE];
       };
+      Blockly.JavaScript.forBlock['sensor_speed'] = block => {
+        return ['drone.speed', Blockly.JavaScript.ORDER_NONE];
+      };
       //floor
       Blockly.JavaScript.forBlock['start_block'] = block => '';
       Blockly.JavaScript.forBlock['end_block'] = block => '';
 
-      
-      
+            
       // --- Global variables ---
       let workspace, scene, camera, renderer, drone;
       let isResizing = false;
@@ -659,7 +684,8 @@
                 { "kind": "block", "type": "sensor_x" },
                 { "kind": "block", "type": "sensor_z" },
                 { "kind": "block", "type": "sensor_altitude" },
-                { "kind": "block", "type": "sensor_direction" }
+                { "kind": "block", "type": "sensor_direction" },
+                { "kind": "block", "type": "sensor_speed" }
               ]
             },  
             { "kind": "category", "name": Blockly.Msg["BKY_CATEGORY_DRONE"], "colour": "20", "categorId": "drone", "contents": 
@@ -673,7 +699,9 @@
                 { "kind": "block", "type": "slide" },
                 { "kind": "block", "type": "walk" },
                 { "kind": "block", "type": "wait" },
-                { "kind": "block", "type": "smoke" }
+                { "kind": "block", "type": "smoke" },
+                { "kind": "block", "type": "set_speed" }
+
               ]
             },
             { "kind": "category", "name": "Flow", "colour": "60", "categorId": "flow", "contents": 
@@ -1082,6 +1110,7 @@ function loadScenario(file) {
           altitude: 1.5,
           direction: 0,
           smoke: 0,
+          speed: 1.0,
           takeOff(callback) {
             if (!this.flying) {
               addCommand(next => {
@@ -1272,6 +1301,8 @@ function loadScenario(file) {
                 const startX = this.mesh.position.x;
                 const startZ = this.mesh.position.z;
                 const rad = THREE.MathUtils.degToRad(this.direction-90);
+                if (this.speed > 10.0) this.speed= 10.0;
+                if (this.speed < 0.0) this.speed= 0.0;
                 animateProperty(
                   val => { 
                     this.mesh.rotation.z = THREE.MathUtils.degToRad(10 * Math.sign(distance)) * val;
@@ -1284,7 +1315,7 @@ function loadScenario(file) {
                         this.mesh.position.z = startZ + Math.cos(rad) * distance * val;
                         updateStatus();
                       },
-                      0, 1, Math.abs(distance) * 50,
+                      0, 1, Math.abs(distance) * 50 / this.speed,
                       () => {
                         animateProperty(
                           val => { 
