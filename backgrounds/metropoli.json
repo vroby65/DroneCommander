@@ -1,0 +1,26 @@
+{
+  "groundTexture": "town.jpg",
+  "hillHeight": 0.1,
+  "fog": {
+    "color": "#b0d0ff",
+    "near": 1000,
+    "far": 4500
+  },
+  "objects": [
+    {
+      "model": "city.obj",
+      "material": "city.mtl",
+      "position": { "x": 30, "y": 0, "z": 0 },
+      "rotation": { "x": 0, "y": -90, "z": 0 },
+      "scale": 200
+      
+    },
+    {
+      "model": "2cv_car_yellow_0430162344_refine.obj",
+      "material": "2cv_car_yellow_0430162344_refine.mtl",
+      "position": { "x": -50, "y": 6, "z": 20 },
+      "rotation": { "x": 0, "y": -90, "z": 0 },
+      "scale": 15
+    }
+  ]
+}
