@@ -1665,8 +1665,10 @@ function createSmokeParticle(position) {
       document.getElementById('scenarioSelect').addEventListener('change', function() {
         const selectedScenario = this.value;
         loadScenario(selectedScenario);
-        resetCameraView();
-        resetScene();
+        setTimeout(() => {
+          resetCameraView();
+          resetScene();
+        }, 50);
       });
               
       function loadScenarioList() {
