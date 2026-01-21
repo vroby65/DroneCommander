@@ -496,10 +496,10 @@
       let isResizing = false;
       let run=false
       let delay=100;
-      const terrainCollisionPadding = 1.4;
-      const terrainRayStartHeight = 10000;
-      const groundRaycaster = new THREE.Raycaster();
-      let groundMeshes = [];
+      const collisionPadding = 1.4;
+      const collisionRayStartHeight = 10000;
+      const collisionRaycaster = new THREE.Raycaster();
+      let collisionMeshes = [];
       const container = document.getElementById("container");
       const leftPanel = document.getElementById("leftPanel");
       const divider = document.getElementById("divider");
@@ -543,18 +543,27 @@
         requestAnimationFrame(step);
       };
 
-      const getGroundHeightAt = (x, z) => {
-        if (!groundMeshes.length) return 0;
-        groundRaycaster.set(new THREE.Vector3(x, terrainRayStartHeight, z), new THREE.Vector3(0, -1, 0));
-        const intersections = groundRaycaster.intersectObjects(groundMeshes, false);
+      const registerCollisionMesh = mesh => {
+        if (!mesh || !mesh.isMesh || mesh.userData.noCollision) return;
+        collisionMeshes.push(mesh);
+      };
+
+      const collectCollisionMeshes = root => {
+        root.traverse(obj => registerCollisionMesh(obj));
+      };
+
+      const getSurfaceHeightAt = (x, z) => {
+        if (!collisionMeshes.length) return 0;
+        collisionRaycaster.set(new THREE.Vector3(x, collisionRayStartHeight, z), new THREE.Vector3(0, -1, 0));
+        const intersections = collisionRaycaster.intersectObjects(collisionMeshes, false);
         if (!intersections.length) return 0;
         return intersections[0].point.y;
       };
 
-      const getSafeAltitudeAt = (x, z) => getGroundHeightAt(x, z) + terrainCollisionPadding;
+      const getSafeAltitudeAt = (x, z) => getSurfaceHeightAt(x, z) + collisionPadding;
 
       const enforceTerrainCollision = () => {
-        if (!drone || !drone.mesh || !groundMeshes.length) return;
+        if (!drone || !drone.mesh || !collisionMeshes.length) return;
         const minAltitude = getSafeAltitudeAt(drone.mesh.position.x, drone.mesh.position.z);
         if (drone.mesh.position.y < minAltitude) {
           drone.mesh.position.y = minAltitude;
@@ -843,8 +852,9 @@ function loadScenario(file) {
   resetScene();
 
   // Rimuove tutti gli oggetti tranne quelli marcati come 'keep'
-  scene.children = scene.children.filter(child => child.userData.type === 'keep');
-  groundMeshes = [];
+        scene.children = scene.children.filter(child => child.userData.type === 'keep');
+  collisionMeshes = [];
+  collectCollisionMeshes(scene);
 
   if (!file) {
     location.reload();
@@ -880,7 +890,8 @@ function loadScenario(file) {
             if (p.geometry) p.geometry.dispose();
             if (p.material) p.material.dispose();
           });
-          groundMeshes = [];
+          collisionMeshes = [];
+          collectCollisionMeshes(scene);
           
           // --- IMPOSTAZIONI FOGLIA ---
           if (data.fog) {
@@ -932,7 +943,7 @@ function loadScenario(file) {
           plane.userData.type = 'keep';
           plane.userData.ground = true;
           scene.add(plane);
-          groundMeshes = [plane];
+          registerCollisionMesh(plane);
           enforceTerrainCollision();
         },
         undefined,
@@ -959,6 +970,7 @@ function loadScenario(file) {
                 child.castShadow = true;
                 child.receiveShadow = true;
                 child.userData.type = 'scenario';
+                registerCollisionMesh(child);
               }
             });
 
@@ -1027,6 +1039,7 @@ function loadScenario(file) {
           side: THREE.BackSide
         });
         const skySphere = new THREE.Mesh(geometry, material);
+        skySphere.userData.noCollision = true;
         skySphere.userData.type = 'keep';
         scene.add(skySphere);
         
@@ -1053,6 +1066,7 @@ function loadScenario(file) {
             const plane = new THREE.Mesh(new THREE.PlaneGeometry(planeSize, planeSize), planeMaterial);
             plane.rotation.x = -Math.PI / 2;
             plane.receiveShadow = true;
+            registerCollisionMesh(plane);
             //plane.userData.type = 'keep';
             scene.add(plane);
           },
@@ -1074,6 +1088,7 @@ function loadScenario(file) {
             plane.rotation.x = -Math.PI / 2;
             plane.position.y=0.3;
             plane.receiveShadow = true;
+            registerCollisionMesh(plane);
             scene.add(plane);
             plane.userData.type = 'keep';
           },
@@ -1107,6 +1122,7 @@ function loadScenario(file) {
               const propeller = new THREE.Mesh(propellerGeometry, propellerMaterial);
               propeller.position.set(pos.x, 200.0, pos.z); 
               propeller.geometry.translate(0, -8, 0);
+              propeller.userData.noCollision = true;
 
               drone.mesh.add(propeller);
               drone.propellers.push(propeller);
@@ -1126,6 +1142,7 @@ function loadScenario(file) {
           scene.add(object);
 
           drone.mesh = object;
+          drone.mesh.userData.noCollision = true;
           drone.mesh.userData.type = 'keep';
           addPropellers();
         });
@@ -1460,20 +1477,24 @@ function createSmokeParticle(position) {
       };
 
       // --- Scene reset ---
-      const resetScene = () => {
-        const startAltitude = getSafeAltitudeAt(0, 0);
-        drone.mesh.position.set(0, startAltitude, 0);
-        drone.mesh.rotation.y = 0;
-        drone.altitude = startAltitude;
-        drone.direction = 0;
-        drone.smoke = 0; 
-        cameraAngle.x = Math.PI / 2;
-        cameraAngle.y = 0;
-        cameraOffset.copy(defaultCameraOffset);
-        camera.position.set(4, 0, 4);
-        clearInterval(drone.propellerInterval); 
-        drone.flying = false;
-        updateStatus();
+        const resetCameraView = () => {
+          cameraAngle.x = Math.PI / 2;
+          cameraAngle.y = 0;
+          cameraOffset.copy(defaultCameraOffset);
+          camera.position.set(4, 0, 4);
+        };
+
+        const resetScene = () => {
+          const startAltitude = getSafeAltitudeAt(0, 0);
+          drone.mesh.position.set(0, startAltitude, 0);
+          drone.mesh.rotation.y = 0;
+          drone.altitude = startAltitude;
+          drone.direction = 0;
+          drone.smoke = 0; 
+        resetCameraView();
+          clearInterval(drone.propellerInterval); 
+          drone.flying = false;
+          updateStatus();
 
         smokeTrail.forEach(p => scene.remove(p));
         smokeTrail = [];
@@ -1625,6 +1646,7 @@ function createSmokeParticle(position) {
       document.getElementById('scenarioSelect').addEventListener('change', function() {
         const selectedScenario = this.value;
         loadScenario(selectedScenario);
+        resetCameraView();
       });
               
       function loadScenarioList() {
