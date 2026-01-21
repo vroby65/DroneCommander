@@ -500,6 +500,7 @@
       const collisionRayStartHeight = 10000;
       const collisionRaycaster = new THREE.Raycaster();
       let collisionMeshes = [];
+      let groundMeshes = [];
       const container = document.getElementById("container");
       const leftPanel = document.getElementById("leftPanel");
       const divider = document.getElementById("divider");
@@ -548,10 +549,19 @@
         collisionMeshes.push(mesh);
       };
 
+      const registerGroundMesh = mesh => {
+        if (!mesh || !mesh.isMesh || mesh.userData.noCollision) return;
+        groundMeshes.push(mesh);
+      };
+
       const collectCollisionMeshes = root => {
         root.traverse(obj => registerCollisionMesh(obj));
       };
 
+      const getHeightAt = (meshes, x, z) => {
+        if (!meshes.length) return 0;
+        collisionRaycaster.set(new THREE.Vector3(x, collisionRayStartHeight, z), new THREE.Vector3(0, -1, 0));
+        const intersections = collisionRaycaster.intersectObjects(meshes, false);
       const getSurfaceHeightAt = (x, z) => {
         if (!collisionMeshes.length) return 0;
         collisionRaycaster.set(new THREE.Vector3(x, collisionRayStartHeight, z), new THREE.Vector3(0, -1, 0));
@@ -560,10 +570,16 @@
         return intersections[0].point.y;
       };
 
+      const getSurfaceHeightAt = (x, z) => getHeightAt(collisionMeshes, x, z);
+      const getGroundHeightAt = (x, z) => getHeightAt(groundMeshes, x, z);
+
       const getSafeAltitudeAt = (x, z) => getSurfaceHeightAt(x, z) + collisionPadding;
 
       const enforceTerrainCollision = () => {
         if (!drone || !drone.mesh || !collisionMeshes.length) return;
+        const minAltitude = drone.flying
+          ? getSafeAltitudeAt(drone.mesh.position.x, drone.mesh.position.z)
+          : getGroundHeightAt(drone.mesh.position.x, drone.mesh.position.z) + collisionPadding;
         const minAltitude = getSafeAltitudeAt(drone.mesh.position.x, drone.mesh.position.z);
         if (drone.mesh.position.y < minAltitude) {
           drone.mesh.position.y = minAltitude;
@@ -852,6 +868,7 @@ function loadScenario(file) {
   // Rimuove tutti gli oggetti tranne quelli marcati come 'keep'
         scene.children = scene.children.filter(child => child.userData.type === 'keep');
   collisionMeshes = [];
+  groundMeshes = [];
   collectCollisionMeshes(scene);
 
   if (!file) {
@@ -889,6 +906,7 @@ function loadScenario(file) {
             if (p.material) p.material.dispose();
           });
           collisionMeshes = [];
+          groundMeshes = [];
           collectCollisionMeshes(scene);
           
           // --- IMPOSTAZIONI FOGLIA ---
@@ -942,6 +960,8 @@ function loadScenario(file) {
           plane.userData.ground = true;
           scene.add(plane);
           registerCollisionMesh(plane);
+          registerGroundMesh(plane);
+          resetScene();
           enforceTerrainCollision();
         },
         undefined,
@@ -1064,6 +1084,9 @@ function loadScenario(file) {
             const plane = new THREE.Mesh(new THREE.PlaneGeometry(planeSize, planeSize), planeMaterial);
             plane.rotation.x = -Math.PI / 2;
             plane.receiveShadow = true;
+            plane.userData.ground = true;
+            registerCollisionMesh(plane);
+            registerGroundMesh(plane);
             registerCollisionMesh(plane);
             //plane.userData.type = 'keep';
             scene.add(plane);
@@ -1483,6 +1506,7 @@ function createSmokeParticle(position) {
         };
 
         const resetScene = () => {
+          const startAltitude = getGroundHeightAt(0, 0) + collisionPadding;
           const startAltitude = getSafeAltitudeAt(0, 0);
           drone.mesh.position.set(0, startAltitude, 0);
           drone.mesh.rotation.y = 0;
@@ -1644,7 +1668,7 @@ function createSmokeParticle(position) {
       document.getElementById('scenarioSelect').addEventListener('change', function() {
         const selectedScenario = this.value;
         loadScenario(selectedScenario);
-        //resetCameraView();
+        resetCameraView();
         resetScene();
       });
               
