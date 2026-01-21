@@ -510,7 +510,8 @@
       // --- Camera control ---
       let isRightMouseDown = false;
       let isLeftMouseDown = false;
-      const cameraOffset = new THREE.Vector3(0, 5, 10);
+      const defaultCameraOffset = new THREE.Vector3(0, 5, 10).multiplyScalar(2.5);
+      const cameraOffset = defaultCameraOffset.clone();
 
       let prevMousePos = { x: 0, y: 0 };
       let cameraAngle = { x: 0, y: 0 };
@@ -999,8 +1000,6 @@ function loadScenario(file) {
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         webglContainer.appendChild(renderer.domElement);
-        cameraOffset.multiplyScalar(2.5);
-
         const ambientLight = new THREE.AmbientLight(0xffffff, 0.5); // luce soffusa
         ambientLight.userData.type = 'keep';
         scene.add(ambientLight);
@@ -1468,6 +1467,10 @@ function createSmokeParticle(position) {
         drone.altitude = startAltitude;
         drone.direction = 0;
         drone.smoke = 0; 
+        cameraAngle.x = Math.PI / 2;
+        cameraAngle.y = 0;
+        cameraOffset.copy(defaultCameraOffset);
+        camera.position.set(4, 0, 4);
         clearInterval(drone.propellerInterval); 
         drone.flying = false;
         updateStatus();
