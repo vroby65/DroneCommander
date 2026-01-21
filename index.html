@@ -849,8 +849,6 @@
       }
 
 function loadScenario(file) {
-  resetScene();
-
   // Rimuove tutti gli oggetti tranne quelli marcati come 'keep'
         scene.children = scene.children.filter(child => child.userData.type === 'keep');
   collisionMeshes = [];
