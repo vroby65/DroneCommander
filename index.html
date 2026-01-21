@@ -560,12 +560,11 @@
 
       const getHeightAt = (meshes, x, z) => {
         if (!meshes.length) return 0;
-        collisionRaycaster.set(new THREE.Vector3(x, collisionRayStartHeight, z), new THREE.Vector3(0, -1, 0));
+        collisionRaycaster.set(
+          new THREE.Vector3(x, collisionRayStartHeight, z),
+          new THREE.Vector3(0, -1, 0)
+        );
         const intersections = collisionRaycaster.intersectObjects(meshes, false);
-      const getSurfaceHeightAt = (x, z) => {
-        if (!collisionMeshes.length) return 0;
-        collisionRaycaster.set(new THREE.Vector3(x, collisionRayStartHeight, z), new THREE.Vector3(0, -1, 0));
-        const intersections = collisionRaycaster.intersectObjects(collisionMeshes, false);
         if (!intersections.length) return 0;
         return intersections[0].point.y;
       };
@@ -580,7 +579,6 @@
         const minAltitude = drone.flying
           ? getSafeAltitudeAt(drone.mesh.position.x, drone.mesh.position.z)
           : getGroundHeightAt(drone.mesh.position.x, drone.mesh.position.z) + collisionPadding;
-        const minAltitude = getSafeAltitudeAt(drone.mesh.position.x, drone.mesh.position.z);
         if (drone.mesh.position.y < minAltitude) {
           drone.mesh.position.y = minAltitude;
           drone.altitude = minAltitude;
@@ -1498,25 +1496,24 @@ function createSmokeParticle(position) {
       };
 
       // --- Scene reset ---
-        const resetCameraView = () => {
-          cameraAngle.x = Math.PI / 2;
-          cameraAngle.y = 0;
-          cameraOffset.copy(defaultCameraOffset);
-          camera.position.set(4, 0, 4);
-        };
+      const resetCameraView = () => {
+        cameraAngle.x = Math.PI / 2;
+        cameraAngle.y = 0;
+        cameraOffset.copy(defaultCameraOffset);
+        camera.position.set(4, 0, 4);
+      };
 
-        const resetScene = () => {
-          const startAltitude = getGroundHeightAt(0, 0) + collisionPadding;
-          const startAltitude = getSafeAltitudeAt(0, 0);
-          drone.mesh.position.set(0, startAltitude, 0);
-          drone.mesh.rotation.y = 0;
-          drone.altitude = startAltitude;
-          drone.direction = 0;
-          drone.smoke = 0; 
+      const resetScene = () => {
+        const startAltitude = getSafeAltitudeAt(0, 0);
+        drone.mesh.position.set(0, startAltitude, 0);
+        drone.mesh.rotation.y = 0;
+        drone.altitude = startAltitude;
+        drone.direction = 0;
+        drone.smoke = 0; 
         resetCameraView();
-          clearInterval(drone.propellerInterval); 
-          drone.flying = false;
-          updateStatus();
+        clearInterval(drone.propellerInterval); 
+        drone.flying = false;
+        updateStatus();
 
         smokeTrail.forEach(p => scene.remove(p));
         smokeTrail = [];
