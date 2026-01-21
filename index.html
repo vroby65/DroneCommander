@@ -496,6 +496,11 @@
       let isResizing = false;
       let run=false
       let delay=100;
+      const collisionPadding = 1.4;
+      const collisionRayStartHeight = 10000;
+      const collisionRaycaster = new THREE.Raycaster();
+      let collisionMeshes = [];
+      let groundMeshes = [];
       const container = document.getElementById("container");
       const leftPanel = document.getElementById("leftPanel");
       const divider = document.getElementById("divider");
@@ -506,7 +511,8 @@
       // --- Camera control ---
       let isRightMouseDown = false;
       let isLeftMouseDown = false;
-      const cameraOffset = new THREE.Vector3(0, 5, 10);
+      const defaultCameraOffset = new THREE.Vector3(0, 5, 10).multiplyScalar(2.5);
+      const cameraOffset = defaultCameraOffset.clone();
 
       let prevMousePos = { x: 0, y: 0 };
       let cameraAngle = { x: 0, y: 0 };
@@ -536,6 +542,45 @@
           }
         };
         requestAnimationFrame(step);
+      };
+
+      const registerCollisionMesh = mesh => {
+        if (!mesh || !mesh.isMesh || mesh.userData.noCollision) return;
+        collisionMeshes.push(mesh);
+      };
+
+      const registerGroundMesh = mesh => {
+        if (!mesh || !mesh.isMesh || mesh.userData.noCollision) return;
+        groundMeshes.push(mesh);
+      };
+
+      const collectCollisionMeshes = root => {
+        root.traverse(obj => registerCollisionMesh(obj));
+      };
+
+      const getHeightAt = (meshes, x, z) => {
+        if (!meshes.length) return 0;
+        collisionRaycaster.set(new THREE.Vector3(x, collisionRayStartHeight, z), new THREE.Vector3(0, -1, 0));
+        const intersections = collisionRaycaster.intersectObjects(meshes, false);
+        if (!intersections.length) return 0;
+        return intersections[0].point.y;
+      };
+
+      const getSurfaceHeightAt = (x, z) => getHeightAt(collisionMeshes, x, z);
+      const getGroundHeightAt = (x, z) => getHeightAt(groundMeshes, x, z);
+
+      const getSafeAltitudeAt = (x, z) => getSurfaceHeightAt(x, z) + collisionPadding;
+
+      const enforceTerrainCollision = () => {
+        if (!drone || !drone.mesh || !collisionMeshes.length) return;
+        const minAltitude = drone.flying
+          ? getSafeAltitudeAt(drone.mesh.position.x, drone.mesh.position.z)
+          : getGroundHeightAt(drone.mesh.position.x, drone.mesh.position.z) + collisionPadding;
+        if (drone.mesh.position.y < minAltitude) {
+          drone.mesh.position.y = minAltitude;
+          drone.altitude = minAltitude;
+          updateStatus();
+        }
       };
 
       // --- Events for camera control ---
@@ -818,7 +863,10 @@ function loadScenario(file) {
   resetScene();
 
   // Rimuove tutti gli oggetti tranne quelli marcati come 'keep'
-  scene.children = scene.children.filter(child => child.userData.type === 'keep');
+        scene.children = scene.children.filter(child => child.userData.type === 'keep');
+  collisionMeshes = [];
+  groundMeshes = [];
+  collectCollisionMeshes(scene);
 
   if (!file) {
     location.reload();
@@ -854,6 +902,9 @@ function loadScenario(file) {
             if (p.geometry) p.geometry.dispose();
             if (p.material) p.material.dispose();
           });
+          collisionMeshes = [];
+          groundMeshes = [];
+          collectCollisionMeshes(scene);
           
           // --- IMPOSTAZIONI FOGLIA ---
           if (data.fog) {
@@ -905,6 +956,9 @@ function loadScenario(file) {
           plane.userData.type = 'keep';
           plane.userData.ground = true;
           scene.add(plane);
+          registerCollisionMesh(plane);
+          registerGroundMesh(plane);
+          enforceTerrainCollision();
         },
         undefined,
         function(err) {
@@ -930,6 +984,7 @@ function loadScenario(file) {
                 child.castShadow = true;
                 child.receiveShadow = true;
                 child.userData.type = 'scenario';
+                registerCollisionMesh(child);
               }
             });
 
@@ -971,8 +1026,6 @@ function loadScenario(file) {
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         webglContainer.appendChild(renderer.domElement);
-        cameraOffset.multiplyScalar(2.5);
-
         const ambientLight = new THREE.AmbientLight(0xffffff, 0.5); // luce soffusa
         ambientLight.userData.type = 'keep';
         scene.add(ambientLight);
@@ -1000,6 +1053,7 @@ function loadScenario(file) {
           side: THREE.BackSide
         });
         const skySphere = new THREE.Mesh(geometry, material);
+        skySphere.userData.noCollision = true;
         skySphere.userData.type = 'keep';
         scene.add(skySphere);
         
@@ -1026,6 +1080,9 @@ function loadScenario(file) {
             const plane = new THREE.Mesh(new THREE.PlaneGeometry(planeSize, planeSize), planeMaterial);
             plane.rotation.x = -Math.PI / 2;
             plane.receiveShadow = true;
+            plane.userData.ground = true;
+            registerCollisionMesh(plane);
+            registerGroundMesh(plane);
             //plane.userData.type = 'keep';
             scene.add(plane);
           },
@@ -1047,6 +1104,7 @@ function loadScenario(file) {
             plane.rotation.x = -Math.PI / 2;
             plane.position.y=0.3;
             plane.receiveShadow = true;
+            registerCollisionMesh(plane);
             scene.add(plane);
             plane.userData.type = 'keep';
           },
@@ -1080,6 +1138,7 @@ function loadScenario(file) {
               const propeller = new THREE.Mesh(propellerGeometry, propellerMaterial);
               propeller.position.set(pos.x, 200.0, pos.z); 
               propeller.geometry.translate(0, -8, 0);
+              propeller.userData.noCollision = true;
 
               drone.mesh.add(propeller);
               drone.propellers.push(propeller);
@@ -1099,6 +1158,7 @@ function loadScenario(file) {
           scene.add(object);
 
           drone.mesh = object;
+          drone.mesh.userData.noCollision = true;
           drone.mesh.userData.type = 'keep';
           addPropellers();
         });
@@ -1146,11 +1206,15 @@ function loadScenario(file) {
               addCommand(
                 next => {
                   const startAltitude = this.altitude;
+                  const targetAltitude = getSafeAltitudeAt(this.mesh.position.x, this.mesh.position.z);
                   animateProperty(
                     val => { 
-                      this.mesh.position.y = val; this.altitude = val; updateStatus(); 
+                      const clampedAltitude = Math.max(val, targetAltitude);
+                      this.mesh.position.y = clampedAltitude;
+                      this.altitude = clampedAltitude;
+                      updateStatus();
                     },
-                    startAltitude, 1.50, 1000,
+                    startAltitude, targetAltitude, 1000,
                     () => { 
                       this.flying = false;
                       clearInterval(this.propellerInterval); 
@@ -1169,11 +1233,16 @@ function loadScenario(file) {
               addCommand(next => {
                 updateDroneSound(basePlaybackRate + 1.0);
                 const startAltitude = this.altitude;
+                const minAltitude = getSafeAltitudeAt(this.mesh.position.x, this.mesh.position.z);
+                const targetAltitude = Math.max(value, minAltitude);
                 animateProperty(
                   val => { 
-                    this.mesh.position.y = val; this.altitude = val; updateStatus(); 
+                    const clampedAltitude = Math.max(val, minAltitude);
+                    this.mesh.position.y = clampedAltitude;
+                    this.altitude = clampedAltitude;
+                    updateStatus();
                   },
-                  startAltitude, value, Math.abs(value) * 50,
+                  startAltitude, targetAltitude, Math.abs(targetAltitude - startAltitude) * 50,
                   () => { 
                     updateDroneSound(basePlaybackRate);
                     next(); if (callback) callback(); 
@@ -1187,10 +1256,16 @@ function loadScenario(file) {
               addCommand(next => {
                 updateDroneSound(basePlaybackRate + 1.0);
                 const startAltitude = this.altitude;
-                const targetAltitude = startAltitude + value;
+                const minAltitude = getSafeAltitudeAt(this.mesh.position.x, this.mesh.position.z);
+                const targetAltitude = Math.max(startAltitude + value, minAltitude);
                 animateProperty(
-                  val => { this.mesh.position.y = val; this.altitude = val; updateStatus(); },
-                  startAltitude, targetAltitude, Math.abs(value) * 50,
+                  val => {
+                    const clampedAltitude = Math.max(val, minAltitude);
+                    this.mesh.position.y = clampedAltitude;
+                    this.altitude = clampedAltitude;
+                    updateStatus();
+                  },
+                  startAltitude, targetAltitude, Math.abs(targetAltitude - startAltitude) * 50,
                   () => {
                     updateDroneSound(basePlaybackRate);
                     next();
@@ -1379,12 +1454,15 @@ function createSmokeParticle(position) {
       const setupStatusInputs = () => {
         document.getElementById('z').addEventListener('change', e => {
           drone.mesh.position.x = -parseFloat(e.target.value);
+          enforceTerrainCollision();
         }, { passive: true });
         document.getElementById('x').addEventListener('change', e => {
           drone.mesh.position.z = -parseFloat(e.target.value);
+          enforceTerrainCollision();
         }, { passive: true });
         document.getElementById('altitude').addEventListener('change', e => {
           drone.mesh.position.y = parseFloat(e.target.value);
+          enforceTerrainCollision();
         }, { passive: true });
         document.getElementById('direction').addEventListener('change', e => {
           drone.mesh.rotation.y = THREE.MathUtils.degToRad( parseFloat(-e.target.value));        
@@ -1395,6 +1473,7 @@ function createSmokeParticle(position) {
       const animate = () => {
         requestAnimationFrame(animate);
         if (drone && drone.mesh) {
+          enforceTerrainCollision();
           const offset = cameraOffset.clone();
           const spherical = new THREE.Spherical().setFromVector3(offset);
           spherical.theta += cameraAngle.x;
@@ -1414,15 +1493,24 @@ function createSmokeParticle(position) {
       };
 
       // --- Scene reset ---
-      const resetScene = () => {
-        drone.mesh.position.set(0, 1.4, 0);
-        drone.mesh.rotation.y = 0;
-        drone.altitude = 1.4;
-        drone.direction = 0;
-        drone.smoke = 0; 
-        clearInterval(drone.propellerInterval); 
-        drone.flying = false;
-        updateStatus();
+        const resetCameraView = () => {
+          cameraAngle.x = Math.PI / 2;
+          cameraAngle.y = 0;
+          cameraOffset.copy(defaultCameraOffset);
+          camera.position.set(4, 0, 4);
+        };
+
+        const resetScene = () => {
+          const startAltitude = getGroundHeightAt(0, 0) + collisionPadding;
+          drone.mesh.position.set(0, startAltitude, 0);
+          drone.mesh.rotation.y = 0;
+          drone.altitude = startAltitude;
+          drone.direction = 0;
+          drone.smoke = 0; 
+        resetCameraView();
+          clearInterval(drone.propellerInterval); 
+          drone.flying = false;
+          updateStatus();
 
         smokeTrail.forEach(p => scene.remove(p));
         smokeTrail = [];
@@ -1574,6 +1662,7 @@ function createSmokeParticle(position) {
       document.getElementById('scenarioSelect').addEventListener('change', function() {
         const selectedScenario = this.value;
         loadScenario(selectedScenario);
+        resetCameraView();
       });
               
       function loadScenarioList() {
