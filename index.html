@@ -766,7 +766,6 @@
         if (droneAltitudeLine) droneAltitudeLine.visible = activeGraphicsProfile.guides;
 
         refreshSceneGraphicsProfile();
-        trimSmokeTrail();
         updateSmokeLine();
         if (renderer) updateWebGLCanvas();
       };
@@ -1720,51 +1719,63 @@ function loadScenario(file) {
       
       let smokeTrail = [];
       let smokeLine = null;
-      const smokeMaterial = new THREE.MeshBasicMaterial({
+      const MAX_SMOKE_POINTS = 30000;
+      const smokePositions = new Float32Array(MAX_SMOKE_POINTS * 3);
+      const smokeBufferGeo = new THREE.BufferGeometry();
+      smokeBufferGeo.setAttribute('position', new THREE.BufferAttribute(smokePositions, 3));
+      smokeBufferGeo.setDrawRange(0, 0);
+      const smokeLineMat = new THREE.LineBasicMaterial({
         color: 0x2f3438,
         transparent: true,
         opacity: 0.9,
-        depthWrite: false,
       });
 
       function clearSmokeTrail() {
         if (smokeLine) {
           scene.remove(smokeLine);
-          if (smokeLine.geometry) smokeLine.geometry.dispose();
           smokeLine = null;
         }
         smokeTrail = [];
         lastSmokeTime = 0;
-      }
-
-      function trimSmokeTrail() {
-        while (smokeTrail.length > activeGraphicsProfile.smokeMax) smokeTrail.shift();
+        smokeBufferGeo.setDrawRange(0, 0);
       }
 
       function updateSmokeLine() {
+        // Remove old line object if still in scene (shouldn't happen after first draw)
         if (smokeLine) {
           scene.remove(smokeLine);
-          if (smokeLine.geometry) smokeLine.geometry.dispose();
           smokeLine = null;
         }
-        if (smokeTrail.length < 2) return;
+        if (smokeTrail.length < 2) {
+          smokeBufferGeo.setDrawRange(0, 0);
+          return;
+        }
 
-        const curve = new THREE.CatmullRomCurve3(smokeTrail);
-        const geometry = new THREE.TubeGeometry(
-          curve,
-          Math.max(2, smokeTrail.length - 1),
-          activeGraphicsProfile.smokeRadius,
-          6,
-          false
-        );
-        smokeLine = new THREE.Mesh(geometry, smokeMaterial);
-        smokeLine.userData.type = 'keep';
-        smokeLine.userData.noCollision = true;
-        smokeLine.userData.noShadow = true;
-        scene.add(smokeLine);
+        const count = Math.min(smokeTrail.length, MAX_SMOKE_POINTS);
+        const offset = smokeTrail.length > MAX_SMOKE_POINTS
+          ? smokeTrail.length - MAX_SMOKE_POINTS
+          : 0;
+
+        for (let i = 0; i < count; i++) {
+          const p = smokeTrail[offset + i];
+          smokePositions[i * 3]     = p.x;
+          smokePositions[i * 3 + 1] = p.y;
+          smokePositions[i * 3 + 2] = p.z;
+        }
+        smokeBufferGeo.attributes.position.needsUpdate = true;
+        smokeBufferGeo.setDrawRange(0, count);
+
+        if (!smokeLine) {
+          smokeLine = new THREE.Line(smokeBufferGeo, smokeLineMat);
+          smokeLine.userData.type = 'keep';
+          smokeLine.userData.noCollision = true;
+          smokeLine.userData.noShadow = true;
+          scene.add(smokeLine);
+        }
       }
 
       function addSmokePoint(position) {
+        if (smokeTrail.length >= MAX_SMOKE_POINTS) return;
         const now = performance.now();
         if (now - lastSmokeTime < activeGraphicsProfile.smokeInterval) return;
 
