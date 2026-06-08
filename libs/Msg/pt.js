@@ -471,7 +471,7 @@ Blockly.Msg["BKY_DRONE_SMOKE"] = "fumaça %1";
 Blockly.Msg["BKY_DRONE_SMOKE_TOOLTIP"] = "Faz o drone soltar fumaça";
 
 Blockly.Msg["BKY_DRONE_SPEED"] = "velocidade %1";
-Blockly.Msg["BKY_DRONE_SPEEK_TOOLTIP"] = "define a velocidade do drone (de 0 a 10)";
+Blockly.Msg["BKY_DRONE_SPEED_TOOLTIP"] = "define a velocidade do drone (de 0 a 10)";
 
 
 // Blocos de Sensores

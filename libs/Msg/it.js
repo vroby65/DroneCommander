@@ -470,7 +470,7 @@ Blockly.Msg["BKY_DRONE_SMOKE"] = "fumo %1";
 Blockly.Msg["BKY_DRONE_SMOKE_TOOLTIP"] = "Fa emettere fumo al drone";
 
 Blockly.Msg["BKY_DRONE_SPEED"] = "velocità %1";
-Blockly.Msg["BKY_DRONE_SPEEK_TOOLTIP"] = "imposta la velocita del drone (da 0 a 10)";
+Blockly.Msg["BKY_DRONE_SPEED_TOOLTIP"] = "imposta la velocità del drone (da 0 a 10)";
 
 
 // Sensor Blocks
@@ -503,12 +503,31 @@ Blockly.Msg["BKY_SENSOR_SPEED_TOOLTIP"] = "Restituisce la velocità del drone";
 Blockly.Msg["BKY_FLOW_START_TOOLTIP"] = "avvio del programma";
 Blockly.Msg["BKY_FLOW_END_TOOLTIP"] = "arresto del programma";
 
+Blockly.Msg["BKY_FLOW_START"] = "Avvio";
+Blockly.Msg["BKY_FLOW_END"] = "Fine";
+
 
 
 // Menu
 Blockly.Msg.BKY_NEW = "Nuovo";
 Blockly.Msg.BKY_LOAD = "Carica";
 Blockly.Msg.BKY_SAVE = "Salva";
+
+Blockly.Msg.BKY_HELP = "Aiuto";
+Blockly.Msg.BKY_SCENARIO = "Scenario";
+Blockly.Msg.BKY_FILE_NAME = "senzanome";
+Blockly.Msg.BKY_SAVE_PROMPT = "Nome file:";
+Blockly.Msg.BKY_GRAPHICS = "Grafica";
+Blockly.Msg.BKY_GRAPHICS_PERFORMANCE = "Prestazioni";
+Blockly.Msg.BKY_GRAPHICS_BALANCED = "Bilanciato";
+Blockly.Msg.BKY_GRAPHICS_QUALITY = "Qualità";
+Blockly.Msg.BKY_STATUS_X = "X:";
+Blockly.Msg.BKY_STATUS_Z = "Z:";
+Blockly.Msg.BKY_STATUS_ALTITUDE = "Altitudine:";
+Blockly.Msg.BKY_STATUS_DIRECTION = "Direzione:";
+Blockly.Msg.BKY_STATUS_FLIGHT = "Stato:";
+Blockly.Msg.BKY_FLIGHT_IN_FLIGHT = "In Volo";
+Blockly.Msg.BKY_FLIGHT_ON_GROUND = "A Terra";
 
 // Category
 Blockly.Msg["BKY_CATEGORY_LOGIC"]="Logica";
@@ -520,6 +539,7 @@ Blockly.Msg["BKY_CATEGORY_VARIABLES"]="Variabili";
 Blockly.Msg["BKY_CATEGORY_FUNCTIONS"]="Funzioni";
 Blockly.Msg["BKY_CATEGORY_SENSORS"]="Sensori";
 Blockly.Msg["BKY_CATEGORY_DRONE"]="Drone";
+Blockly.Msg["BKY_CATEGORY_FLOW"]="Flusso";
 
 return Blockly.Msg;
 }));

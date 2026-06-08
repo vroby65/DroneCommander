@@ -174,14 +174,14 @@
           <button id="saveBtn">Save</button>
           <div id="scenarioControls">
             <select id="scenarioSelect">
-              <option value="">Scenario</option>
+              <option value=""></option>
             </select>
-            <select id="graphicsSelect" title="Grafica">
-              <option value="performance">Prestazioni</option>
-              <option value="balanced">Bilanciato</option>
-              <option value="quality">Qualità</option>
+            <select id="graphicsSelect">
+              <option value="performance"></option>
+              <option value="balanced"></option>
+              <option value="quality"></option>
             </select>
-            <button id="helpBtn">Help</button>
+            <button id="helpBtn"></button>
           </div>
 
           <input type="file" id="fileInput" style="display:none">
@@ -192,7 +192,7 @@
       <div id="rightPanel">
         <div id="viewerToolbar">
           <button id="toggleWebglBtn" >🗖</button>
-          <span id="fileNameLabel" title="noname">noname</span>
+          <span id="fileNameLabel"></span>
           <button id="runBtn" ><font color='green'>▶</font></button>
           <button id="stopBtn" disabled ><font color='red'>■</font></button>
         </div>
@@ -200,15 +200,15 @@
         <div id="statusPanel">
           <table>
             <tr>
-              <td>X:</td><td><input type="number" id="x" value="0" step="0.1"></td>
-              <td>Z:</td><td><input type="number" id="z" value="0" step="0.1"></td>
+              <td id="labelX">X:</td><td><input type="number" id="x" value="0" step="0.1"></td>
+              <td id="labelZ">Z:</td><td><input type="number" id="z" value="0" step="0.1"></td>
             </tr>
             <tr>
-              <td>Altitude:</td><td><input type="number" id="altitude" value="1.5" step="0.1"></td>
-              <td>Direction:</td><td><input type="number" id="direction" value="0" step="1"></td>
+              <td id="labelAlt">Altitude:</td><td><input type="number" id="altitude" value="1.5" step="0.1"></td>
+              <td id="labelDir">Direction:</td><td><input type="number" id="direction" value="0" step="1"></td>
             </tr>
             <tr>
-              <td colspan="2">Status: <span id="flightStatus">On Ground</span></td>
+              <td colspan="2"><span id="labelStatus">Status:</span> <span id="flightStatus">On Ground</span></td>
             </tr>
           </table>
         </div>
@@ -340,7 +340,7 @@
             "previousStatement": null,
             "nextStatement": null,
             "colour": 20,
-            "tooltip": "Imposta la velocità di avanzamento del drone"
+            "tooltip": Blockly.Msg["BKY_DRONE_SPEED_TOOLTIP"]
           },          
           {
             "type": "sensor_keypressed",
@@ -410,7 +410,7 @@
           },
           {
             "type": "start_block",
-            "message0": "Start",
+            "message0": Blockly.Msg["BKY_FLOW_START"],
             "nextStatement": null,
             "colour": 60,
             "tooltip": Blockly.Msg["BKY_FLOW_START_TOOLTIP"],
@@ -418,7 +418,7 @@
           },
           {
             "type": "end_block",
-            "message0": "End",
+            "message0": Blockly.Msg["BKY_FLOW_END"],
             "previousStatement": null,
             "colour": 0,
             "tooltip": Blockly.Msg["BKY_FLOW_END_TOOLTIP"]
@@ -867,7 +867,7 @@
 
       const autosaveWorkspaceKey = 'droneCommander.autosaveXml';
       const autosaveFileNameKey = 'droneCommander.fileName';
-      const defaultProgramName = 'noname';
+      const defaultProgramName = (typeof Blockly !== 'undefined' && Blockly.Msg && Blockly.Msg.BKY_FILE_NAME) || 'noname';
       const defaultWorkspaceXmlText = `<xml xmlns="https://developers.google.com/blockly/xml">
         <block type="start_block" x="10" y="10"></block>
       </xml>`;
@@ -1044,7 +1044,7 @@
 
               ]
             },
-            { "kind": "category", "name": "Flow", "colour": "60", "categorId": "flow", "contents": 
+            { "kind": "category", "name": Blockly.Msg["BKY_CATEGORY_FLOW"], "colour": "60", "categorId": "flow", "contents": 
               [
                 { "kind": "block", "type": "start_block" },
                 { "kind": "block", "type": "end_block" }
@@ -1872,7 +1872,9 @@ function loadScenario(file) {
         document.getElementById('z').value = -drone.mesh.position.x.toFixed(2);
         document.getElementById('altitude').value = drone.altitude.toFixed(2);
         document.getElementById('direction').value = ((-drone.direction.toFixed(0) % 360) + 360) % 360 ;
-        document.getElementById('flightStatus').innerText = drone.flying ? "In Flight" : "On Ground";
+        document.getElementById('flightStatus').innerText = drone.flying
+  ? (Blockly.Msg["BKY_FLIGHT_IN_FLIGHT"] || "In Flight")
+  : (Blockly.Msg["BKY_FLIGHT_ON_GROUND"] || "On Ground");
       };
 
       const setupStatusInputs = () => {
@@ -1955,7 +1957,7 @@ function loadScenario(file) {
         loadWorkspaceFromXmlText(defaultWorkspaceXmlText);
       });
       document.getElementById('saveBtn').addEventListener('click', () => {
-        const requestedName = prompt('Nome file:', programName);
+        const requestedName = prompt(Blockly.Msg.BKY_SAVE_PROMPT || 'File name:', programName);
         if (requestedName === null) return;
         setProgramName(requestedName);
         const xml_text = getWorkspaceXmlText();
@@ -2070,9 +2072,39 @@ function loadScenario(file) {
 
       function updateLanguage(selectedLang) {
         const currentXmlText = workspace ? getWorkspaceXmlText() : null;
+
+        // Toolbar & menu
         document.getElementById('newBtn').innerText = Blockly.Msg.BKY_NEW || "New";
         document.getElementById('loadBtn').innerText = Blockly.Msg.BKY_LOAD || "Load";
         document.getElementById('saveBtn').innerText = Blockly.Msg.BKY_SAVE || "Save";
+        document.getElementById('helpBtn').innerText = Blockly.Msg.BKY_HELP || "Help";
+
+        // Scenario dropdown placeholder
+        const scenarioOpt = document.querySelector('#scenarioSelect option:first-child');
+        if (scenarioOpt) scenarioOpt.text = Blockly.Msg.BKY_SCENARIO || 'Scenario';
+
+        // Graphics select
+        document.getElementById('graphicsSelect').title = Blockly.Msg.BKY_GRAPHICS || 'Graphics';
+        const gfxOpts = document.querySelectorAll('#graphicsSelect option');
+        if (gfxOpts[0]) gfxOpts[0].text = Blockly.Msg.BKY_GRAPHICS_PERFORMANCE || 'Performance';
+        if (gfxOpts[1]) gfxOpts[1].text = Blockly.Msg.BKY_GRAPHICS_BALANCED || 'Balanced';
+        if (gfxOpts[2]) gfxOpts[2].text = Blockly.Msg.BKY_GRAPHICS_QUALITY || 'Quality';
+
+        // Status panel
+        document.getElementById('labelX').innerText = Blockly.Msg["BKY_STATUS_X"] || 'X:';
+        document.getElementById('labelZ').innerText = Blockly.Msg["BKY_STATUS_Z"] || 'Z:';
+        document.getElementById('labelAlt').innerText = Blockly.Msg["BKY_STATUS_ALTITUDE"] || 'Altitude:';
+        document.getElementById('labelDir').innerText = Blockly.Msg["BKY_STATUS_DIRECTION"] || 'Direction:';
+        document.getElementById('labelStatus').innerText = Blockly.Msg["BKY_STATUS_FLIGHT"] || 'Status:';
+
+        // Update flight status if drone exists
+        if (typeof drone !== 'undefined' && drone) {
+          document.getElementById('flightStatus').innerText = drone.flying
+            ? (Blockly.Msg["BKY_FLIGHT_IN_FLIGHT"] || "In Flight")
+            : (Blockly.Msg["BKY_FLIGHT_ON_GROUND"] || "On Ground");
+        }
+
+        // Re-init Blockly workspace
         Blockly.setLocale(selectedLang);
         localStorage.setItem('selectedLanguage', selectedLang);
         defineCustomBlocks();
@@ -2123,7 +2155,8 @@ function loadScenario(file) {
           .then(response => response.json())
           .then(data => {
             const scenarioSelect = document.getElementById('scenarioSelect');
-            scenarioSelect.innerHTML = '<option value="">Scenario</option>';
+            scenarioSelect.innerHTML = '<option value=""></option>';
+if (scenarioSelect.options[0]) scenarioSelect.options[0].text = Blockly.Msg.BKY_SCENARIO || 'Scenario';
             data.forEach(scenario => {
               const option = document.createElement('option');
               option.value = scenario.file;
