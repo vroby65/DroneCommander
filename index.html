@@ -619,7 +619,6 @@
       let groundMeshes = [];
       let directionalLight;
       let droneGroundMarker;
-      let droneAltitudeLine;
       let lastSmokeTime = 0;
       const container = document.getElementById("container");
       const leftPanel = document.getElementById("leftPanel");
@@ -772,7 +771,7 @@
         }
 
         if (droneGroundMarker) droneGroundMarker.visible = activeGraphicsProfile.guides;
-        if (droneAltitudeLine) droneAltitudeLine.visible = activeGraphicsProfile.guides;
+
 
         refreshSceneGraphicsProfile();
         updateSmokeLine();
@@ -1813,7 +1812,7 @@ function loadScenario(file) {
       }
 
       function createDroneGuides() {
-        if (droneGroundMarker || droneAltitudeLine) return;
+        if (droneGroundMarker) return;
 
         const markerGeometry = new THREE.RingGeometry(1.8, 2.05, 48);
         const markerMaterial = new THREE.MeshBasicMaterial({
@@ -1830,39 +1829,21 @@ function loadScenario(file) {
         droneGroundMarker.userData.noShadow = true;
         scene.add(droneGroundMarker);
 
-        const lineGeometry = new THREE.Geometry();
-        lineGeometry.vertices.push(new THREE.Vector3(), new THREE.Vector3());
-        const lineMaterial = new THREE.LineBasicMaterial({
-          color: 0x0066ff,
-          transparent: true,
-          opacity: 0.75,
-          depthWrite: false
-        });
-        droneAltitudeLine = new THREE.Line(lineGeometry, lineMaterial);
-        droneAltitudeLine.userData.type = 'keep';
-        droneAltitudeLine.userData.noCollision = true;
-        droneAltitudeLine.userData.noShadow = true;
-        scene.add(droneAltitudeLine);
-        updateDroneGuides();
+
       }
 
       function updateDroneGuides() {
-        if (!droneGroundMarker || !droneAltitudeLine || !drone || !drone.mesh) return;
+        if (!droneGroundMarker || !drone || !drone.mesh) return;
         const visible = activeGraphicsProfile.guides;
         droneGroundMarker.visible = visible;
-        droneAltitudeLine.visible = visible;
+
         if (!visible) return;
 
         const x = drone.mesh.position.x;
         const z = drone.mesh.position.z;
         const groundY = getGroundHeightAt(x, z) + 0.05;
-        const droneY = drone.mesh.position.y;
 
         droneGroundMarker.position.set(x, groundY, z);
-        const vertices = droneAltitudeLine.geometry.vertices;
-        vertices[0].set(x, groundY, z);
-        vertices[1].set(x, droneY, z);
-        droneAltitudeLine.geometry.verticesNeedUpdate = true;
       }
                           
       
