@@ -95,9 +95,10 @@
       }
       #viewerToolbar {
         display: flex;
-        justify-content: flex-end;
+        justify-content: flex-start;
         align-items: center;
         min-height: 36px;
+        padding-left: 6px;
         padding-right: 6px;
         box-sizing: border-box;
       }
@@ -108,7 +109,7 @@
         white-space: nowrap;
         font-size: 13px;
         font-weight: bold;
-        margin: 0 8px 0 2px;
+        margin: 0 auto 0 2px;
       }
       button{
         margin-right:5px;
@@ -189,7 +190,7 @@
       <div id="divider"></div>
       <div id="rightPanel">
         <div id="viewerToolbar">
-          <button id="toggleWebglBtn" >🗖</button>  
+          <button id="toggleWebglBtn" >🗖</button>
           <span id="fileNameLabel" title="noname">noname</span>
           <button id="runBtn" ><font color='green'>▶</font></button>
           <button id="stopBtn" disabled ><font color='red'>■</font></button>
