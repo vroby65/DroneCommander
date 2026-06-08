@@ -981,14 +981,19 @@
                 { "kind": "block", "type": "text" },
                 { "kind": "block", "type": "text_join" },
                 { "kind": "block", "type": "text_append" },
-                { "kind": "block", "type": "text_length" },
-                { "kind": "block", "type": "text_isEmpty" },
+                { "kind": "block", "type": "text_length",
+                  "inputs": { "VALUE": { "shadow": { "type": "text", "fields": { "TEXT": "" } } } } },
+                { "kind": "block", "type": "text_isEmpty",
+                  "inputs": { "VALUE": { "shadow": { "type": "text", "fields": { "TEXT": "" } } } } },
                 { "kind": "block", "type": "text_indexOf" },
                 { "kind": "block", "type": "text_charAt" },
                 { "kind": "block", "type": "text_getSubstring" },
-                { "kind": "block", "type": "text_changeCase" },
-                { "kind": "block", "type": "text_trim" },
-                { "kind": "block", "type": "text_print" }
+                { "kind": "block", "type": "text_changeCase",
+                  "inputs": { "TEXT": { "shadow": { "type": "text", "fields": { "TEXT": "" } } } } },
+                { "kind": "block", "type": "text_trim",
+                  "inputs": { "TEXT": { "shadow": { "type": "text", "fields": { "TEXT": "" } } } } },
+                { "kind": "block", "type": "text_print",
+                  "inputs": { "TEXT": { "shadow": { "type": "text", "fields": { "TEXT": "" } } } } }
               ]
             },
             { "kind": "category", "name": Blockly.Msg["BKY_CATEGORY_LISTS"], "colour": "260", "categorId": "lists", "contents": [
@@ -1019,15 +1024,23 @@
               [
                 { "kind": "block", "type": "take_off" },
                 { "kind": "block", "type": "land" },
-                { "kind": "block", "type": "set_altitude" },
-                { "kind": "block", "type": "change_altitude" },
-                { "kind": "block", "type": "set_angle" },
-                { "kind": "block", "type": "change_angle" },
-                { "kind": "block", "type": "slide" },
-                { "kind": "block", "type": "walk" },
-                { "kind": "block", "type": "wait" },
+                { "kind": "block", "type": "set_altitude",
+                  "inputs": { "ALTITUDE": { "shadow": { "type": "math_number", "fields": { "NUM": "10" } } } } },
+                { "kind": "block", "type": "change_altitude",
+                  "inputs": { "ALTITUDE": { "shadow": { "type": "math_number", "fields": { "NUM": "10" } } } } },
+                { "kind": "block", "type": "set_angle",
+                  "inputs": { "ANGLE": { "shadow": { "type": "math_number", "fields": { "NUM": "90" } } } } },
+                { "kind": "block", "type": "change_angle",
+                  "inputs": { "ANGLE": { "shadow": { "type": "math_number", "fields": { "NUM": "90" } } } } },
+                { "kind": "block", "type": "slide",
+                  "inputs": { "SLIDE": { "shadow": { "type": "math_number", "fields": { "NUM": "1" } } } } },
+                { "kind": "block", "type": "walk",
+                  "inputs": { "DIST": { "shadow": { "type": "math_number", "fields": { "NUM": "1" } } } } },
+                { "kind": "block", "type": "wait",
+                  "inputs": { "DIST": { "shadow": { "type": "math_number", "fields": { "NUM": "1" } } } } },
                 { "kind": "block", "type": "smoke" },
-                { "kind": "block", "type": "set_speed" }
+                { "kind": "block", "type": "set_speed",
+                  "inputs": { "SPEED": { "shadow": { "type": "math_number", "fields": { "NUM": "1" } } } } }
 
               ]
             },
@@ -1045,52 +1058,7 @@
            theme: Blockly.Themes.makecode
         });
         workspace.addChangeListener(scheduleAutosave);
-        workspace.addChangeListener(attachShadowBlocks);
       };
-
-      // Attach shadow blocks (math_number, text) to custom and built-in blocks
-      // so users can type values directly or replace with a variable block.
-      function attachShadowBlocks(event) {
-        if (event.type !== Blockly.Events.BLOCK_CREATE || !event.blockId) return;
-        var block = workspace.getBlockById(event.blockId);
-        if (!block || block.isShadow()) return;
-
-        var NUM_DEFAULTS = {
-          'set_altitude':      { i: 'ALTITUDE', v: '10' },
-          'change_altitude':   { i: 'ALTITUDE', v: '10' },
-          'set_angle':         { i: 'ANGLE',    v: '90' },
-          'change_angle':      { i: 'ANGLE',    v: '90' },
-          'slide':             { i: 'SLIDE',    v: '1'  },
-          'walk':              { i: 'DIST',     v: '1'  },
-          'wait':              { i: 'DIST',     v: '1'  },
-          'set_speed':         { i: 'SPEED',    v: '1'  },
-        };
-        var TEXT_INPUTS = ['text_print', 'text_length', 'text_isEmpty', 'text_changeCase', 'text_trim'];
-        var TEXT_NAMES  = { text_print: 'TEXT', text_length: 'VALUE', text_isEmpty: 'VALUE',
-                            text_changeCase: 'TEXT', text_trim: 'TEXT' };
-
-        var cfg = NUM_DEFAULTS[block.type];
-        if (cfg) {
-          var inp = block.getInput(cfg.i);
-          if (inp && inp.connection && !inp.connection.targetConnection) {
-            var sh = workspace.newBlock('math_number');
-            sh.setShadow(true);
-            sh.setFieldValue(cfg.v, 'NUM');
-            sh.outputConnection.connect(inp.connection);
-          }
-        }
-
-        if (TEXT_INPUTS.indexOf(block.type) !== -1) {
-          var name = TEXT_NAMES[block.type];
-          var inp = block.getInput(name);
-          if (inp && inp.connection && !inp.connection.targetConnection) {
-            var sh = workspace.newBlock('text');
-            sh.setShadow(true);
-            sh.setFieldValue('', 'TEXT');
-            sh.outputConnection.connect(inp.connection);
-          }
-        }
-      }
 
       // --- Keypress handler ---
       var pressedKeys = {};
