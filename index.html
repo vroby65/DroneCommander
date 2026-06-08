@@ -239,7 +239,7 @@
             "type": "set_altitude",
             "message0": Blockly.Msg["BKY_DRONE_SET_ALTITUDE"],
             "args0": [
-              { "type": "input_value", "name": "ALTITUDE", "check": "Number" }
+              { "type": "field_number", "name": "ALTITUDE", "value": 10, "min": 0 }
             ],
             "previousStatement": null,
             "nextStatement": null,
@@ -250,7 +250,7 @@
             "type": "change_altitude",
             "message0": Blockly.Msg["BKY_DRONE_CHANGE_ALTITUDE"],
             "args0": [
-              { "type": "input_value", "name": "ALTITUDE", "check": "Number" }
+              { "type": "field_number", "name": "ALTITUDE", "value": 10 }
             ],
             "previousStatement": null,
             "nextStatement": null,
@@ -261,7 +261,7 @@
             "type": "set_angle",
             "message0": Blockly.Msg["BKY_DRONE_SET_ANGLE"],
             "args0": [
-              { "type": "input_value", "name": "ANGLE", "check": "Number" }
+              { "type": "field_number", "name": "ANGLE", "value": 90 }
             ],
             "previousStatement": null,
             "nextStatement": null,
@@ -272,7 +272,7 @@
             "type": "change_angle",
             "message0": Blockly.Msg["BKY_DRONE_CHANGE_ANGLE"],
             "args0": [
-              { "type": "input_value", "name": "ANGLE", "check": "Number" }
+              { "type": "field_number", "name": "ANGLE", "value": 90 }
             ],
             "previousStatement": null,
             "nextStatement": null,
@@ -283,7 +283,7 @@
             "type": "slide",
             "message0": Blockly.Msg["BKY_DRONE_SLIDE"],
             "args0": [
-              { "type": "input_value", "name": "SLIDE", "check": "Number" }
+              { "type": "field_number", "name": "SLIDE", "value": 1 }
             ],
             "previousStatement": null,
             "nextStatement": null,
@@ -294,7 +294,7 @@
             "type": "walk",
             "message0": Blockly.Msg["BKY_DRONE_WALK"],
             "args0": [
-              { "type": "input_value", "name": "DIST", "check": "Number" }
+              { "type": "field_number", "name": "DIST", "value": 1 }
             ],
             "previousStatement": null,
             "nextStatement": null,
@@ -305,7 +305,7 @@
             "type": "wait",
             "message0": Blockly.Msg["BKY_DRONE_WAIT"],
             "args0": [
-              { "type": "input_value", "name": "DIST", "check": "Number" }
+              { "type": "field_number", "name": "DIST", "value": 1 }
             ],
             "previousStatement": null,
             "nextStatement": null,
@@ -327,7 +327,7 @@
             "type": "set_speed",
             "message0": Blockly.Msg["BKY_DRONE_SPEED"],
             "args0": [
-              { "type": "input_value", "name": "SPEED", "check": "Number" }
+              { "type": "field_number", "name": "SPEED", "value": 1, "min": 0 }
             ],
             "previousStatement": null,
             "nextStatement": null,
@@ -466,31 +466,31 @@
       Blockly.JavaScript.forBlock['take_off'] = block => 'await drone.takeOff();\n';
       Blockly.JavaScript.forBlock['land'] = block => 'await drone.land();\n';
       Blockly.JavaScript.forBlock['set_altitude'] = block => {
-        var altitude = Blockly.JavaScript.valueToCode(block, 'ALTITUDE', Blockly.JavaScript.ORDER_ATOMIC) || '0';
+        var altitude = block.getFieldValue('ALTITUDE');
         return 'await drone.setAltitude(' + altitude + ');\n';
       };
       Blockly.JavaScript.forBlock['change_altitude'] = block => {
-        var altitude = Blockly.JavaScript.valueToCode(block, 'ALTITUDE', Blockly.JavaScript.ORDER_ATOMIC) || '0';
+        var altitude = block.getFieldValue('ALTITUDE');
         return 'await drone.changeAltitude(' + altitude + ');\n';
       };
       Blockly.JavaScript.forBlock['set_angle'] = block => {
-        var angle = Blockly.JavaScript.valueToCode(block, 'ANGLE', Blockly.JavaScript.ORDER_ATOMIC) || '0';
+        var angle = block.getFieldValue('ANGLE');
         return 'await drone.setAngle(' + angle + ');\n';
       };
       Blockly.JavaScript.forBlock['change_angle'] = block => {
-        var angle = Blockly.JavaScript.valueToCode(block, 'ANGLE', Blockly.JavaScript.ORDER_ATOMIC) || '0';
+        var angle = block.getFieldValue('ANGLE');
         return 'await drone.changeAngle(' + angle + ');\n';
       };
       Blockly.JavaScript.forBlock['slide'] = block => {
-        var slide = Blockly.JavaScript.valueToCode(block, 'SLIDE', Blockly.JavaScript.ORDER_ATOMIC) || '0';
+        var slide = block.getFieldValue('SLIDE');
         return 'await drone.slide(' + slide + ');\n';
       };
       Blockly.JavaScript.forBlock['walk'] = block => {
-        var dist = Blockly.JavaScript.valueToCode(block, 'DIST', Blockly.JavaScript.ORDER_ATOMIC) || '0';
+        var dist = block.getFieldValue('DIST');
         return 'await drone.walk(' + dist + ');\n';
       };
       Blockly.JavaScript.forBlock['wait'] = block => {
-        var dist = Blockly.JavaScript.valueToCode(block, 'DIST', Blockly.JavaScript.ORDER_ATOMIC) || '0';
+        var dist = block.getFieldValue('DIST');
         return 'await waitSeconds(' + dist + ');\n';
       };
       Blockly.JavaScript.forBlock['smoke'] = block => {
@@ -498,7 +498,7 @@
         return `drone.smoke = (${smoke});\n`;
       };
       Blockly.JavaScript.forBlock['set_speed'] = block => {
-        var speed = Blockly.JavaScript.valueToCode(block, 'SPEED', Blockly.JavaScript.ORDER_ATOMIC) || '1';
+        var speed = block.getFieldValue('SPEED');
         return `drone.speed = ${speed};\n`;
       };
       
