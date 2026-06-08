@@ -586,8 +586,7 @@
           anisotropy: 1,
           smokeMax: 60,
           smokeInterval: 160,
-          smokeRadius: 0.09,
-          guides: true
+          smokeRadius: 0.09
         },
         balanced: {
           pixelRatio: 1,
@@ -596,8 +595,7 @@
           anisotropy: 4,
           smokeMax: 140,
           smokeInterval: 90,
-          smokeRadius: 0.12,
-          guides: true
+          smokeRadius: 0.12
         },
         quality: {
           pixelRatio: 1.5,
@@ -606,8 +604,7 @@
           anisotropy: 8,
           smokeMax: 240,
           smokeInterval: 45,
-          smokeRadius: 0.16,
-          guides: true
+          smokeRadius: 0.16
         }
       };
       let graphicsProfileName = localStorage.getItem('graphicsProfile') || 'balanced';
@@ -770,7 +767,7 @@
           directionalLight.shadow.needsUpdate = true;
         }
 
-        if (droneGroundMarker) droneGroundMarker.visible = activeGraphicsProfile.guides;
+        if (droneGroundMarker) droneGroundMarker.visible = graphicsProfileName === 'performance';
 
 
         refreshSceneGraphicsProfile();
@@ -1834,7 +1831,7 @@ function loadScenario(file) {
 
       function updateDroneGuides() {
         if (!droneGroundMarker || !drone || !drone.mesh) return;
-        const visible = activeGraphicsProfile.guides;
+        const visible = graphicsProfileName === 'performance';
         droneGroundMarker.visible = visible;
 
         if (!visible) return;
