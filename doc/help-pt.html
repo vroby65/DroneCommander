@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Drone Commander - Ajuda</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 24px;
+      background: #f5f5f5;
+      color: #222;
+      line-height: 1.6;
+    }
+    h1 { color: #20A39E; border-bottom: 3px solid #20A39E; padding-bottom: 8px; }
+    h2 { color: #20A39E; margin-top: 32px; border-bottom: 1px solid #ccc; padding-bottom: 4px; }
+    h3 { color: #333; margin-top: 20px; }
+    code {
+      background: #e8e8e8;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    .block-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0;
+    }
+    .block-table th, .block-table td {
+      border: 1px solid #ccc;
+      padding: 8px 12px;
+      text-align: left;
+    }
+    .block-table th {
+      background: #20A39E;
+      color: white;
+    }
+    .block-table tr:nth-child(even) { background: #f0f0f0; }
+    .note {
+      background: #fff8e1;
+      border-left: 4px solid #f7c948;
+      padding: 12px 16px;
+      margin: 16px 0;
+      border-radius: 4px;
+    }
+    .tip {
+      background: #e8f5e9;
+      border-left: 4px solid #66bb6a;
+      padding: 12px 16px;
+      margin: 16px 0;
+      border-radius: 4px;
+    }
+    .category-section {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin: 16px 0;
+    }
+    .category-tag {
+      display: inline-block;
+      padding: 4px 14px;
+      border-radius: 16px;
+      color: white;
+      font-weight: bold;
+      font-size: 14px;
+    }
+    .cat-logic { background: #4B9CD3; }
+    .cat-loops { background: #F7C948; color: #333; }
+    .cat-math { background: #F86624; }
+    .cat-text { background: #8C6BB1; }
+    .cat-lists { background: #3AAFB9; }
+    .cat-variables { background: #FF8C42; }
+    .cat-functions { background: #DB5461; }
+    .cat-sensors { background: #90BE6D; }
+    .cat-drone { background: #20A39E; }
+    .cat-flow { background: #888; }
+    img.example-img {
+      max-width: 100%;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      margin: 8px 0;
+    }
+    ul { padding-left: 20px; }
+    ul ul { padding-left: 20px; }
+    .shortcut-table td:first-child {
+      font-weight: bold;
+      white-space: nowrap;
+    }
+    footer {
+      margin-top: 48px;
+      padding-top: 16px;
+      border-top: 1px solid #ccc;
+      font-size: 14px;
+      color: #666;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Drone Commander</h1>
+<p><strong>Drone Commander</strong> é uma aplicação web interativa que permite simular o controlo de voo de drones usando programação visual. Você cria um programa de voo arrastando e soltando blocos Blockly e, em seguida, observa o drone executar esses comandos num ambiente 3D em tempo real alimentado por Three.js.</p>
+
+<p>Não é necessária experiência em programação — basta encaixar os blocos e pressionar Executar!</p>
+
+<div class="tip">
+  <strong>Início rápido:</strong> Arraste um bloco <code>Start</code>, conecte um bloco <code>decolar</code>, depois um bloco <code>aterrar</code> e clique em ▶ Executar. O seu drone vai descolar e aterrar!
+</div>
+
+<hr>
+
+<h2>Índice</h2>
+<ol>
+  <li><a href="#interface">Visão Geral da Interface</a></li>
+  <li><a href="#editor">O Editor Blockly</a></li>
+  <li><a href="#blocks">Referência de Blocos</a></li>
+  <li><a href="#drone-blocks">Blocos de Drone</a></li>
+  <li><a href="#sensor-blocks">Blocos de Sensores</a></li>
+  <li><a href="#flow-blocks">Blocos de Controlo de Fluxo</a></li>
+  <li><a href="#controls">Controlos de Simulação</a></li>
+  <li><a href="#camera">Vista 3D e Controlos de Câmara</a></li>
+  <li><a href="#status">Painel de Estado</a></li>
+  <li><a href="#files">Gestão de Ficheiros</a></li>
+  <li><a href="#scenarios">Cenários</a></li>
+  <li><a href="#graphics">Perfis Gráficos</a></li>
+  <li><a href="#language">Seleção de Idioma</a></li>
+  <li><a href="#examples">Programas de Exemplo</a></li>
+  <li><a href="#tips">Dicas e Resolução de Problemas</a></li>
+</ol>
+
+<hr>
+
+<h2 id="interface">Visão Geral da Interface</h2>
+
+<p>A aplicação está dividida em dois painéis principais separados por um divisor redimensionável:</p>
+
+<ul>
+  <li><strong>Painel Esquerdo</strong> — O editor Blockly onde você constrói o seu programa de voo.</li>
+  <li><strong>Painel Direito</strong> — A vista de simulação 3D com uma barra de estado na parte inferior.</li>
+</ul>
+
+<p><strong>Barra de menu do painel esquerdo (topo do editor):</strong></p>
+<ul>
+  <li><strong>Seletor de idioma</strong> — Altera o idioma da interface.</li>
+  <li><strong>Novo</strong> — Cria um novo programa vazio.</li>
+  <li><strong>Carregar</strong> — Carrega um programa Blockly de um ficheiro <code>.xml</code> no seu computador.</li>
+  <li><strong>Salvar</strong> — Guarda o seu programa atual como um ficheiro <code>.xml</code>.</li>
+  <li><strong>Menu de cenário</strong> — Escolhe um ambiente 3D (veja <a href="#scenarios">Cenários</a>).</li>
+  <li><strong>Menu gráfico</strong> — Escolhe uma predefinição de qualidade gráfica (veja <a href="#graphics">Perfis Gráficos</a>).</li>
+</ul>
+
+<p><strong>Barra de ferramentas do painel direito (acima da vista 3D):</strong></p>
+<ul>
+  <li><strong>🗖 / 🗗</strong> — Alterna a vista 3D para ecrã inteiro (oculta o editor e o painel de estado).</li>
+  <li><strong>Nome do ficheiro</strong> — O nome do programa atual.</li>
+  <li><strong>▶ Executar</strong> — Executa o programa Blockly.</li>
+  <li><strong>■ Parar</strong> — Para a simulação; clique novamente para redefinir o drone.</li>
+</ul>
+
+<hr>
+
+<h2 id="editor">O Editor Blockly</h2>
+
+<p>O editor Blockly é um ambiente de programação visual. Você cria um programa arrastando blocos da <strong>caixa de ferramentas</strong> (a barra lateral à esquerda do editor) para a <strong>área de trabalho</strong> (a grande área branca) e encaixando-os como peças de puzzle.</p>
+
+<h3>Como construir um programa</h3>
+<ol>
+  <li>Cada programa deve começar com um bloco <strong>Start</strong> (da categoria <em>Flow</em>).</li>
+  <li>Conecte blocos de comando de <strong>Drone</strong> abaixo do bloco Start na ordem em que deseja que sejam executados.</li>
+  <li>Opcionalmente, termine com um bloco <strong>End</strong>.</li>
+  <li>Clique em ▶ <strong>Executar</strong> para ver o drone executar o seu programa.</li>
+</ol>
+
+<h3>Ações de edição comuns</h3>
+<ul>
+  <li><strong>Arrastar</strong> — Move um bloco da caixa de ferramentas ou pela área de trabalho.</li>
+  <li><strong>Clique direito</strong> num bloco para opções de contexto: Duplicar, Eliminar, Adicionar Comentário, Desativar, Entradas em Linha, etc.</li>
+  <li><strong>Entradas numéricas</strong> — Clique num campo numérico e digite um valor. Também pode conectar um bloco de Matemática (ex.: um bloco de número ou aritmético) às ranhuras de entrada.</li>
+  <li><strong>Entradas booleanas</strong> (ex.: o bloco <code>fumaça</code>) aceitam blocos Verdadeiro/Falso, blocos lógicos ou blocos de sensores.</li>
+  <li><strong>Desativar um bloco</strong> — Clique direito &gt; <em>Desativar Bloco</em> para removê-lo temporariamente do programa sem o eliminar.</li>
+  <li><strong>Colapsar</strong> — Clique direito &gt; <em>Colapsar Bloco</em> para reduzir a desordem visual.</li>
+</ul>
+
+<hr>
+
+<h2 id="blocks">Referência de Blocos</h2>
+
+<p>A caixa de ferramentas no lado esquerdo do editor está organizada nas seguintes categorias:</p>
+
+<div class="category-section">
+  <span class="category-tag cat-logic">Lógica</span>
+  <span class="category-tag cat-loops">Laços</span>
+  <span class="category-tag cat-math">Matemática</span>
+  <span class="category-tag cat-text">Texto</span>
+  <span class="category-tag cat-lists">Listas</span>
+  <span class="category-tag cat-variables">Variáveis</span>
+  <span class="category-tag cat-functions">Funções</span>
+  <span class="category-tag cat-sensors">Sensores</span>
+  <span class="category-tag cat-drone">Drone</span>
+  <span class="category-tag cat-flow">Flow</span>
+</div>
+
+<h3>Lógica</h3>
+<p>Condições if/else padrão, operadores lógicos (e, ou, não), valores booleanos (verdadeiro/falso), operadores de comparação (=, ≠, &lt;, ≤, &gt;, ≥) e o operador ternário.</p>
+
+<h3>Laços</h3>
+<p>Blocos de repetição por um número fixo de vezes, laços while/until, laços de contagem (for), laços for-each e instruções de controlo de laço (break, continue).</p>
+
+<h3>Matemática</h3>
+<p>Constantes numéricas, operações aritméticas (+, −, ×, ÷, ^), raiz quadrada, valor absoluto, funções trigonométricas, arredondamento, números aleatórios e verificações de propriedades numéricas (par, ímpar, primo, etc.).</p>
+
+<h3>Texto</h3>
+<p>Constantes de string, concatenação de texto, comprimento, substring, pesquisa de caracteres, conversão de maiúsculas/minúsculas, remoção de espaços e impressão na consola.</p>
+
+<h3>Listas</h3>
+<p>Criar listas, obter/definir itens, encontrar sublistas, ordenar, inverter, verificar se está vazia e dividir/juntar strings.</p>
+
+<h3>Variáveis</h3>
+<p>Crie e use variáveis para armazenar e recuperar valores durante a execução do programa.</p>
+
+<h3>Funções</h3>
+<p>Defina procedimentos reutilizáveis (com ou sem valores de retorno) para organizar o seu código.</p>
+
+<hr>
+
+<h2 id="drone-blocks">Blocos de Drone</h2>
+
+<p>Estes são os blocos principais para controlar o drone. Os blocos marcados como <em>requer voo</em> só terão efeito enquanto o drone estiver no ar; são silenciosamente ignorados se o drone estiver no solo.</p>
+
+<table class="block-table">
+  <tr>
+    <th>Bloco</th>
+    <th>Descrição</th>
+    <th>Requer Voo</th>
+  </tr>
+  <tr>
+    <td><code>decolar</code></td>
+    <td>Liga as hélices do drone e eleva-o a uma altura de 10 metros. O drone entra em estado de voo.</td>
+    <td>Não</td>
+  </tr>
+  <tr>
+    <td><code>aterrar</code></td>
+    <td>Desce o drone até ao solo, para as hélices e sai do estado de voo. O drone aterra na altura do terreno abaixo dele.</td>
+    <td>Sim</td>
+  </tr>
+  <tr>
+    <td><code>definir altitude [N]</code></td>
+    <td>Altera a altitude do drone para o valor especificado (em metros). O drone faz uma transição suave para a altitude alvo.</td>
+    <td>Sim</td>
+  </tr>
+  <tr>
+    <td><code>alterar altitude [N]</code></td>
+    <td>Ajusta a altitude do drone por um valor relativo (ex.: +5 para subir 5m, -3 para descer 3m).</td>
+    <td>Sim</td>
+  </tr>
+  <tr>
+    <td><code>definir ângulo [N]</code></td>
+    <td>Roda o drone para uma direção específica (0–359 graus, onde 0 = norte).</td>
+    <td>Sim</td>
+  </tr>
+  <tr>
+    <td><code>alterar ângulo [N]</code></td>
+    <td>Roda o drone por um número relativo de graus (ex.: 90 para virar à direita, -90 para virar à esquerda).</td>
+    <td>Sim</td>
+  </tr>
+  <tr>
+    <td><code>deslizar [N]</code></td>
+    <td>Move o drone lateralmente (esquerda/direita) pela distância especificada. Valores positivos movem para a direita, negativos para a esquerda.</td>
+    <td>Sim</td>
+  </tr>
+  <tr>
+    <td><code>andar [N]</code></td>
+    <td>Move o drone para a frente pela distância especificada (em metros). O drone move-se na direção para a qual está virado.</td>
+    <td>Sim</td>
+  </tr>
+  <tr>
+    <td><code>esperar [N]</code></td>
+    <td>Pausa o programa pelo número especificado de segundos antes de continuar para o próximo bloco.</td>
+    <td>Não</td>
+  </tr>
+  <tr>
+    <td><code>fumaça [Verdadeiro/Falso]</code></td>
+    <td>Ativa ou desativa o efeito de rasto de fumo. Quando ativado, o drone deixa um rasto visível enquanto voa.</td>
+    <td>Não</td>
+  </tr>
+  <tr>
+    <td><code>velocidade [N]</code></td>
+    <td>Define a velocidade de movimento do drone (0–10). Valores mais altos fazem o drone mover-se mais rápido durante comandos <code>andar</code>. A velocidade predefinida é 1.0.</td>
+    <td>Não</td>
+  </tr>
+</table>
+
+<div class="note">
+  <strong>Nota:</strong> O drone só pode <code>andar</code> (mover-se para a frente) e <code>deslizar</code> (mover-se lateralmente) enquanto voa. <code>definir_ângulo</code> e <code>alterar_ângulo</code> mudam a direção do drone sem o mover.
+</div>
+
+<hr>
+
+<h2 id="sensor-blocks">Blocos de Sensores</h2>
+
+<p>Os blocos de sensores retornam dados em tempo real da simulação do drone. Podem ser ligados a entradas numéricas ou booleanas de outros blocos (ex.: dentro de condições de blocos if/while).</p>
+
+<table class="block-table">
+  <tr>
+    <th>Bloco</th>
+    <th>Retorna</th>
+    <th>Descrição</th>
+  </tr>
+  <tr>
+    <td><code>tecla [TECLA] pressionada?</code></td>
+    <td>Booleano</td>
+    <td>Retorna <code>verdadeiro</code> se a tecla especificada estiver atualmente pressionada. Teclas disponíveis: Seta para Cima/Baixo/Esquerda/Direita, Espaço, Enter, A–Z.</td>
+  </tr>
+  <tr>
+    <td><code>X</code></td>
+    <td>Número</td>
+    <td>Retorna a coordenada X atual do drone (posição este-oeste).</td>
+  </tr>
+  <tr>
+    <td><code>Z</code></td>
+    <td>Número</td>
+    <td>Retorna a coordenada Z atual do drone (posição norte-sul).</td>
+  </tr>
+  <tr>
+    <td><code>Altitude</code></td>
+    <td>Número</td>
+    <td>Retorna a altitude atual do drone em metros.</td>
+  </tr>
+  <tr>
+    <td><code>Direção</code></td>
+    <td>Número</td>
+    <td>Retorna a direção atual do drone em graus (0–359).</td>
+  </tr>
+  <tr>
+    <td><code>velocidade</code></td>
+    <td>Número</td>
+    <td>Retorna a configuração atual de velocidade do drone (0–10).</td>
+  </tr>
+</table>
+
+<h3>Usar sensores — padrões sugeridos</h3>
+<ul>
+  <li><strong>Condução por teclado:</strong> Use <code>tecla pressionada</code> dentro de um laço <code>while verdadeiro</code> com blocos <code>se</code> para fazer o drone reagir às setas do teclado em tempo real.</li>
+  <li><strong>Altitude condicional:</strong> Use o sensor <code>Altitude</code> com uma comparação lógica para manter o drone acima de uma certa altura.</li>
+  <li><strong>Aterragem automática:</strong> Verifique se a altitude está perto de 0 e então acione um bloco <code>aterrar</code>.</li>
+</ul>
+
+<hr>
+
+<h2 id="flow-blocks">Blocos de Controlo de Fluxo</h2>
+
+<table class="block-table">
+  <tr>
+    <th>Bloco</th>
+    <th>Descrição</th>
+  </tr>
+  <tr>
+    <td><code>Start</code></td>
+    <td>O ponto de entrada de cada programa. Todos os comandos do drone devem ser conectados abaixo deste bloco. Tem uma forma de "chapéu" e não tem conexão na parte superior.</td>
+  </tr>
+  <tr>
+    <td><code>End</code></td>
+    <td>Um bloco opcional para marcar o fim do programa. Quaisquer blocos abaixo dele não serão executados.</td>
+  </tr>
+</table>
+
+<div class="tip">
+  <strong>Dica:</strong> Se não incluir um bloco <code>Start</code>, o programa ainda será executado, mas pode executar blocos numa ordem inesperada. Comece sempre com <code>Start</code>.
+</div>
+
+<hr>
+
+<h2 id="controls">Controlos de Simulação</h2>
+
+<h3>Executar (▶)</h3>
+<p>Clique no botão verde ▶ na barra de ferramentas do painel direito para executar o seu programa Blockly. O programa é convertido para JavaScript e executado passo a passo. Durante a execução, o botão Parar fica ativo e o botão Executar fica desativado.</p>
+
+<h3>Parar (■)</h3>
+<p>Clique no botão vermelho ■ para parar o programa em execução. O drone para imediatamente. Clique em Parar novamente para redefinir o drone para a sua posição inicial.</p>
+
+<h3>O que acontece durante a execução</h3>
+<ul>
+  <li>Cada bloco é executado sequencialmente com um pequeno atraso entre comandos para que possa ver o movimento.</li>
+  <li>O som do drone (ruído das hélices) é reproduzido durante o voo.</li>
+  <li>O painel de estado é atualizado em tempo real com posição, altitude e direção.</li>
+  <li>As hélices giram visivelmente durante o voo.</li>
+  <li>Os rastos de fumo são renderizados se o modo de fumo estiver ativado.</li>
+</ul>
+
+<hr>
+
+<h2 id="camera">Vista 3D e Controlos de Câmara</h2>
+
+<p>A vista 3D mostra o drone a voar no cenário selecionado. Pode controlar a câmara livremente:</p>
+
+<table class="block-table">
+  <tr>
+    <th>Ação</th>
+    <th>Controlo</th>
+  </tr>
+  <tr>
+    <td><strong>Orbitar (rodar vista)</strong></td>
+    <td><strong>Clique direito + arrastar</strong> para rodar a câmara à volta do drone.</td>
+  </tr>
+  <tr>
+    <td><strong>Repor vista</strong></td>
+    <td><strong>Clique do meio (botão do scroll do rato)</strong> para posicionar a câmara atrás do drone.</td>
+  </tr>
+  <tr>
+    <td><strong>Zoom</strong></td>
+    <td><strong>Scroll do rato</strong> para ampliar e reduzir.</td>
+  </tr>
+  <tr>
+    <td><strong>Primeira pessoa</strong></td>
+    <td><strong>Clique esquerdo + arrastar</strong> enquanto o drone está a voar para mudar para uma vista de câmara de perseguição que segue o drone de perto.</td>
+  </tr>
+</table>
+
+<h3>Guias visuais do drone</h3>
+<p>Durante o voo, duas ajudas visuais aparecem (nos modos Equilibrado e Desempenho):</p>
+<ul>
+  <li><strong>Marcador no solo</strong> — Um anel azul no solo diretamente abaixo do drone.</li>
+  <li><strong>Linha de altitude</strong> — Uma linha vertical azul a ligar o drone ao seu marcador no solo, mostrando a altura.</li>
+</ul>
+<p>Estas guias podem ser ocultadas mudando para o modo Qualidade ou definindo um perfil personalizado.</p>
+
+<hr>
+
+<h2 id="status">Painel de Estado</h2>
+
+<p>O painel de estado é mostrado na parte inferior do painel direito. Exibe a telemetria atual do drone e permite ajustes manuais:</p>
+
+<table class="block-table">
+  <tr>
+    <th>Campo</th>
+    <th>Descrição</th>
+  </tr>
+  <tr>
+    <td><strong>X</strong></td>
+    <td>A posição este-oeste do drone. Editável — altere o valor e prima Enter para teletransportar o drone (com verificação de colisão).</td>
+  </tr>
+  <tr>
+    <td><strong>Z</strong></td>
+    <td>A posição norte-sul do drone. Editável como X.</td>
+  </tr>
+  <tr>
+    <td><strong>Altitude</strong></td>
+    <td>A altura do drone acima do solo. Editável — útil para posicionar rapidamente o drone.</td>
+  </tr>
+  <tr>
+    <td><strong>Direção</strong></td>
+    <td>A direção do drone em graus (0–359). Editável — altere para rodar o drone instantaneamente.</td>
+  </tr>
+  <tr>
+    <td><strong>Estado</strong></td>
+    <td>Mostra "No Solo" ou "Em Voo" dependendo do estado do drone.</td>
+  </tr>
+</table>
+
+<hr>
+
+<h2 id="files">Gestão de Ficheiros</h2>
+
+<h3>Novo</h3>
+<p>Clique em <strong>Novo</strong> para limpar o programa atual e começar com uma área de trabalho nova contendo apenas um bloco <code>Start</code>. Será perguntado se deseja salvar o programa atual primeiro.</p>
+
+<h3>Salvar</h3>
+<p>Clique em <strong>Salvar</strong> para descarregar o seu programa atual como um ficheiro <code>.xml</code>. Será solicitado um nome para o ficheiro. O programa também é automaticamente salvo no armazenamento local do seu navegador.</p>
+
+<h3>Carregar</h3>
+<p>Clique em <strong>Carregar</strong> para abrir um ficheiro <code>.xml</code> do seu computador. O programa carregado substitui o conteúdo atual da área de trabalho.</p>
+
+<h3>Salvamento Automático</h3>
+<p>O seu programa é automaticamente salvo no <strong>armazenamento local</strong> do navegador sempre que faz uma alteração. Quando voltar à página ou a atualizar, o último programa salvo é restaurado automaticamente. O nome do ficheiro atual também é lembrado entre sessões.</p>
+
+<hr>
+
+<h2 id="scenarios">Cenários</h2>
+
+<p>O Drone Commander inclui quatro ambientes 3D que pode alternar usando o menu no painel esquerdo.</p>
+
+<table class="block-table">
+  <tr>
+    <th>Cenário</th>
+    <th>Descrição</th>
+  </tr>
+  <tr>
+    <td><strong>Campo de voo</strong> (Flight Field)</td>
+    <td>Um campo de aviação relvado com árvores, bancos e colinas suaves. O ambiente predefinido.</td>
+  </tr>
+  <tr>
+    <td><strong>Pista urbana</strong> (Urban Track)</td>
+    <td>Um ambiente urbano com edifícios e cenário citadino.</td>
+  </tr>
+  <tr>
+    <td><strong>Metrópole</strong> (Metropolis)</td>
+    <td>Uma grande cidade com arranha-céus e uma disposição urbana densa.</td>
+  </tr>
+  <tr>
+    <td><strong>Ilha tropical</strong> (Tropical Island)</td>
+    <td>Uma ilha tropical com água, areia e vegetação insular.</td>
+  </tr>
+</table>
+
+<p>Quando muda de cenário, o drone é redefinido para o centro do novo ambiente e a câmara volta à sua posição predefinida. O sistema de colisão com o terreno adapta-se a cada cenário para que o drone voe acima do solo e dos obstáculos.</p>
+
+<hr>
+
+<h2 id="graphics">Perfis Gráficos</h2>
+
+<p>Escolha uma predefinição gráfica para equilibrar qualidade visual e desempenho:</p>
+
+<table class="block-table">
+  <tr>
+    <th>Perfil</th>
+    <th>Proporção de Pixels</th>
+    <th>Sombras</th>
+    <th>Detalhe do Fumo</th>
+    <th>Melhor para</th>
+  </tr>
+  <tr>
+    <td><strong>Desempenho</strong></td>
+    <td>0.75×</td>
+    <td>Desligadas</td>
+    <td>Baixo</td>
+    <td>Dispositivos mais antigos, GPUs de baixo consumo ou quando precisa de taxas de fotogramas suaves.</td>
+  </tr>
+  <tr>
+    <td><strong>Equilibrado</strong></td>
+    <td>1×</td>
+    <td>Ligadas</td>
+    <td>Médio</td>
+    <td>Uso geral na maioria dos dispositivos. Selecionado por predefinição.</td>
+  </tr>
+  <tr>
+    <td><strong>Qualidade</strong></td>
+    <td>1.5×</td>
+    <td>Ligadas</td>
+    <td>Alto</td>
+    <td>Computadores e portáteis potentes com GPUs dedicadas.</td>
+  </tr>
+</table>
+
+<p>A sua seleção é salva no armazenamento local e persiste entre sessões.</p>
+
+<hr>
+
+<h2 id="language">Seleção de Idioma</h2>
+
+<p>O Drone Commander suporta vários idiomas. Use o menu no painel esquerdo para alternar entre:</p>
+
+<ul>
+  <li><strong>English</strong> — Inglês</li>
+  <li><strong>Italiano</strong> — Italiano</li>
+  <li><strong>Français</strong> — Francês</li>
+  <li><strong>Deutsch</strong> — Alemão</li>
+  <li><strong>Español</strong> — Espanhol</li>
+  <li><strong>Português</strong> — Português</li>
+</ul>
+
+<p>A configuração de idioma é salva no seu navegador e persiste entre sessões. Alterar o idioma atualiza a caixa de ferramentas, os rótulos dos blocos e todo o texto da interface.</p>
+
+<hr>
+
+<h2 id="examples">Programas de Exemplo</h2>
+
+<h3>1. Descolagem e Aterragem Básicas</h3>
+<p>O programa mais simples — o drone sobe e volta a descer.</p>
+<pre>
+  Start
+  ├── decolar
+  └── aterrar
+  End</pre>
+
+<p>O que acontece: O drone eleva-se a 10m, paira brevemente, depois desce e aterra no solo abaixo.</p>
+
+<h3>2. Voo para a Frente com Regresso</h3>
+<p>Voe para a frente, vire-se e volte.</p>
+<pre>
+  Start
+  ├── decolar
+  ├── andar 10
+  ├── definir ângulo 180
+  ├── andar 10
+  └── aterrar
+  End</pre>
+
+<p>O que acontece: O drone descola, voa 10 metros para a frente, vira 180°, voa 10 metros para trás e aterra no local original.</p>
+
+<h3>3. Padrão Quadrado</h3>
+<p>Voe num quadrado movendo-se e virando repetidamente.</p>
+<pre>
+  Start
+  ├── decolar
+  ├── definir altitude 5
+  ├── repetir 4 vezes
+  │   ├── andar 5
+  │   └── alterar ângulo 90
+  └── aterrar
+  End</pre>
+
+<p>O que acontece: O drone voa num padrão quadrado de 5×5 metros a 5m de altitude antes de aterrar.</p>
+
+<h3>4. Drone Controlado por Teclado</h3>
+<p>Use o teclado para pilotar o drone em tempo real. Isto usa um laço <code>while verdadeiro</code> com blocos de sensores.</p>
+<pre>
+  Start
+  ├── decolar
+  ├── enquanto verdadeiro
+  │   ├── se tecla "Seta para Cima" pressionada
+  │   │   └── andar 0.5
+  │   ├── se tecla "Seta para Baixo" pressionada
+  │   │   └── andar -0.5
+  │   ├── se tecla "Seta para Esquerda" pressionada
+  │   │   └── alterar ângulo -5
+  │   ├── se tecla "Seta para Direita" pressionada
+  │   │   └── alterar ângulo 5
+  │   └── esperar 0.1
+  └── aterrar
+  End</pre>
+
+<div class="tip">
+  <strong>Dica:</strong> Ao executar programas controlados por teclado, clique primeiro na vista 3D para garantir o foco do teclado e, em seguida, use as setas para controlar o drone.
+</div>
+
+<h3>5. Voo com Sensores de Altitude</h3>
+<p>Suba a altitude, mova-se para a frente e use sensores.</p>
+<pre>
+  Start
+  ├── decolar
+  ├── definir altitude 8
+  ├── definir velocidade 3
+  ├── andar 15
+  ├── alterar ângulo 90
+  ├── fumaça verdadeiro
+  ├── andar 10
+  ├── fumaça falso
+  └── aterrar
+  End</pre>
+
+<p>O que acontece: O drone sobe a 8m, move-se para a frente rapidamente a velocidade 3, vira, deixa um rasto de fumo por 10m e depois aterra.</p>
+
+<h3>6. Patrulha Automática com Laços</h3>
+<p>Patrulhe uma área retangular continuamente (até ser parado).</p>
+<pre>
+  Start
+  ├── decolar
+  ├── definir altitude 4
+  ├── definir velocidade 2
+  ├── enquanto verdadeiro
+  │   ├── andar 8
+  │   ├── alterar ângulo 90
+  │   ├── andar 4
+  │   ├── alterar ângulo 90
+  │   └── esperar 0.5
+  └── aterrar
+  End</pre>
+
+<p>O que acontece: O drone voa num padrão de patrulha retangular a 4m de altitude até clicar em Parar.</p>
+
+<hr>
+
+<h2 id="tips">Dicas e Resolução de Problemas</h2>
+
+<h3>Melhores práticas</h3>
+<ul>
+  <li><strong>Comece com Start:</strong> Inicie sempre o seu programa com um bloco <code>Start</code> para definir claramente o ponto de entrada da execução.</li>
+  <li><strong>Descole primeiro:</strong> Os comandos de movimento (andar, deslizar, definir_ângulo, etc.) só funcionam enquanto o drone está em voo. Inclua sempre <code>decolar</code> antes do movimento.</li>
+  <li><strong>Consciência do terreno:</strong> O drone adapta-se automaticamente à altura do terreno. Ao aterrar, desce ao nível do solo na sua posição atual, que pode variar em cenários montanhosos.</li>
+  <li><strong>Controlo de velocidade:</strong> O bloco <code>velocidade</code> afeta a rapidez com que o drone se move com <code>andar</code>. O intervalo de velocidade é 0–10; o predefinido é 1.0.</li>
+  <li><strong>Fumo como ferramenta de depuração:</strong> Ative o fumo para visualizar a trajetória de voo do drone.</li>
+</ul>
+
+<h3>Comportamentos conhecidos</h3>
+<ul>
+  <li><strong>Redefinição do drone:</strong> Quando executa um programa, o drone é automaticamente redefinido para a sua posição inicial (centro do mapa) antes da execução.</li>
+  <li><strong>Deteção de colisões:</strong> O drone não atravessa o solo ou objetos do terreno. A altitude é automaticamente limitada para permanecer acima do terreno.</li>
+  <li><strong>Salvamento automático:</strong> Funciona em todos os navegadores modernos. Limpar o armazenamento local do seu navegador irá eliminar os programas e preferências salvos.</li>
+  <li><strong>Sem necessidade de internet:</strong> Após o carregamento inicial da página, o Drone Commander funciona inteiramente no seu navegador. Todas as bibliotecas são carregadas localmente.</li>
+</ul>
+
+<h3>Se algo não funcionar</h3>
+<ul>
+  <li><strong>O drone não se move:</strong> Certifique-se de que o drone descolou. O estado de voo deve mostrar "Em Voo".</li>
+  <li><strong>O botão Executar permanece desativado:</strong> Clique em Parar, depois clique em Parar novamente para redefinir. O botão Executar será reativado.</li>
+  <li><strong>A vista 3D está em branco:</strong> Verifique se o seu navegador suporta WebGL. Tente um navegador diferente (recomendados Chrome, Firefox, Edge).</li>
+  <li><strong>Sem som:</strong> O som do drone requer interação do utilizador (clique) para iniciar — isto é uma política de reprodução automática do navegador. Clique no botão Executar; se o áudio ainda não tocar, verifique as configurações de som do seu navegador para o separador.</li>
+  <li><strong>Desempenho lento:</strong> Mude para o perfil gráfico <strong>Desempenho</strong> no menu.</li>
+</ul>
+
+<hr>
+
+<h2>Atalhos de Teclado</h2>
+
+<table class="block-table shortcut-table">
+  <tr>
+    <th>Tecla</th>
+    <th>Ação</th>
+  </tr>
+  <tr>
+    <td>Seta para Cima / Baixo / Esquerda / Direita</td>
+    <td>Usado com blocos de sensor de teclado no seu programa (não são atalhos incorporados).</td>
+  </tr>
+  <tr>
+    <td>Espaço, Enter, A–Z</td>
+    <td>Também disponíveis como entradas de sensor de teclado para os seus programas.</td>
+  </tr>
+  <tr>
+    <td>Scroll do rato</td>
+    <td>Ampliar/reduzir a câmara na vista 3D.</td>
+  </tr>
+  <tr>
+    <td>Clique direito + arrastar</td>
+    <td>Orbitar a câmara à volta do drone.</td>
+  </tr>
+  <tr>
+    <td>Clique do meio</td>
+    <td>Posicionar a câmara atrás do drone (rotação de 90°).</td>
+  </tr>
+  <tr>
+    <td>Clique esquerdo + arrastar</td>
+    <td>Mudar para vista de câmara de perseguição (segue o drone de perto).</td>
+  </tr>
+</table>
+
+<hr>
+
+<h2>Detalhes Técnicos</h2>
+<ul>
+  <li><strong>Motor:</strong> Three.js (renderização 3D), Blockly (programação visual)</li>
+  <li><strong>Formato:</strong> Ficheiro único <code>index.html</code> com JavaScript incorporado</li>
+  <li><strong>Armazenamento:</strong> Armazenamento local do navegador para salvamento automático, preferências e seleção de idioma</li>
+  <li><strong>Modelos:</strong> STL (drone, hélices, câmara), OBJ/MTL (objetos de cenário)</li>
+  <li><strong>Som:</strong> Web Audio API com drone.mp3 em loop durante o voo</li>
+  <li><strong>Física do drone:</strong> Fila de comandos com interpolação suave (sem motor físico real; os movimentos são animados)</li>
+</ul>
+
+<footer>
+  Drone Commander — Licença MIT. Criado por <a href="https://github.com/vroby65">vroby65</a>.
+  <br>
+  <a href="https://github.com/vroby65/DroneCommander">Repositório GitHub</a>
+</footer>
+
+</body>
+</html>

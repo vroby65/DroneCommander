@@ -181,6 +181,7 @@
               <option value="balanced">Bilanciato</option>
               <option value="quality">Qualità</option>
             </select>
+            <button id="helpBtn">Help</button>
           </div>
 
           <input type="file" id="fileInput" style="display:none">
@@ -2051,6 +2052,20 @@ function loadScenario(file) {
       document.getElementById('graphicsSelect').addEventListener('change', function() {
         applyGraphicsProfile(this.value);
       }, { passive: true });
+
+      document.getElementById('helpBtn').addEventListener('click', function() {
+        const lang = document.getElementById('languageSelect').value;
+        const helpFiles = {
+          en: 'doc/help.html',
+          it: 'doc/help-it.html',
+          fr: 'doc/help-fr.html',
+          de: 'doc/help-de.html',
+          es: 'doc/help-es.html',
+          pt: 'doc/help-pt.html'
+        };
+        const helpPage = helpFiles[lang] || 'doc/help.html';
+        window.open(helpPage, '_blank');
+      });
               
       function loadScenarioList() {
         fetch('backgrounds/list.json')

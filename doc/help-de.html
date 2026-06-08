@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Drone Commander - Hilfe</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 24px;
+      background: #f5f5f5;
+      color: #222;
+      line-height: 1.6;
+    }
+    h1 { color: #20A39E; border-bottom: 3px solid #20A39E; padding-bottom: 8px; }
+    h2 { color: #20A39E; margin-top: 32px; border-bottom: 1px solid #ccc; padding-bottom: 4px; }
+    h3 { color: #333; margin-top: 20px; }
+    code {
+      background: #e8e8e8;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    .block-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0;
+    }
+    .block-table th, .block-table td {
+      border: 1px solid #ccc;
+      padding: 8px 12px;
+      text-align: left;
+    }
+    .block-table th {
+      background: #20A39E;
+      color: white;
+    }
+    .block-table tr:nth-child(even) { background: #f0f0f0; }
+    .note {
+      background: #fff8e1;
+      border-left: 4px solid #f7c948;
+      padding: 12px 16px;
+      margin: 16px 0;
+      border-radius: 4px;
+    }
+    .tip {
+      background: #e8f5e9;
+      border-left: 4px solid #66bb6a;
+      padding: 12px 16px;
+      margin: 16px 0;
+      border-radius: 4px;
+    }
+    .category-section {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin: 16px 0;
+    }
+    .category-tag {
+      display: inline-block;
+      padding: 4px 14px;
+      border-radius: 16px;
+      color: white;
+      font-weight: bold;
+      font-size: 14px;
+    }
+    .cat-logic { background: #4B9CD3; }
+    .cat-loops { background: #F7C948; color: #333; }
+    .cat-math { background: #F86624; }
+    .cat-text { background: #8C6BB1; }
+    .cat-lists { background: #3AAFB9; }
+    .cat-variables { background: #FF8C42; }
+    .cat-functions { background: #DB5461; }
+    .cat-sensors { background: #90BE6D; }
+    .cat-drone { background: #20A39E; }
+    .cat-flow { background: #888; }
+    img.example-img {
+      max-width: 100%;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      margin: 8px 0;
+    }
+    ul { padding-left: 20px; }
+    ul ul { padding-left: 20px; }
+    .shortcut-table td:first-child {
+      font-weight: bold;
+      white-space: nowrap;
+    }
+    footer {
+      margin-top: 48px;
+      padding-top: 16px;
+      border-top: 1px solid #ccc;
+      font-size: 14px;
+      color: #666;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Drone Commander</h1>
+<p><strong>Drone Commander</strong> ist eine interaktive Webanwendung, mit der Sie Drohnenflüge durch visuelle Programmierung simulieren können. Sie erstellen ein Flugprogramm, indem Sie Blockly-Blöcke per Drag & Drop zusammenf&uuml;gen, und beobachten dann, wie die Drohne diese Befehle in einer 3D-Echtzeitumgebung (angetrieben durch Three.js) ausf&uuml;hrt.</p>
+
+<p>Keine Programmierkenntnisse erforderlich – f&uuml;gen Sie einfach Blöcke zusammen und dr&uuml;cken Sie auf Start!</p>
+
+<div class="tip">
+  <strong>Schnellstart:</strong> Ziehen Sie einen <code>Start</code>-Block, f&uuml;gen Sie einen <code>abheben</code>-Block und dann einen <code>landen</code>-Block an, und klicken Sie auf ▶ Ausf&uuml;hren. Ihre Drohne wird abheben und landen!
+</div>
+
+<hr>
+
+<h2>Inhaltsverzeichnis</h2>
+<ol>
+  <li><a href="#interface">Oberfläche im &Uuml;berblick</a></li>
+  <li><a href="#editor">Der Blockly-Editor</a></li>
+  <li><a href="#blocks">Block-Referenz</a></li>
+  <li><a href="#drone-blocks">Drohnen-Blöcke</a></li>
+  <li><a href="#sensor-blocks">Sensor-Blöcke</a></li>
+  <li><a href="#flow-blocks">Ablaufsteuerungs-Blöcke</a></li>
+  <li><a href="#controls">Simulationssteuerung</a></li>
+  <li><a href="#camera">3D-Ansicht &amp; Kamerasteuerung</a></li>
+  <li><a href="#status">Status-Panel</a></li>
+  <li><a href="#files">Dateiverwaltung</a></li>
+  <li><a href="#scenarios">Szenarien</a></li>
+  <li><a href="#graphics">Grafikprofile</a></li>
+  <li><a href="#language">Sprachauswahl</a></li>
+  <li><a href="#examples">Beispielprogramme</a></li>
+  <li><a href="#tips">Tipps &amp; Fehlerbehebung</a></li>
+</ol>
+
+<hr>
+
+<h2 id="interface">Oberfläche im &Uuml;berblick</h2>
+
+<p>Die Anwendung ist in zwei Hauptbereiche unterteilt, die durch eine in der Gr&ouml;&szlig;e veränderbare Trennlinie getrennt sind:</p>
+
+<ul>
+  <li><strong>Linkes Panel</strong> – Der Blockly-Editor, in dem Sie Ihr Flugprogramm erstellen.</li>
+  <li><strong>Rechtes Panel</strong> – Die 3D-Simulationsansicht mit einer Statusleiste am unteren Rand.</li>
+</ul>
+
+<p><strong>Men&uuml;leiste des linken Panels (oben im Editor):</strong></p>
+<ul>
+  <li><strong>Sprachauswahl</strong> – Die Oberflächensprache wechseln.</li>
+  <li><strong>Neu</strong> – Ein neues, leeres Programm erstellen.</li>
+  <li><strong>Laden</strong> – Ein Blockly-Programm aus einer <code>.xml</code>-Datei auf Ihrem Computer laden.</li>
+  <li><strong>Speichern</strong> – Ihr aktuelles Programm als <code>.xml</code>-Datei speichern.</li>
+  <li><strong>Szenario-Auswahl</strong> – Eine 3D-Umgebung auswählen (siehe <a href="#scenarios">Szenarien</a>).</li>
+  <li><strong>Grafik-Auswahl</strong> – Eine Grafikqualitätsvoreinstellung auswählen (siehe <a href="#graphics">Grafikprofile</a>).</li>
+</ul>
+
+<p><strong>Symbolleiste des rechten Panels (oberhalb der 3D-Ansicht):</strong></p>
+<ul>
+  <li><strong>🗖 / 🗗</strong> – 3D-Ansicht auf Vollbild umschalten (versteckt Editor und Status-Panel).</li>
+  <li><strong>Dateiname</strong> – Der Name des aktuellen Programms.</li>
+  <li><strong>▶ Ausf&uuml;hren</strong> – Das Blockly-Programm ausf&uuml;hren.</li>
+  <li><strong>■ Stopp</strong> – Die Simulation anhalten; erneutes Klicken setzt die Drohne zurück.</li>
+</ul>
+
+<hr>
+
+<h2 id="editor">Der Blockly-Editor</h2>
+
+<p>Der Blockly-Editor ist eine visuelle Programmierumgebung. Sie erstellen ein Programm, indem Sie Blöcke aus der <strong>Toolbox</strong> (der Seitenleiste links im Editor) auf die <strong>Arbeitsfläche</strong> (den gro&szlig;en wei&szlig;en Bereich) ziehen und sie wie Puzzleteile zusammenstecken.</p>
+
+<h3>So erstellen Sie ein Programm</h3>
+<ol>
+  <li>Jedes Programm sollte mit einem <strong>Start</strong>-Block beginnen (aus der Kategorie <em>Flow</em>).</li>
+  <li>F&uuml;gen Sie <strong>Drohnen</strong>-Befehlsblöcke in der gew&uuml;nschten Reihenfolge unter dem Start-Block an.</li>
+  <li>Optional k&ouml;nnen Sie mit einem <strong>End</strong>-Block abschlie&szlig;en.</li>
+  <li>Klicken Sie auf ▶ <strong>Ausf&uuml;hren</strong>, um zu sehen, wie die Drohne Ihr Programm ausf&uuml;hrt.</li>
+</ol>
+
+<h3>Häufige Bearbeitungsaktionen</h3>
+<ul>
+  <li><strong>Ziehen</strong> – Einen Block aus der Toolbox oder auf der Arbeitsfläche bewegen.</li>
+  <li><strong>Rechtsklick</strong> auf einen Block für Kontextoptionen: Duplizieren, L&ouml;schen, Kommentar hinzuf&uuml;gen, Deaktivieren, Inline-Eingaben usw.</li>
+  <li><strong>Zahleneingaben</strong> – Auf ein Zahlenfeld klicken und einen Wert eingeben. Sie können auch einen Mathe-Block (z. B. einen Zahlenblock oder Rechenblock) an Eingabeschlitze anhängen.</li>
+  <li><strong>Boolesche Eingaben</strong> (z. B. der <code>Rauch</code>-Block) akzeptieren Wahr/Falsch-Blöcke, Logik-Blöcke oder Sensor-Blöcke.</li>
+  <li><strong>Block deaktivieren</strong> – Rechtsklick &gt; <em>Block deaktivieren</em>, um einen Block vorübergehend aus dem Programm zu entfernen, ohne ihn zu l&ouml;schen.</li>
+  <li><strong>Einklappen</strong> – Rechtsklick &gt; <em>Block einklappen</em>, um die visuelle Unübersichtlichkeit zu verringern.</li>
+</ul>
+
+<hr>
+
+<h2 id="blocks">Block-Referenz</h2>
+
+<p>Die Toolbox auf der linken Seite des Editors ist in die folgenden Kategorien unterteilt:</p>
+
+<div class="category-section">
+  <span class="category-tag cat-logic">Logik</span>
+  <span class="category-tag cat-loops">Schleifen</span>
+  <span class="category-tag cat-math">Mathematik</span>
+  <span class="category-tag cat-text">Text</span>
+  <span class="category-tag cat-lists">Listen</span>
+  <span class="category-tag cat-variables">Variablen</span>
+  <span class="category-tag cat-functions">Funktionen</span>
+  <span class="category-tag cat-sensors">Sensoren</span>
+  <span class="category-tag cat-drone">Drohne</span>
+  <span class="category-tag cat-flow">Flow</span>
+</div>
+
+<h3>Logik</h3>
+<p>Standard Wenn/Sonst-Bedingungen, logische Operatoren (und, oder, nicht), boolesche Werte (wahr/falsch), Vergleichsoperatoren (=, &ne;, &lt;, &le;, &gt;, &ge;) und der ternäre Operator.</p>
+
+<h3>Schleifen</h3>
+<p>Blöcke eine bestimmte Anzahl von Malen wiederholen, w&auml;hrend-/bis-Schleifen, Zählschleifen (f&uuml;r), F&uuml;r-jeden-Schleifen und Schleifensteuerungsanweisungen (Abbruch, Fortsetzen).</p>
+
+<h3>Mathematik</h3>
+<p>Zahlenkonstanten, arithmetische Operationen (+, &minus;, &times;, &divide;, ^), Quadratwurzel, Absolutwert, trigonometrische Funktionen, Runden, Zufallszahlen und Zahleneigenschaftspr&uuml;fungen (gerade, ungerade, Primzahl usw.).</p>
+
+<h3>Text</h3>
+<p>Zeichenkettenkonstanten, Textverkettung, L&auml;nge, Teilzeichenkette, Zeichensuche, Gro&szlig;-/Kleinschreibung, Trimmen und Ausgabe auf der Konsole.</p>
+
+<h3>Listen</h3>
+<p>Listen erstellen, Elemente abrufen/setzen, Unterlisten finden, sortieren, umkehren, auf Leerheit prüfen und Zeichenketten teilen/verbinden.</p>
+
+<h3>Variablen</h3>
+<p>Variablen erstellen und verwenden, um w&auml;hrend der Programmausf&uuml;hrung Werte zu speichern und abzurufen.</p>
+
+<h3>Funktionen</h3>
+<p>Wiederverwendbare Prozeduren (mit oder ohne R&uuml;ckgabewerte) definieren, um Ihren Code zu organisieren.</p>
+
+<hr>
+
+<h2 id="drone-blocks">Drohnen-Blöcke</h2>
+
+<p>Dies sind die Kernblöcke zur Steuerung der Drohne. Blöcke, die mit <em>Flug erforderlich</em> gekennzeichnet sind, wirken nur w&auml;hrend die Drohne in der Luft ist; sie werden stillschweigend &uuml;bersprungen, wenn die Drohne am Boden ist.</p>
+
+<table class="block-table">
+  <tr>
+    <th>Block</th>
+    <th>Beschreibung</th>
+    <th>Flug erforderlich</th>
+  </tr>
+  <tr>
+    <td><code>abheben</code></td>
+    <td>Startet die Propeller der Drohne und hebt sie auf eine H&ouml;he von 10 Metern. Die Drohne wechselt in den Flugzustand.</td>
+    <td>Nein</td>
+  </tr>
+  <tr>
+    <td><code>landen</code></td>
+    <td>L&auml;sst die Drohne zum Boden sinken, stoppt die Propeller und beendet den Flugzustand. Die Drohne landet auf der Gel&auml;ndeh&ouml;he unter ihr.</td>
+    <td>Ja</td>
+  </tr>
+  <tr>
+    <td><code>H&ouml;he setzen [N]</code></td>
+    <td>&Auml;ndert die Flugh&ouml;he der Drohne auf den angegebenen Wert (in Metern). Die Drohne wechselt gleichm&auml;&szlig;ig zur Zielh&ouml;he.</td>
+    <td>Ja</td>
+  </tr>
+  <tr>
+    <td><code>H&ouml;he &auml;ndern [N]</code></td>
+    <td>Passt die Flugh&ouml;he der Drohne um einen relativen Betrag an (z. B. +5 zum Steigen um 5 m, -3 zum Sinken um 3 m).</td>
+    <td>Ja</td>
+  </tr>
+  <tr>
+    <td><code>Winkel setzen [N]</code></td>
+    <td>Dreht die Drohne in eine bestimmte Richtung (0–359 Grad, wobei 0 = Norden).</td>
+    <td>Ja</td>
+  </tr>
+  <tr>
+    <td><code>Winkel &auml;ndern [N]</code></td>
+    <td>Dreht die Drohne um eine relative Gradzahl (z. B. 90 f&uuml;r eine Rechtsdrehung, -90 f&uuml;r links).</td>
+    <td>Ja</td>
+  </tr>
+  <tr>
+    <td><code>gleiten [N]</code></td>
+    <td>Bewegt die Drohne seitlich (links/rechts) um die angegebene Entfernung. Positive Werte bewegen nach rechts, negative nach links.</td>
+    <td>Ja</td>
+  </tr>
+  <tr>
+    <td><code>gehen [N]</code></td>
+    <td>Bewegt die Drohne um die angegebene Entfernung (in Metern) vorw&auml;rts. Die Drohne bewegt sich in die Richtung, in die sie gerade blickt.</td>
+    <td>Ja</td>
+  </tr>
+  <tr>
+    <td><code>warten [N]</code></td>
+    <td>Pausiert das Programm f&uuml;r die angegebene Anzahl an Sekunden, bevor es mit dem n&auml;chsten Block fortf&auml;hrt.</td>
+    <td>Nein</td>
+  </tr>
+  <tr>
+    <td><code>Rauch [Wahr/Falsch]</code></td>
+    <td>Aktiviert oder deaktiviert den Rauchspureffekt. Wenn aktiviert, hinterl&auml;sst die Drohne eine sichtbare Spur w&auml;hrend des Flugs.</td>
+    <td>Nein</td>
+  </tr>
+  <tr>
+    <td><code>Geschwindigkeit [N]</code></td>
+    <td>Setzt die Bewegungsgeschwindigkeit der Drohne (0–10). Höhere Werte lassen die Drohne bei <code>gehen</code>-Befehlen schneller fliegen. Die Standardgeschwindigkeit ist 1,0.</td>
+    <td>Nein</td>
+  </tr>
+</table>
+
+<div class="note">
+  <strong>Hinweis:</strong> Die Drohne kann nur w&auml;hrend des Flugs <code>gehen</code> (vorw&auml;rts) und <code>gleiten</code> (seitw&auml;rts). <code>Winkel setzen</code> und <code>Winkel &auml;ndern</code> &auml;ndern die Blickrichtung der Drohne, ohne sie zu bewegen.
+</div>
+
+<hr>
+
+<h2 id="sensor-blocks">Sensor-Blöcke</h2>
+
+<p>Sensor-Blöcke liefern Echtzeitdaten aus der Drohnensimulation. Sie können in Zahlen- oder Boolesche-Eingaben anderer Blöcke eingesteckt werden (z. B. in Bedingungen von Wenn-/Solange-Blöcken).</p>
+
+<table class="block-table">
+  <tr>
+    <th>Block</th>
+    <th>R&uuml;ckgabe</th>
+    <th>Beschreibung</th>
+  </tr>
+  <tr>
+    <td><code>Taste [TASTE] gedr&uuml;ckt?</code></td>
+    <td>Boolesch</td>
+    <td>Gibt <code>wahr</code> zur&uuml;ck, wenn die angegebene Tastaturtaste gerade gedr&uuml;ckt ist. Verfügbare Tasten: Pfeil Oben/Unten/Links/Rechts, Leertaste, Eingabetaste, A–Z.</td>
+  </tr>
+  <tr>
+    <td><code>X</code></td>
+    <td>Zahl</td>
+    <td>Gibt die aktuelle X-Koordinate der Drohne zur&uuml;ck (Ost-West-Position).</td>
+  </tr>
+  <tr>
+    <td><code>Z</code></td>
+    <td>Zahl</td>
+    <td>Gibt die aktuelle Z-Koordinate der Drohne zur&uuml;ck (Nord-S&uuml;d-Position).</td>
+  </tr>
+  <tr>
+    <td><code>H&ouml;he</code></td>
+    <td>Zahl</td>
+    <td>Gibt die aktuelle Flugh&ouml;he der Drohne in Metern zur&uuml;ck.</td>
+  </tr>
+  <tr>
+    <td><code>Richtung</code></td>
+    <td>Zahl</td>
+    <td>Gibt die aktuelle Blickrichtung der Drohne in Grad zur&uuml;ck (0–359).</td>
+  </tr>
+  <tr>
+    <td><code>Geschwindigkeit</code></td>
+    <td>Zahl</td>
+    <td>Gibt die aktuelle Geschwindigkeitseinstellung der Drohne zur&uuml;ck (0–10).</td>
+  </tr>
+</table>
+
+<h3>Sensoren verwenden – empfohlene Muster</h3>
+<ul>
+  <li><strong>Tastatursteuerung:</strong> Verwenden Sie <code>Taste gedr&uuml;ckt</code> innerhalb einer <code>solange wahr</code>-Schleife mit <code>wenn</code>-Blöcken, um die Drohne in Echtzeit auf Pfeiltasten reagieren zu lassen.</li>
+  <li><strong>Bedingte H&ouml;he:</strong> Verwenden Sie den <code>H&ouml;he</code>-Sensor mit einem logischen Vergleich, um die Drohne &uuml;ber einer bestimmten H&ouml;he zu halten.</li>
+  <li><strong>Automatische Landung:</strong> Prüfen Sie, ob die H&ouml;he nahe 0 ist, und l&ouml;sen Sie dann einen <code>landen</code>-Block aus.</li>
+</ul>
+
+<hr>
+
+<h2 id="flow-blocks">Ablaufsteuerungs-Blöcke</h2>
+
+<table class="block-table">
+  <tr>
+    <th>Block</th>
+    <th>Beschreibung</th>
+  </tr>
+  <tr>
+    <td><code>Start</code></td>
+    <td>Der Einstiegspunkt jedes Programms. Alle Drohnenbefehle m&uuml;ssen unter diesem Block angeschlossen werden. Er hat eine "Hut"-Form und keine Verbindung an der Oberseite.</td>
+  </tr>
+  <tr>
+    <td><code>End</code></td>
+    <td>Ein optionaler Block, der das Ende des Programms markiert. Blöcke darunter werden nicht ausgef&uuml;hrt.</td>
+  </tr>
+</table>
+
+<div class="tip">
+  <strong>Tipp:</strong> Wenn Sie keinen <code>Start</code>-Block einf&uuml;gen, wird das Programm zwar trotzdem ausgef&uuml;hrt, aber die Blöcke könnten in unerwarteter Reihenfolge ablaufen. Beginnen Sie immer mit <code>Start</code>.
+</div>
+
+<hr>
+
+<h2 id="controls">Simulationssteuerung</h2>
+
+<h3>Ausf&uuml;hren (▶)</h3>
+<p>Klicken Sie auf die gr&uuml;ne ▶-Schaltfläche in der Symbolleiste des rechten Panels, um Ihr Blockly-Programm auszuf&uuml;hren. Das Programm wird in JavaScript &uuml;bersetzt und Schritt f&uuml;r Schritt ausgef&uuml;hrt. W&auml;hrend der Ausf&uuml;hrung ist die Stopp-Schaltfläche aktiviert und die Ausf&uuml;hren-Schaltfläche deaktiviert.</p>
+
+<h3>Stopp (■)</h3>
+<p>Klicken Sie auf die rote ■-Schaltfläche, um das laufende Programm anzuhalten. Die Drohne stoppt sofort. Klicken Sie erneut auf Stopp, um die Drohne auf ihre Ausgangsposition zurückzusetzen.</p>
+
+<h3>Was w&auml;hrend der Ausf&uuml;hrung passiert</h3>
+<ul>
+  <li>Jeder Block wird nacheinander mit einer kleinen Verz&ouml;gerung zwischen den Befehlen ausgef&uuml;hrt, damit Sie die Bewegung sehen k&ouml;nnen.</li>
+  <li>Das Drohnenger&auml;usch (Propellerl&auml;rm) ert&ouml;nt w&auml;hrend des Flugs.</li>
+  <li>Das Status-Panel aktualisiert sich in Echtzeit mit Position, H&ouml;he und Richtung.</li>
+  <li>Die Propeller drehen sich sichtbar w&auml;hrend des Flugs.</li>
+  <li>Rauchspuren werden dargestellt, wenn der Rauchmodus aktiviert ist.</li>
+</ul>
+
+<hr>
+
+<h2 id="camera">3D-Ansicht &amp; Kamerasteuerung</h2>
+
+<p>Die 3D-Ansicht zeigt die Drohne beim Flug im ausgew&auml;hlten Szenario. Sie können die Kamera frei steuern:</p>
+
+<table class="block-table">
+  <tr>
+    <th>Aktion</th>
+    <th>Steuerung</th>
+  </tr>
+  <tr>
+    <td><strong>Orbiter (Ansicht drehen)</strong></td>
+    <td><strong>Rechtsklick + ziehen</strong>, um die Kamera um die Drohne zu drehen.</td>
+  </tr>
+  <tr>
+    <td><strong>Ansicht zur&uuml;cksetzen</strong></td>
+    <td><strong>Mittelklick (Mausradtaste)</strong>, um die Kamera hinter der Drohne einzurasten.</td>
+  </tr>
+  <tr>
+    <td><strong>Zoomen</strong></td>
+    <td><strong>Mausrad</strong>, um hinein- und herauszuzoomen.</td>
+  </tr>
+  <tr>
+    <td><strong>Erste Person</strong></td>
+    <td><strong>Linksklick + ziehen</strong> w&auml;hrend des Flugs, um in eine Verfolgungskamera zu wechseln, die der Drohne eng folgt.</td>
+  </tr>
+</table>
+
+<h3>Visuelle Hilfen der Drohne</h3>
+<p>W&auml;hrend des Flugs werden zwei visuelle Hilfen eingeblendet (im Modus "Ausgewogen" und "Leistung"):</p>
+<ul>
+  <li><strong>Bodenmarkierung</strong> – Ein blauer Ring auf dem Boden direkt unter der Drohne.</li>
+  <li><strong>H&ouml;henlinie</strong> – Eine vertikale blaue Linie, die die Drohne mit ihrer Bodenmarkierung verbindet und die H&ouml;he anzeigt.</li>
+</ul>
+<p>Diese Hilfen können durch Umschalten in den Modus "Qualit&auml;t" oder durch ein benutzerdefiniertes Profil ausgeblendet werden.</p>
+
+<hr>
+
+<h2 id="status">Status-Panel</h2>
+
+<p>Das Status-Panel wird am unteren Rand des rechten Panels angezeigt. Es zeigt die aktuelle Telemetrie der Drohne und erm&ouml;glicht manuelle Anpassungen:</p>
+
+<table class="block-table">
+  <tr>
+    <th>Feld</th>
+    <th>Beschreibung</th>
+  </tr>
+  <tr>
+    <td><strong>X</strong></td>
+    <td>Die Ost-West-Position der Drohne. Editierbar – &auml;ndern Sie den Wert und dr&uuml;cken Sie die Eingabetaste, um die Drohne zu teleportieren (kollisionsgepr&uuml;ft).</td>
+  </tr>
+  <tr>
+    <td><strong>Z</strong></td>
+    <td>Die Nord-S&uuml;d-Position der Drohne. Editierbar wie X.</td>
+  </tr>
+  <tr>
+    <td><strong>H&ouml;he</strong></td>
+    <td>Die H&ouml;he der Drohne &uuml;ber dem Boden. Editierbar – n&uuml;tzlich zum schnellen Positionieren der Drohne.</td>
+  </tr>
+  <tr>
+    <td><strong>Richtung</strong></td>
+    <td>Die Ausrichtung der Drohne in Grad (0–359). Editierbar – &auml;ndern, um die Drohne sofort zu drehen.</td>
+  </tr>
+  <tr>
+    <td><strong>Status</strong></td>
+    <td>Zeigt "Am Boden" oder "Im Flug" je nach Zustand der Drohne an.</td>
+  </tr>
+</table>
+
+<hr>
+
+<h2 id="files">Dateiverwaltung</h2>
+
+<h3>Neu</h3>
+<p>Klicken Sie auf <strong>Neu</strong>, um das aktuelle Programm zu l&ouml;schen und mit einer leeren Arbeitsfläche zu beginnen, die nur einen <code>Start</code>-Block enth&auml;lt. Sie werden gefragt, ob Sie das aktuelle Programm zuerst speichern m&ouml;chten.</p>
+
+<h3>Speichern</h3>
+<p>Klicken Sie auf <strong>Speichern</strong>, um Ihr aktuelles Programm als <code>.xml</code>-Datei herunterzuladen. Sie werden nach einem Dateinamen gefragt. Das Programm wird au&szlig;erdem automatisch im lokalen Speicher Ihres Browsers gespeichert.</p>
+
+<h3>Laden</h3>
+<p>Klicken Sie auf <strong>Laden</strong>, um eine <code>.xml</code>-Datei von Ihrem Computer zu &ouml;ffnen. Das geladene Programm ersetzt den aktuellen Arbeitsflächeninhalt.</p>
+
+<h3>Autosave</h3>
+<p>Ihr Programm wird bei jeder &Auml;nderung automatisch im <strong>lokalen Speicher</strong> Ihres Browsers gespeichert. Wenn Sie zur Seite zurückkehren oder sie aktualisieren, wird das zuletzt gespeicherte Programm automatisch wiederhergestellt. Der aktuelle Dateiname wird ebenfalls zwischen den Sitzungen gemerkt.</p>
+
+<hr>
+
+<h2 id="scenarios">Szenarien</h2>
+
+<p>Drone Commander enth&auml;lt vier 3D-Umgebungen, zwischen denen Sie über die Auswahl in der Men&uuml;leiste des linken Panels wechseln k&ouml;nnen.</p>
+
+<table class="block-table">
+  <tr>
+    <th>Szenario</th>
+    <th>Beschreibung</th>
+  </tr>
+  <tr>
+    <td><strong>Flugfeld</strong></td>
+    <td>Ein grasbewachsenes Flugfeld mit B&auml;umen, Bänken und sanften Hügeln. Die Standardumgebung.</td>
+  </tr>
+  <tr>
+    <td><strong>Stadtstrecke</strong></td>
+    <td>Eine Stadtumgebung mit Gebäuden und urbaner Szenerie.</td>
+  </tr>
+  <tr>
+    <td><strong>Metropole</strong></td>
+    <td>Eine gro&szlig;e Stadt mit Wolkenkratzern und dichter urbaner Bebauung.</td>
+  </tr>
+  <tr>
+    <td><strong>Tropeninsel</strong></td>
+    <td>Eine tropische Insel mit Wasser, Sand und Inselvegetation.</td>
+  </tr>
+</table>
+
+<p>Wenn Sie das Szenario wechseln, wird die Drohne in die Mitte der neuen Umgebung zurückgesetzt und die Kamera kehrt in ihre Standardposition zur&uuml;ck. Das Gel&auml;ndekollisionssystem passt sich jedem Szenario an, sodass die Drohne über dem Boden und Hindernissen fliegt.</p>
+
+<hr>
+
+<h2 id="graphics">Grafikprofile</h2>
+
+<p>Wählen Sie eine Grafikvoreinstellung, um visuelle Qualit&auml;t und Leistung auszugleichen:</p>
+
+<table class="block-table">
+  <tr>
+    <th>Profil</th>
+    <th>Pixelverh&auml;ltnis</th>
+    <th>Schatten</th>
+    <th>Rauchdetail</th>
+    <th>Am besten geeignet</th>
+  </tr>
+  <tr>
+    <td><strong>Leistung</strong></td>
+    <td>0,75×</td>
+    <td>Aus</td>
+    <td>Niedrig</td>
+    <td>&Auml;ltere Geräte, GPUs mit geringer Leistung oder wenn Sie flüssige Bildraten ben&ouml;tigen.</td>
+  </tr>
+  <tr>
+    <td><strong>Ausgewogen</strong></td>
+    <td>1×</td>
+    <td>An</td>
+    <td>Mittel</td>
+    <td>Allgemeine Nutzung auf den meisten Geräten. Standardm&auml;&szlig;ig ausgew&auml;hlt.</td>
+  </tr>
+  <tr>
+    <td><strong>Qualit&auml;t</strong></td>
+    <td>1,5×</td>
+    <td>An</td>
+    <td>Hoch</td>
+    <td>Leistungsstarke Desktops und Laptops mit dedizierten GPUs.</td>
+  </tr>
+</table>
+
+<p>Ihre Auswahl wird im lokalen Speicher gespeichert und bleibt zwischen den Sitzungen erhalten.</p>
+
+<hr>
+
+<h2 id="language">Sprachauswahl</h2>
+
+<p>Drone Commander unterst&uuml;tzt mehrere Sprachen. Verwenden Sie die Auswahl in der Men&uuml;leiste des linken Panels, um zu wechseln:</p>
+
+<ul>
+  <li><strong>English</strong> – Englisch (Standard)</li>
+  <li><strong>Italiano</strong> – Italienisch</li>
+  <li><strong>Fran&ccedil;ais</strong> – Franz&ouml;sisch</li>
+  <li><strong>Deutsch</strong> – Deutsch</li>
+  <li><strong>Espa&ntilde;ol</strong> – Spanisch</li>
+  <li><strong>Portugu&ecirc;s</strong> – Portugiesisch</li>
+</ul>
+
+<p>Die Spracheinstellung wird in Ihrem Browser gespeichert und bleibt zwischen den Sitzungen erhalten. Beim Wechseln der Sprache werden die Toolbox, Blockbeschriftungen und der gesamte Oberflächentext aktualisiert.</p>
+
+<hr>
+
+<h2 id="examples">Beispielprogramme</h2>
+
+<h3>1. Einfacher Start und Landung</h3>
+<p>Das einfachste Programm – die Drohne fliegt hoch und kommt wieder herunter.</p>
+<pre>
+  Start
+  ├── abheben
+  └── landen
+  End</pre>
+
+<p>Was passiert: Die Drohne steigt auf 10 m, schwebt kurz, sinkt dann und landet auf dem Boden darunter.</p>
+
+<h3>2. Vorw&auml;rtsflug mit R&uuml;ckkehr</h3>
+<p>Vorw&auml;rts fliegen, umdrehen und zur&uuml;ckkommen.</p>
+<pre>
+  Start
+  ├── abheben
+  ├── gehen 10
+  ├── Winkel setzen 180
+  ├── gehen 10
+  └── landen
+  End</pre>
+
+<p>Was passiert: Die Drohne hebt ab, fliegt 10 Meter vorw&auml;rts, dreht sich um 180°, fliegt 10 Meter zur&uuml;ck und landet am Ausgangspunkt.</p>
+
+<h3>3. Quadratisches Muster</h3>
+<p>In einem Quadrat fliegen, indem wiederholt bewegt und gedreht wird.</p>
+<pre>
+  Start
+  ├── abheben
+  ├── H&ouml;he setzen 5
+  ├── wiederhole 4 mal
+  │   ├── gehen 5
+  │   └── Winkel &auml;ndern 90
+  └── landen
+  End</pre>
+
+<p>Was passiert: Die Drohne fliegt ein 5×5 Meter gro&szlig;es Quadratmuster in 5 m H&ouml;he, bevor sie landet.</p>
+
+<h3>4. Tastaturgesteuerte Drohne</h3>
+<p>Mit der Tastatur die Drohne in Echtzeit steuern. Dies verwendet eine <code>solange wahr</code>-Schleife mit Sensor-Blöcken.</p>
+<pre>
+  Start
+  ├── abheben
+  ├── solange wahr
+  │   ├── wenn Taste "Pfeil Oben" gedr&uuml;ckt
+  │   │   └── gehen 0.5
+  │   ├── wenn Taste "Pfeil Unten" gedr&uuml;ckt
+  │   │   └── gehen -0.5
+  │   ├── wenn Taste "Pfeil Links" gedr&uuml;ckt
+  │   │   └── Winkel &auml;ndern -5
+  │   ├── wenn Taste "Pfeil Rechts" gedr&uuml;ckt
+  │   │   └── Winkel &auml;ndern 5
+  │   └── warten 0.1
+  └── landen
+  End</pre>
+
+<div class="tip">
+  <strong>Tipp:</strong> Klicken Sie bei tastaturgesteuerten Programmen zuerst auf die 3D-Ansicht, um den Tastaturfokus sicherzustellen, und verwenden Sie dann die Pfeiltasten zur Steuerung der Drohne.
+</div>
+
+<h3>5. H&ouml;henbewusster Flug</h3>
+<p>Auf H&ouml;he steigen, vorw&auml;rts fliegen und Sensoren verwenden.</p>
+<pre>
+  Start
+  ├── abheben
+  ├── H&ouml;he setzen 8
+  ├── Geschwindigkeit 3
+  ├── gehen 15
+  ├── Winkel &auml;ndern 90
+  ├── Rauch wahr
+  ├── gehen 10
+  ├── Rauch falsch
+  └── landen
+  End</pre>
+
+<p>Was passiert: Die Drohne steigt auf 8 m, bewegt sich schnell mit Geschwindigkeit 3 vorw&auml;rts, dreht sich, hinterl&auml;sst 10 m lang eine Rauchspur und landet dann.</p>
+
+<h3>6. Automatisierte Patrouille mit Schleifen</h3>
+<p>Ein rechteckiges Gebiet kontinuierlich patrouillieren (bis zum Stopp).</p>
+<pre>
+  Start
+  ├── abheben
+  ├── H&ouml;he setzen 4
+  ├── Geschwindigkeit 2
+  ├── solange wahr
+  │   ├── gehen 8
+  │   ├── Winkel &auml;ndern 90
+  │   ├── gehen 4
+  │   ├── Winkel &auml;ndern 90
+  │   └── warten 0.5
+  └── landen
+  End</pre>
+
+<p>Was passiert: Die Drohne fliegt ein rechteckiges Patrouillenmuster in 4 m H&ouml;he, bis Sie auf Stopp klicken.</p>
+
+<hr>
+
+<h2 id="tips">Tipps &amp; Fehlerbehebung</h2>
+
+<h3>Bewährte Methoden</h3>
+<ul>
+  <li><strong>Mit Start beginnen:</strong> Beginnen Sie Ihr Programm immer mit einem <code>Start</code>-Block, um den Ausf&uuml;hrungseinstiegspunkt klar zu definieren.</li>
+  <li><strong>Zuerst abheben:</strong> Bewegungsbefehle (<code>gehen</code>, <code>gleiten</code>, <code>Winkel setzen</code> usw.) funktionieren nur, w&auml;hrend die Drohne in der Luft ist. F&uuml;gen Sie immer <code>abheben</code> vor Bewegungen ein.</li>
+  <li><strong>Geländebewusstsein:</strong> Die Drohne passt sich automatisch an die Geländehöhe an. Bei der Landung sinkt sie auf die Bodenhöhe an ihrer aktuellen Position, die in hügeligen Szenarien variieren kann.</li>
+  <li><strong>Geschwindigkeitssteuerung:</strong> Der <code>Geschwindigkeit</code>-Block beeinflusst, wie schnell sich die Drohne mit <code>gehen</code> bewegt. Der Geschwindigkeitsbereich ist 0–10; die Standardeinstellung ist 1,0.</li>
+  <li><strong>Rauch als Debugging-Werkzeug:</strong> Aktivieren Sie Rauch, um den Flugpfad der Drohne sichtbar zu machen.</li>
+</ul>
+
+<h3>Bekannte Verhaltensweisen</h3>
+<ul>
+  <li><strong>Drohnen-R&uuml;cksetzung:</strong> Wenn Sie ein Programm ausf&uuml;hren, wird die Drohne automatisch auf ihre Ausgangsposition (Kartenmitte) zur&uuml;ckgesetzt, bevor die Ausf&uuml;hrung beginnt.</li>
+  <li><strong>Kollisionserkennung:</strong> Die Drohne fliegt nicht durch den Boden oder Geländebjekte. Die H&ouml;he wird automatisch begrenzt, um über dem Gelände zu bleiben.</li>
+  <li><strong>Autosave:</strong> Funktioniert in allen modernen Browsern. Das L&ouml;schen des lokalen Speichers Ihres Browsers entfernt gespeicherte Programme und Einstellungen.</li>
+  <li><strong>Kein Internet erforderlich:</strong> Nach dem ersten Laden der Seite l&auml;uft Drone Commander vollst&auml;ndig in Ihrem Browser. Alle Bibliotheken werden lokal geladen.</li>
+</ul>
+
+<h3>Wenn etwas nicht funktioniert</h3>
+<ul>
+  <li><strong>Drohne bewegt sich nicht:</strong> Stellen Sie sicher, dass die Drohne abgehoben hat. Der Flugstatus sollte "Im Flug" anzeigen.</li>
+  <li><strong>Ausf&uuml;hren-Schaltfläche bleibt deaktiviert:</strong> Klicken Sie auf Stopp, dann erneut auf Stopp, um zurückzusetzen. Die Ausf&uuml;hren-Schaltfläche wird wieder aktiviert.</li>
+  <li><strong>3D-Ansicht ist leer:</strong> Überprüfen Sie, ob Ihr Browser WebGL unterst&uuml;tzt. Versuchen Sie einen anderen Browser (Chrome, Firefox, Edge empfohlen).</li>
+  <li><strong>Kein Ton:</strong> Das Drohnenger&auml;usch erfordert eine Benutzerinteraktion (Klick), um zu starten – dies liegt an der Browser-Autoplay-Richtlinie. Klicken Sie auf die Ausf&uuml;hren-Schaltfläche; wenn der Ton immer noch nicht abgespielt wird, überprüfen Sie die Toneinstellungen Ihres Browsers f&uuml;r den Tab.</li>
+  <li><strong>Langsame Leistung:</strong> Wechseln Sie in der Auswahl zum Grafikprofil <strong>Leistung</strong>.</li>
+</ul>
+
+<hr>
+
+<h2>Tastaturk&uuml;rzel</h2>
+
+<table class="block-table shortcut-table">
+  <tr>
+    <th>Taste</th>
+    <th>Aktion</th>
+  </tr>
+  <tr>
+    <td>Pfeil Oben / Unten / Links / Rechts</td>
+    <td>Mit Tastatursensor-Blöcken in Ihrem Programm verwendbar (keine integrierten Tastenk&uuml;rzel).</td>
+  </tr>
+  <tr>
+    <td>Leertaste, Eingabetaste, A–Z</td>
+    <td>Ebenfalls als Tastatursensor-Eingaben f&uuml;r Ihre Programme verfügbar.</td>
+  </tr>
+  <tr>
+    <td>Mausrad</td>
+    <td>Kamera in der 3D-Ansicht hinein-/herauszoomen.</td>
+  </tr>
+  <tr>
+    <td>Rechtsklick + ziehen</td>
+    <td>Kamera um die Drohne orbiten.</td>
+  </tr>
+  <tr>
+    <td>Mittelklick</td>
+    <td>Kamera hinter der Drohne einrasten (90°-Drehung).</td>
+  </tr>
+  <tr>
+    <td>Linksklick + ziehen</td>
+    <td>In die Verfolgungskamera wechseln (folgt der Drohne eng).</td>
+  </tr>
+</table>
+
+<hr>
+
+<h2>Technische Details</h2>
+<ul>
+  <li><strong>Engine:</strong> Three.js (3D-Rendering), Blockly (visuelle Programmierung)</li>
+  <li><strong>Format:</strong> Einzelne <code>index.html</code>-Datei mit eingebettetem JavaScript</li>
+  <li><strong>Speicher:</strong> Lokaler Browserspeicher f&uuml;r Autosave, Einstellungen und Sprachauswahl</li>
+  <li><strong>Modelle:</strong> STL (Drohne, Propeller, Kamera), OBJ/MTL (Szenenobjekte)</li>
+  <li><strong>Sound:</strong> Web Audio API mit <code>drone.mp3</code>, das w&auml;hrend des Flugs in einer Schleife abgespielt wird</li>
+  <li><strong>Drohnenphysik:</strong> Befehlswarteschlange mit gleichm&auml;&szlig;iger Interpolation (keine echte Physik-Engine; Bewegungen werden animiert)</li>
+</ul>
+
+<footer>
+  Drone Commander — MIT-Lizenz. Erstellt von <a href="https://github.com/vroby65">vroby65</a>.
+  <br>
+  <a href="https://github.com/vroby65/DroneCommander">GitHub-Repository</a>
+</footer>
+
+</body>
+</html>
