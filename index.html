@@ -543,7 +543,17 @@
         };
       }
 
-            
+      // Override math_random_int to use inline calculation instead of a helper function.
+      // The global `function` → `async function` replacement in the run handler breaks
+      // Blockly's built-in helper (it becomes async but calls to it aren't awaited).
+      Blockly.JavaScript.forBlock['math_random_int'] = (block, generator) => {
+        var from = generator.valueToCode(block, 'FROM', Blockly.JavaScript.ORDER_NONE) || '0';
+        var to = generator.valueToCode(block, 'TO', Blockly.JavaScript.ORDER_NONE) || '0';
+        var code = 'Math.floor(Math.random() * (' + to + ' - ' + from + ' + 1) + ' + from + ')';
+        return [code, Blockly.JavaScript.ORDER_FUNCTION_CALL];
+      };
+
+
       // --- Global variables ---
       let workspace, scene, camera, renderer, drone;
       let isResizing = false;
