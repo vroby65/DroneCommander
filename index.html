@@ -1767,6 +1767,7 @@ function loadScenario(file) {
 
         if (!smokeLine) {
           smokeLine = new THREE.Line(smokeBufferGeo, smokeLineMat);
+          smokeLine.frustumCulled = false;
           smokeLine.userData.type = 'keep';
           smokeLine.userData.noCollision = true;
           smokeLine.userData.noShadow = true;
@@ -1884,6 +1885,14 @@ function loadScenario(file) {
           camera.position.copy(drone.mesh.position).add(offset);
           camera.lookAt(drone.mesh.position);
           updateDroneGuides();
+
+          // Keep directional light and its shadow camera centred on the drone
+          if (directionalLight) {
+            directionalLight.position.set(drone.mesh.position.x, drone.mesh.position.y + 100, drone.mesh.position.z);
+            directionalLight.target.position.copy(drone.mesh.position);
+            directionalLight.target.updateMatrixWorld();
+          }
+
           if (drone.smoke){
             if (drone.flying && drone.mesh) {
               const pos = drone.mesh.position.clone();
