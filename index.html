@@ -74,10 +74,31 @@
       }
       #menu {        
         margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        flex-wrap: wrap;
       }
       #menu img {
         margin-top: -23px;
         margin-bottom: -23px;
+      }
+      #scenarioControls {
+        display: flex;
+        gap: 5px;
+        width: 100%;
+      }
+      #scenarioControls select {
+        flex: 1;
+        min-width: 0;
+      }
+      #viewerToolbar {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        min-height: 36px;
+        padding-right: 6px;
+        box-sizing: border-box;
       }
       button{
         margin-right:5px;
@@ -140,9 +161,16 @@
           <button id="newBtn">New</button>
           <button id="loadBtn">Load</button>
           <button id="saveBtn">Save</button>
-          <select id="scenarioSelect">
-            <option value="">Scenari</option>
-          </select>
+          <div id="scenarioControls">
+            <select id="scenarioSelect">
+              <option value="">Scenario</option>
+            </select>
+            <select id="graphicsSelect" title="Grafica">
+              <option value="performance">Prestazioni</option>
+              <option value="balanced">Bilanciato</option>
+              <option value="quality">Qualità</option>
+            </select>
+          </div>
 
           <input type="file" id="fileInput" style="display:none">
         </div>
@@ -150,7 +178,7 @@
       </div>
       <div id="divider"></div>
       <div id="rightPanel">
-        <div>  
+        <div id="viewerToolbar">
           <button id="toggleWebglBtn" >🗖</button>  
           <button id="runBtn" ><font color='green'>▶</font></button>
           <button id="stopBtn" disabled ><font color='red'>■</font></button>
@@ -518,11 +546,46 @@
       };
       const sleep = ms => new Promise(resolve => setTimeout(resolve, getDuration(ms)));
       const waitSeconds = seconds => sleep(Number(seconds) * 1000);
+      const graphicsProfiles = {
+        performance: {
+          pixelRatio: 0.75,
+          shadows: false,
+          shadowMapSize: 512,
+          anisotropy: 1,
+          smokeMax: 60,
+          smokeInterval: 160,
+          guides: true
+        },
+        balanced: {
+          pixelRatio: 1,
+          shadows: true,
+          shadowMapSize: 2048,
+          anisotropy: 4,
+          smokeMax: 140,
+          smokeInterval: 90,
+          guides: true
+        },
+        quality: {
+          pixelRatio: 1.5,
+          shadows: true,
+          shadowMapSize: 4096,
+          anisotropy: 8,
+          smokeMax: 240,
+          smokeInterval: 45,
+          guides: true
+        }
+      };
+      let graphicsProfileName = localStorage.getItem('graphicsProfile') || 'balanced';
+      let activeGraphicsProfile = graphicsProfiles[graphicsProfileName] || graphicsProfiles.balanced;
       const collisionPadding = 1.4;
       const collisionRayStartHeight = 10000;
       const collisionRaycaster = new THREE.Raycaster();
       let collisionMeshes = [];
       let groundMeshes = [];
+      let directionalLight;
+      let droneGroundMarker;
+      let droneAltitudeLine;
+      let lastSmokeTime = 0;
       const container = document.getElementById("container");
       const leftPanel = document.getElementById("leftPanel");
       const divider = document.getElementById("divider");
@@ -621,6 +684,64 @@
       const getGroundHeightAt = (x, z) => getHeightAt(groundMeshes, x, z);
 
       const getSafeAltitudeAt = (x, z) => getSurfaceHeightAt(x, z) + collisionPadding;
+
+      const getProfilePixelRatio = () => Math.min(window.devicePixelRatio || 1, activeGraphicsProfile.pixelRatio);
+
+      const getProfileAnisotropy = () => {
+        if (!renderer || !renderer.capabilities || !renderer.capabilities.getMaxAnisotropy) {
+          return activeGraphicsProfile.anisotropy;
+        }
+        return Math.min(activeGraphicsProfile.anisotropy, renderer.capabilities.getMaxAnisotropy());
+      };
+
+      const applyTextureQuality = texture => {
+        if (!texture || !texture.image) return;
+        texture.anisotropy = getProfileAnisotropy();
+        texture.needsUpdate = true;
+      };
+
+      const applyObjectShadowProfile = object => {
+        if (!object || !object.isMesh || object.userData.noShadow) return;
+        object.castShadow = activeGraphicsProfile.shadows && !object.userData.ground;
+        object.receiveShadow = activeGraphicsProfile.shadows;
+      };
+
+      const refreshSceneGraphicsProfile = () => {
+        if (!scene) return;
+        scene.traverse(object => {
+          applyObjectShadowProfile(object);
+          if (!object.material) return;
+          const materials = Array.isArray(object.material) ? object.material : [object.material];
+          materials.forEach(material => applyTextureQuality(material.map));
+        });
+      };
+
+      const applyGraphicsProfile = profileName => {
+        graphicsProfileName = graphicsProfiles[profileName] ? profileName : 'balanced';
+        activeGraphicsProfile = graphicsProfiles[graphicsProfileName];
+        localStorage.setItem('graphicsProfile', graphicsProfileName);
+
+        if (renderer) {
+          renderer.setPixelRatio(getProfilePixelRatio());
+          renderer.shadowMap.enabled = activeGraphicsProfile.shadows;
+        }
+
+        if (directionalLight) {
+          directionalLight.castShadow = activeGraphicsProfile.shadows;
+          directionalLight.shadow.mapSize.set(activeGraphicsProfile.shadowMapSize, activeGraphicsProfile.shadowMapSize);
+          if (directionalLight.shadow.map) {
+            directionalLight.shadow.map.dispose();
+            directionalLight.shadow.map = null;
+          }
+          directionalLight.shadow.needsUpdate = true;
+        }
+
+        if (droneGroundMarker) droneGroundMarker.visible = activeGraphicsProfile.guides;
+        if (droneAltitudeLine) droneAltitudeLine.visible = activeGraphicsProfile.guides;
+
+        refreshSceneGraphicsProfile();
+        if (renderer) updateWebGLCanvas();
+      };
 
       const enforceTerrainCollision = () => {
         if (!drone || !drone.mesh || !collisionMeshes.length) return;
@@ -938,7 +1059,7 @@ function loadScenario(file) {
         function(texture) {
           texture.wrapS = THREE.RepeatWrapping;
           texture.wrapT = THREE.RepeatWrapping;
-          texture.anisotropy = 16;
+          applyTextureQuality(texture);
 
           const planeSize = 4100;
           const textureSize = 1024;
@@ -994,14 +1115,12 @@ function loadScenario(file) {
 
           // CREA il piano con materiale
           const planeMaterial = new THREE.MeshLambertMaterial({
-            map: texture,
-            bumpMap: texture,
-            bumpScale: 0.6
+            map: texture
           });
 
           const plane = new THREE.Mesh(geometry, planeMaterial);
           plane.rotation.x = -Math.PI / 2;
-          plane.receiveShadow = true;
+          plane.receiveShadow = activeGraphicsProfile.shadows;
           plane.userData.type = 'keep';
           plane.userData.ground = true;
           scene.add(plane);
@@ -1031,8 +1150,8 @@ function loadScenario(file) {
           objLoader.load(obj.model, object => {
             object.traverse(child => {
               if (child.isMesh) {
-                child.castShadow = true;
-                child.receiveShadow = true;
+                child.castShadow = activeGraphicsProfile.shadows;
+                child.receiveShadow = activeGraphicsProfile.shadows;
                 child.userData.type = 'scenario';
                 registerCollisionMesh(child);
               }
@@ -1073,7 +1192,8 @@ function loadScenario(file) {
         camera.position.set(4, 0, 4);
         cameraAngle.x =Math.PI/2;
         renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.shadowMap.enabled = true;
+        renderer.setPixelRatio(getProfilePixelRatio());
+        renderer.shadowMap.enabled = activeGraphicsProfile.shadows;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         webglContainer.appendChild(renderer.domElement);
         const ambientLight = new THREE.AmbientLight(0xffffff, 0.5); // luce soffusa
@@ -1081,21 +1201,21 @@ function loadScenario(file) {
         scene.add(ambientLight);
 
 
-        const light = new THREE.DirectionalLight(0xffffff, 1.0);
-        light.position.set(0, 100, 0);
-        light.castShadow = true;
-        light.userData.type = 'keep';
-        scene.add(light);
-        light.shadow.mapSize.set(8192, 8192);
-        light.shadow.camera.near = 0.5;
-        light.shadow.camera.far = 500;
-        light.shadow.camera.left = -55;
-        light.shadow.camera.right = 55;
-        light.shadow.camera.top = 55;
-        light.shadow.camera.bottom = -55;
+        directionalLight = new THREE.DirectionalLight(0xffffff, 1.0);
+        directionalLight.position.set(0, 100, 0);
+        directionalLight.castShadow = activeGraphicsProfile.shadows;
+        directionalLight.userData.type = 'keep';
+        scene.add(directionalLight);
+        directionalLight.shadow.mapSize.set(activeGraphicsProfile.shadowMapSize, activeGraphicsProfile.shadowMapSize);
+        directionalLight.shadow.camera.near = 0.5;
+        directionalLight.shadow.camera.far = 500;
+        directionalLight.shadow.camera.left = -55;
+        directionalLight.shadow.camera.right = 55;
+        directionalLight.shadow.camera.top = 55;
+        directionalLight.shadow.camera.bottom = -55;
 
         //sky sphere
-        const geometry = new THREE.SphereGeometry(2000, 64, 64); // molto grande
+        const geometry = new THREE.SphereGeometry(2000, 32, 16); // molto grande
         //geometry.scale(1, 1, 1); // inverti le normali
         const sky_texture = new THREE.TextureLoader().load('textures/sky_campo_di_volo.png');
         const material = new THREE.MeshBasicMaterial({ 
@@ -1104,6 +1224,7 @@ function loadScenario(file) {
         });
         const skySphere = new THREE.Mesh(geometry, material);
         skySphere.userData.noCollision = true;
+        skySphere.userData.noShadow = true;
         skySphere.userData.type = 'keep';
         scene.add(skySphere);
         
@@ -1114,7 +1235,7 @@ function loadScenario(file) {
           function(texture) {
             texture.wrapS = THREE.RepeatWrapping; 
             texture.wrapT = THREE.RepeatWrapping; 
-            texture.anisotropy = 16; 
+            applyTextureQuality(texture);
 
             const planeSize = 4100; 
             const textureSize = 256; 
@@ -1122,18 +1243,15 @@ function loadScenario(file) {
             texture.repeat.set(planeSize / textureSize, planeSize / textureSize);
 
             const planeMaterial = new THREE.MeshLambertMaterial({
-              map: texture,
-              bumpMap: texture,
-              bumpScale: 0.3
+              map: texture
             });
                 
             const plane = new THREE.Mesh(new THREE.PlaneGeometry(planeSize, planeSize), planeMaterial);
             plane.rotation.x = -Math.PI / 2;
-            plane.receiveShadow = true;
+            plane.receiveShadow = activeGraphicsProfile.shadows;
             plane.userData.ground = true;
             registerCollisionMesh(plane);
             registerGroundMesh(plane);
-            registerCollisionMesh(plane);
             //plane.userData.type = 'keep';
             scene.add(plane);
           },
@@ -1151,10 +1269,10 @@ function loadScenario(file) {
               map: texture,
               transparent: true
             });
-            const plane = new THREE.Mesh(new THREE.PlaneGeometry(16, 16, 256, 256), planeMaterial);
+            const plane = new THREE.Mesh(new THREE.PlaneGeometry(16, 16, 1, 1), planeMaterial);
             plane.rotation.x = -Math.PI / 2;
             plane.position.y=0.3;
-            plane.receiveShadow = true;
+            plane.receiveShadow = activeGraphicsProfile.shadows;
             registerCollisionMesh(plane);
             scene.add(plane);
             plane.userData.type = 'keep';
@@ -1190,6 +1308,7 @@ function loadScenario(file) {
               propeller.position.set(pos.x, 200.0, pos.z); 
               propeller.geometry.translate(0, -8, 0);
               propeller.userData.noCollision = true;
+              propeller.castShadow = activeGraphicsProfile.shadows;
 
               drone.mesh.add(propeller);
               drone.propellers.push(propeller);
@@ -1205,13 +1324,14 @@ function loadScenario(file) {
           const object = new THREE.Mesh(geometry, material);
           object.scale.set(0.005, 0.005, 0.005);
           object.position.set(0, 1.4, 0);
-          object.castShadow = true;
+          object.castShadow = activeGraphicsProfile.shadows;
           scene.add(object);
 
           drone.mesh = object;
           drone.mesh.userData.noCollision = true;
           drone.mesh.userData.type = 'keep';
           addPropellers();
+          createDroneGuides();
         });
 
         drone = {
@@ -1495,27 +1615,88 @@ function loadScenario(file) {
         setupStatusInputs();
       }
       
-let smokeTrail = [];
+      let smokeTrail = [];
+      const smokeGeometry = new THREE.SphereGeometry(0.15, 8, 8);
+      const smokeMaterial = new THREE.MeshBasicMaterial({
+        color: 0x888888,
+        transparent: true,
+        opacity: 0.5,
+        depthWrite: false,
+      });
 
-function createSmokeParticle(position) {
-  const geometry = new THREE.SphereGeometry(0.15, 8, 8);
-  const material = new THREE.MeshBasicMaterial({
-    color: 0x888888,
-    transparent: true,
-    opacity: 0.5,
-    depthWrite: false,
-  });
-  const sphere = new THREE.Mesh(geometry, material);
-  sphere.position.copy(position);
-  scene.add(sphere);
-  smokeTrail.push(sphere);
+      function trimSmokeTrail() {
+        while (smokeTrail.length > activeGraphicsProfile.smokeMax) {
+          const old = smokeTrail.shift();
+          scene.remove(old);
+        }
+      }
 
-  // Limit number of smoke particles for performance
-  //if (smokeTrail.length > 200) {
-  //  const old = smokeTrail.shift();
-  //  scene.remove(old);
-  //}
-}
+      function createSmokeParticle(position) {
+        const now = performance.now();
+        if (now - lastSmokeTime < activeGraphicsProfile.smokeInterval) return;
+        lastSmokeTime = now;
+
+        const sphere = new THREE.Mesh(smokeGeometry, smokeMaterial);
+        sphere.position.copy(position);
+        sphere.userData.noCollision = true;
+        sphere.userData.noShadow = true;
+        scene.add(sphere);
+        smokeTrail.push(sphere);
+        trimSmokeTrail();
+      }
+
+      function createDroneGuides() {
+        if (droneGroundMarker || droneAltitudeLine) return;
+
+        const markerGeometry = new THREE.RingGeometry(1.8, 2.05, 48);
+        const markerMaterial = new THREE.MeshBasicMaterial({
+          color: 0x00aaff,
+          transparent: true,
+          opacity: 0.65,
+          side: THREE.DoubleSide,
+          depthWrite: false
+        });
+        droneGroundMarker = new THREE.Mesh(markerGeometry, markerMaterial);
+        droneGroundMarker.rotation.x = -Math.PI / 2;
+        droneGroundMarker.userData.type = 'keep';
+        droneGroundMarker.userData.noCollision = true;
+        droneGroundMarker.userData.noShadow = true;
+        scene.add(droneGroundMarker);
+
+        const lineGeometry = new THREE.Geometry();
+        lineGeometry.vertices.push(new THREE.Vector3(), new THREE.Vector3());
+        const lineMaterial = new THREE.LineBasicMaterial({
+          color: 0x0066ff,
+          transparent: true,
+          opacity: 0.75,
+          depthWrite: false
+        });
+        droneAltitudeLine = new THREE.Line(lineGeometry, lineMaterial);
+        droneAltitudeLine.userData.type = 'keep';
+        droneAltitudeLine.userData.noCollision = true;
+        droneAltitudeLine.userData.noShadow = true;
+        scene.add(droneAltitudeLine);
+        updateDroneGuides();
+      }
+
+      function updateDroneGuides() {
+        if (!droneGroundMarker || !droneAltitudeLine || !drone || !drone.mesh) return;
+        const visible = activeGraphicsProfile.guides;
+        droneGroundMarker.visible = visible;
+        droneAltitudeLine.visible = visible;
+        if (!visible) return;
+
+        const x = drone.mesh.position.x;
+        const z = drone.mesh.position.z;
+        const groundY = getGroundHeightAt(x, z) + 0.05;
+        const droneY = drone.mesh.position.y;
+
+        droneGroundMarker.position.set(x, groundY, z);
+        const vertices = droneAltitudeLine.geometry.vertices;
+        vertices[0].set(x, groundY, z);
+        vertices[1].set(x, droneY, z);
+        droneAltitudeLine.geometry.verticesNeedUpdate = true;
+      }
                           
       
       // --- Updating the status panel ---
@@ -1558,6 +1739,7 @@ function createSmokeParticle(position) {
           offset.setFromSpherical(spherical);
           camera.position.copy(drone.mesh.position).add(offset);
           camera.lookAt(drone.mesh.position);
+          updateDroneGuides();
           if (drone.smoke){
             if (drone.flying && drone.mesh) {
               const pos = drone.mesh.position.clone();
@@ -1590,6 +1772,8 @@ function createSmokeParticle(position) {
 
         smokeTrail.forEach(p => scene.remove(p));
         smokeTrail = [];
+        lastSmokeTime = 0;
+        updateDroneGuides();
       };
 
       // --- Menu button handlers ---
@@ -1743,13 +1927,17 @@ function createSmokeParticle(position) {
           resetScene();
         }, 500);
       });
+
+      document.getElementById('graphicsSelect').addEventListener('change', function() {
+        applyGraphicsProfile(this.value);
+      }, { passive: true });
               
       function loadScenarioList() {
         fetch('backgrounds/list.json')
           .then(response => response.json())
           .then(data => {
             const scenarioSelect = document.getElementById('scenarioSelect');
-            scenarioSelect.innerHTML = '<option value="">Default</option>';
+            scenarioSelect.innerHTML = '<option value="">Scenario</option>';
             data.forEach(scenario => {
               const option = document.createElement('option');
               option.value = scenario.file;
@@ -1764,6 +1952,8 @@ function createSmokeParticle(position) {
           defineCustomBlocks();
           initBlockly();
           initThree();
+          document.getElementById('graphicsSelect').value = graphicsProfileName;
+          applyGraphicsProfile(graphicsProfileName);
           updateWebGLCanvas();
           animate();
           var savedLang = localStorage.getItem('selectedLanguage') || 'en';
