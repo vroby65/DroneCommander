@@ -1,66 +1,79 @@
-# Drone Commander 
-![image](https://github.com/user-attachments/assets/19607562-ec93-4e99-b6c9-6a8b50a2f5bb)
+# Drone Commander
 
-## Overview
+![Drone Commander overview](screenshots/overview.png)
 
-**Drone Commander** is an interactive web-based application designed for simulating drone flight control using Blockly and Three.js. Users can visually program the drone's movements using drag-and-drop blocks, and then see the drone execute those commands in a 3D simulation.
+Drone Commander is an interactive browser app for programming and simulating drone flight with Blockly and Three.js. Build a flight plan with blocks, run it, and watch the drone move inside a 3D scene.
+
+## Online Demo
+
+Open the hosted version:
+
+https://vroby65.github.io/DroneCommander/
 
 ## Features
 
-- **Visual Programming**: Utilize Blockly to create flight programs without writing code.
-- **3D Simulation**: Watch your programmed drone fly in a realistic 3D environment powered by Three.js.
-- **Intuitive UI**: A split interface with a Blockly editor, 3D viewer, and status panel.
-- **Custom Blocks**: Includes blocks for takeoff, landing, altitude control, direction setting, and movement.
-- **Keyboard Sensors**: Detect key presses to interact with the drone in real-time.
-- **Simulation Controls**: Play, pause, and reset the simulation easily.
-- **File Management**: Save and load Blockly programs.
-- **Resizable UI**: Adjust the layout by resizing panels or switching to fullscreen mode.
+- **Visual programming** with Blockly blocks for logic, loops, math, variables, functions, flow, sensors, and drone commands.
+- **3D simulation** powered by Three.js, with terrain-aware altitude and landing behavior.
+- **Drone commands** for take off, land, set/change altitude, set/change angle, walk, slide, wait, smoke trail, and speed control.
+- **Sensor blocks** for keyboard input, X/Z position, altitude, direction, and speed.
+- **Scenarios**: flight field, urban track, metropolis, and tropical island.
+- **Graphics profiles**: Performance, Balanced, and Quality.
+- **Program management** with New, Save, Load, autosave to browser local storage, and remembered file names.
+- **Multilingual UI and help** in English, Italian, French, German, Spanish, and Portuguese.
+- **Resizable layout** with a Blockly editor, 3D viewer, toolbar, and status panel.
 
-## online user
+## Screenshots
 
-visit: https://vroby65.github.io/DroneCommander/
+### Take Off And Land
 
-## Installation
+![Take off and land program](screenshots/takeoff-land.png)
 
-To run Drone Commander locally, simply clone the repository and open `index.html` in a web browser.
+### Speed And Smoke Trail
+
+![Speed and smoke trail program](screenshots/smoke-flight.png)
+
+## Run Locally
+
+Clone the repository and serve it with any static HTTP server:
 
 ```sh
- git clone https://github.com/your-username/drone-commander.git
- cd drone-commander
- open index.html
+git clone https://github.com/vroby65/DroneCommander.git
+cd DroneCommander
+python3 -m http.server 8000
 ```
+
+Then open:
+
+```text
+http://127.0.0.1:8000/
+```
+
+Using an HTTP server is recommended because the app loads scenarios, textures, models, sounds, and help pages from local files.
 
 ## Usage
 
-1. Drag and drop blocks in the Blockly editor to create a flight program.
-2. Click the **Run** button to execute the program and see the drone fly.
-3. Adjust position values using the status panel inputs.
-4. Click **Stop** to halt execution and reset the simulation.
-5. Save and Load programs for future use.
+1. Drag a **Start** block into the Blockly workspace.
+2. Attach drone blocks such as **take off**, **set altitude**, **walk**, **change angle**, and **land**.
+3. Click the green play button to run the program in the 3D viewer.
+4. Use the status panel to inspect or adjust X, Z, altitude, direction, and flight status.
+5. Use **Save** and **Load** to export or import Blockly XML programs.
+6. Switch scenario or graphics profile from the toolbar when needed.
 
-## Example Programs
+## Project Structure
 
-### Takeoff and Land
-![immagine](https://github.com/user-attachments/assets/1daa4553-e4e5-4649-817e-86136fc48bee)
-
-
-### Move Forward and Turn
-![immagine](https://github.com/user-attachments/assets/16e1369c-1941-4176-9a8c-0812cb470725)
-
-### keyboard drive
-![immagine](https://github.com/user-attachments/assets/df4a548e-9acf-4fa0-881b-b888c8874cb1)
-
+- `index.html` - Main app, Blockly blocks, generators, UI, and Three.js simulation.
+- `doc/` - Help pages in supported languages.
+- `backgrounds/` - Scenario definitions.
+- `models/` - Drone and scene models.
+- `textures/` - Terrain, sky, and object textures.
+- `sounds/` - Drone audio assets.
+- `libs/` - Vendored Blockly and Three.js libraries.
+- `screenshots/` - README screenshots generated from the current app.
 
 ## License
 
-This project is licensed under the MIT License. See the `LICENSE` file for details.
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
 
 ## Contributing
 
-Contributions are welcome! Feel free to submit issues or pull requests to improve the project.
-
-## Contact
-
-For any inquiries, feel free to reach out via GitHub Issues.
-
-
+Contributions are welcome. Open an issue or pull request to suggest fixes, new blocks, new scenarios, translations, or documentation improvements.
