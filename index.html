@@ -101,6 +101,15 @@
         padding-right: 6px;
         box-sizing: border-box;
       }
+      #fileNameLabel {
+        max-width: 180px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 13px;
+        font-weight: bold;
+        margin: 0 8px 0 2px;
+      }
       button{
         margin-right:5px;
       }
@@ -181,6 +190,7 @@
       <div id="rightPanel">
         <div id="viewerToolbar">
           <button id="toggleWebglBtn" >🗖</button>  
+          <span id="fileNameLabel" title="noname">noname</span>
           <button id="runBtn" ><font color='green'>▶</font></button>
           <button id="stopBtn" disabled ><font color='red'>■</font></button>
         </div>
@@ -835,6 +845,80 @@
         resizeTimeout = setTimeout(updateWebGLCanvas, 100);
       }, { passive: true });
 
+      const autosaveWorkspaceKey = 'droneCommander.autosaveXml';
+      const autosaveFileNameKey = 'droneCommander.fileName';
+      const defaultProgramName = 'noname';
+      const defaultWorkspaceXmlText = `<xml xmlns="https://developers.google.com/blockly/xml">
+        <block type="start_block" x="10" y="10"></block>
+      </xml>`;
+      let programName = localStorage.getItem(autosaveFileNameKey) || defaultProgramName;
+      let autosaveTimeout;
+      let isRestoringWorkspace = false;
+
+      const stripFileExtension = name => {
+        const cleanName = String(name || '').split(/[\\/]/).pop().trim();
+        return cleanName.replace(/\.[^/.]+$/, '').trim();
+      };
+
+      const normalizeProgramName = name => stripFileExtension(name) || defaultProgramName;
+
+      const updateFileNameLabel = () => {
+        const label = document.getElementById('fileNameLabel');
+        if (!label) return;
+        label.innerText = programName;
+        label.title = programName;
+      };
+
+      const setProgramName = name => {
+        programName = normalizeProgramName(name);
+        localStorage.setItem(autosaveFileNameKey, programName);
+        updateFileNameLabel();
+      };
+
+      const getWorkspaceXmlText = () => {
+        if (!workspace) return '';
+        const xml = Blockly.Xml.workspaceToDom(workspace);
+        return Blockly.Xml.domToPrettyText(xml);
+      };
+
+      const parseWorkspaceXml = xmlText => new DOMParser().parseFromString(xmlText, 'text/xml').documentElement;
+
+      const saveProgramToLocalStorage = () => {
+        if (!workspace) return;
+        localStorage.setItem(autosaveWorkspaceKey, getWorkspaceXmlText());
+        localStorage.setItem(autosaveFileNameKey, programName);
+      };
+
+      const scheduleAutosave = event => {
+        if (!workspace || isRestoringWorkspace || (event && event.isUiEvent)) return;
+        clearTimeout(autosaveTimeout);
+        autosaveTimeout = setTimeout(saveProgramToLocalStorage, 250);
+      };
+
+      const loadWorkspaceFromXmlText = (xmlText, shouldAutosave = true) => {
+        if (!workspace || !xmlText) return false;
+        isRestoringWorkspace = true;
+        try {
+          workspace.clear();
+          Blockly.Xml.domToWorkspace(parseWorkspaceXml(xmlText), workspace);
+        } catch (error) {
+          console.error('Errore caricando il programma Blockly:', error);
+          return false;
+        } finally {
+          isRestoringWorkspace = false;
+        }
+        if (shouldAutosave) saveProgramToLocalStorage();
+        return true;
+      };
+
+      const restoreProgramFromLocalStorage = () => {
+        setProgramName(localStorage.getItem(autosaveFileNameKey) || defaultProgramName);
+        const savedXml = localStorage.getItem(autosaveWorkspaceKey);
+        if (savedXml) loadWorkspaceFromXmlText(savedXml, false);
+      };
+
+      window.addEventListener('beforeunload', saveProgramToLocalStorage);
+
       // --- Initialization of Blockly ---
       const initBlockly = () => {
         const toolbox = {
@@ -940,6 +1024,7 @@
            renderer: 'zelos',
            theme: Blockly.Themes.makecode 
         });
+        workspace.addChangeListener(scheduleAutosave);
       };
 
       // --- Keypress handler ---
@@ -1813,23 +1898,19 @@ function loadScenario(file) {
 
       // --- Menu button handlers ---
       document.getElementById('newBtn').addEventListener('click', () => {
-        workspace.clear();
-        setTimeout(() => {
-          const xml_text = `<xml xmlns="https://developers.google.com/blockly/xml">
-            <block type="start_block" x="10" y="10"></block>
-          </xml>`;
-          const parser = new DOMParser();
-          const xml = parser.parseFromString(xml_text, 'text/xml');
-          Blockly.Xml.domToWorkspace(xml.documentElement, workspace);
-        }, 10);
+        setProgramName(defaultProgramName);
+        loadWorkspaceFromXmlText(defaultWorkspaceXmlText);
       });
       document.getElementById('saveBtn').addEventListener('click', () => {
-        const xml = Blockly.Xml.workspaceToDom(workspace);
-        const xml_text = Blockly.Xml.domToPrettyText(xml);
+        const requestedName = prompt('Nome file:', programName);
+        if (requestedName === null) return;
+        setProgramName(requestedName);
+        const xml_text = getWorkspaceXmlText();
+        saveProgramToLocalStorage();
         const blob = new Blob([xml_text], { type: 'text/xml' });
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
-        a.download = 'drone_code.xml';
+        a.download = programName + '.xml';
         a.click();
       }, { passive: true });
       document.getElementById('loadBtn').addEventListener('click', () => {
@@ -1841,10 +1922,11 @@ function loadScenario(file) {
         const reader = new FileReader();
         reader.onload = e => {
           const xml_text = e.target.result;
-          const parser = new DOMParser();
-          const xml = parser.parseFromString(xml_text, 'text/xml');
-          workspace.clear();
-          Blockly.Xml.domToWorkspace(xml.documentElement, workspace);
+          if (loadWorkspaceFromXmlText(xml_text, false)) {
+            setProgramName(file.name);
+            saveProgramToLocalStorage();
+          }
+          event.target.value = '';
         };
         reader.readAsText(file);
       }, { passive: true });
@@ -1934,6 +2016,7 @@ function loadScenario(file) {
       }
 
       function updateLanguage(selectedLang) {
+        const currentXmlText = workspace ? getWorkspaceXmlText() : null;
         document.getElementById('newBtn').innerText = Blockly.Msg.BKY_NEW || "New";
         document.getElementById('loadBtn').innerText = Blockly.Msg.BKY_LOAD || "Load";
         document.getElementById('saveBtn').innerText = Blockly.Msg.BKY_SAVE || "Save";
@@ -1945,6 +2028,7 @@ function loadScenario(file) {
         }
         document.getElementById('blocklyDiv').innerText='';
         initBlockly();
+        if (currentXmlText) loadWorkspaceFromXmlText(currentXmlText, false);
       }
 
       document.getElementById('languageSelect').addEventListener('change', function() {
@@ -1986,6 +2070,7 @@ function loadScenario(file) {
       window.onload = function() {
           defineCustomBlocks();
           initBlockly();
+          restoreProgramFromLocalStorage();
           initThree();
           document.getElementById('graphicsSelect').value = graphicsProfileName;
           applyGraphicsProfile(graphicsProfileName);
