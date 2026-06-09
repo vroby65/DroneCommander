@@ -218,8 +218,8 @@
     <script>
       // --- Definition of custom blocks ---
       const customBlockTypes = [
-        "take_off", "land", "set_altitude", "change_altitude", "set_angle",
-        "change_angle", "slide", "walk", "go_to", "move_by", "return_to_base",
+        "take_off", "land", "return_to_base", "set_altitude", "change_altitude", "set_angle",
+        "change_angle", "slide", "walk", "go_to", "move_by",
         "wait", "smoke", "set_speed", "sensor_keypressed", "sensor_x",
         "sensor_z", "sensor_altitude", "sensor_direction", "sensor_speed",
         "start_block", "end_block"
@@ -628,6 +628,7 @@
       let isResizing = false;
       let run=false
       let delay=100;
+      const defaultFlightAltitude = 10.0;
       const getNumber = (value, fallback = 0) => {
         const number = Number(value);
         return Number.isFinite(number) ? number : fallback;
@@ -1082,6 +1083,7 @@
               [
                 { "kind": "block", "type": "take_off" },
                 { "kind": "block", "type": "land" },
+                { "kind": "block", "type": "return_to_base" },
                 { "kind": "block", "type": "set_altitude",
                   "inputs": { "ALTITUDE": { "shadow": { "type": "math_number", "fields": { "NUM": "10" } } } } },
                 { "kind": "block", "type": "change_altitude",
@@ -1106,7 +1108,6 @@
                     "Y": { "shadow": { "type": "math_number", "fields": { "NUM": "0" } } },
                     "Z": { "shadow": { "type": "math_number", "fields": { "NUM": "0" } } }
                   } },
-                { "kind": "block", "type": "return_to_base" },
                 { "kind": "block", "type": "wait",
                   "inputs": { "DIST": { "shadow": { "type": "math_number", "fields": { "NUM": "1" } } } } },
                 { "kind": "block", "type": "smoke" },
@@ -1227,16 +1228,15 @@
       }
 
 function loadScenario(file) {
+  if (!file) {
+    return;
+  }
+
   // Rimuove tutti gli oggetti tranne quelli marcati come 'keep'
         scene.children = scene.children.filter(child => child.userData.type === 'keep');
   collisionMeshes = [];
   groundMeshes = [];
   collectCollisionMeshes(scene);
-
-  if (!file) {
-    location.reload();
-    return;
-  }
   
   fetch('backgrounds/' + file)
     .then(response => {
@@ -1559,7 +1559,7 @@ function loadScenario(file) {
                   val => { 
                     this.mesh.position.y = val; this.altitude = val; updateStatus(); 
                   },
-                  startAltitude, 10.0, 500,
+                  startAltitude, defaultFlightAltitude, 500,
                   () => { 
                     updateStatus(); next(); if (callback) callback(); 
                   }
@@ -1824,7 +1824,7 @@ function loadScenario(file) {
             );
           },
           returnToBase(callback) {
-            return this.moveToInternal(0, this.altitude, 10, callback);
+            return this.moveToInternal(0, defaultFlightAltitude, 0, callback);
           },
           moveToInternal(targetX, targetY, targetZ, callback) {
             targetX = getNumber(targetX, this.mesh.position.x);
@@ -2248,8 +2248,11 @@ function loadScenario(file) {
       }
 
       function updateLanguage(selectedLang) {
+        const currentLang = localStorage.getItem('selectedLanguage') || 'en';
         localStorage.setItem('selectedLanguage', selectedLang);
-        location.reload();
+        if (selectedLang !== currentLang) {
+          location.reload();
+        }
       }
 
       document.getElementById('languageSelect').addEventListener('change', function() {
@@ -2307,7 +2310,9 @@ if (scenarioSelect.options[0]) scenarioSelect.options[0].text = Blockly.Msg.BKY_
           var savedLang = localStorage.getItem('selectedLanguage') || 'en';
           document.getElementById('languageSelect').value = savedLang;
           loadLanguageFile(savedLang, function() {
-            updateLanguage(savedLang);
+            localStorage.setItem('selectedLanguage', savedLang);
+            defineCustomBlocks();
+            initBlockly();
             restoreProgramFromLocalStorage();
             initThree();
             document.getElementById('graphicsSelect').value = graphicsProfileName;
