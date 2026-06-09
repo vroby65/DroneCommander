@@ -2247,9 +2247,43 @@ function loadScenario(file) {
         document.head.appendChild(script);
       }
 
+      function applyLocalizedStrings() {
+        // Toolbar & menu
+        document.getElementById('newBtn').innerText = Blockly.Msg.BKY_NEW || "New";
+        document.getElementById('loadBtn').innerText = Blockly.Msg.BKY_LOAD || "Load";
+        document.getElementById('saveBtn').innerText = Blockly.Msg.BKY_SAVE || "Save";
+        document.getElementById('helpBtn').innerText = Blockly.Msg.BKY_HELP || "Help";
+
+        // Scenario dropdown placeholder
+        const scenarioOpt = document.querySelector('#scenarioSelect option:first-child');
+        if (scenarioOpt) scenarioOpt.text = Blockly.Msg.BKY_SCENARIO || 'Scenario';
+
+        // Graphics select
+        document.getElementById('graphicsSelect').title = Blockly.Msg.BKY_GRAPHICS || 'Graphics';
+        const gfxOpts = document.querySelectorAll('#graphicsSelect option');
+        if (gfxOpts[0]) gfxOpts[0].text = Blockly.Msg.BKY_GRAPHICS_PERFORMANCE || 'Performance';
+        if (gfxOpts[1]) gfxOpts[1].text = Blockly.Msg.BKY_GRAPHICS_BALANCED || 'Balanced';
+        if (gfxOpts[2]) gfxOpts[2].text = Blockly.Msg.BKY_GRAPHICS_QUALITY || 'Quality';
+
+        // Status panel
+        document.getElementById('labelX').innerText = Blockly.Msg["BKY_STATUS_X"] || 'X:';
+        document.getElementById('labelZ').innerText = Blockly.Msg["BKY_STATUS_Z"] || 'Z:';
+        document.getElementById('labelAlt').innerText = Blockly.Msg["BKY_STATUS_ALTITUDE"] || 'Altitude:';
+        document.getElementById('labelDir').innerText = Blockly.Msg["BKY_STATUS_DIRECTION"] || 'Direction:';
+        document.getElementById('labelStatus').innerText = Blockly.Msg["BKY_STATUS_FLIGHT"] || 'Status:';
+
+        // Flight status
+        if (typeof drone !== 'undefined' && drone) {
+          document.getElementById('flightStatus').innerText = drone.flying
+            ? (Blockly.Msg["BKY_FLIGHT_IN_FLIGHT"] || "In Flight")
+            : (Blockly.Msg["BKY_FLIGHT_ON_GROUND"] || "On Ground");
+        }
+      }
+
       function updateLanguage(selectedLang) {
         const currentLang = localStorage.getItem('selectedLanguage') || 'en';
         localStorage.setItem('selectedLanguage', selectedLang);
+        applyLocalizedStrings();
         if (selectedLang !== currentLang) {
           location.reload();
         }
@@ -2311,6 +2345,7 @@ if (scenarioSelect.options[0]) scenarioSelect.options[0].text = Blockly.Msg.BKY_
           document.getElementById('languageSelect').value = savedLang;
           loadLanguageFile(savedLang, function() {
             localStorage.setItem('selectedLanguage', savedLang);
+            applyLocalizedStrings();
             defineCustomBlocks();
             initBlockly();
             restoreProgramFromLocalStorage();
