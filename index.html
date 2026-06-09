@@ -1824,7 +1824,7 @@ function loadScenario(file) {
             );
           },
           returnToBase(callback) {
-            return this.moveToInternal(0, this.altitude, 0, callback);
+            return this.moveToInternal(0, this.altitude, 10, callback);
           },
           moveToInternal(targetX, targetY, targetZ, callback) {
             targetX = getNumber(targetX, this.mesh.position.x);
@@ -2248,50 +2248,8 @@ function loadScenario(file) {
       }
 
       function updateLanguage(selectedLang) {
-        const currentXmlText = workspace ? getWorkspaceXmlText() : null;
-
-        // Toolbar & menu
-        document.getElementById('newBtn').innerText = Blockly.Msg.BKY_NEW || "New";
-        document.getElementById('loadBtn').innerText = Blockly.Msg.BKY_LOAD || "Load";
-        document.getElementById('saveBtn').innerText = Blockly.Msg.BKY_SAVE || "Save";
-        document.getElementById('helpBtn').innerText = Blockly.Msg.BKY_HELP || "Help";
-
-        // Scenario dropdown placeholder
-        const scenarioOpt = document.querySelector('#scenarioSelect option:first-child');
-        if (scenarioOpt) scenarioOpt.text = Blockly.Msg.BKY_SCENARIO || 'Scenario';
-
-        // Graphics select
-        document.getElementById('graphicsSelect').title = Blockly.Msg.BKY_GRAPHICS || 'Graphics';
-        const gfxOpts = document.querySelectorAll('#graphicsSelect option');
-        if (gfxOpts[0]) gfxOpts[0].text = Blockly.Msg.BKY_GRAPHICS_PERFORMANCE || 'Performance';
-        if (gfxOpts[1]) gfxOpts[1].text = Blockly.Msg.BKY_GRAPHICS_BALANCED || 'Balanced';
-        if (gfxOpts[2]) gfxOpts[2].text = Blockly.Msg.BKY_GRAPHICS_QUALITY || 'Quality';
-
-        // Status panel
-        document.getElementById('labelX').innerText = Blockly.Msg["BKY_STATUS_X"] || 'X:';
-        document.getElementById('labelZ').innerText = Blockly.Msg["BKY_STATUS_Z"] || 'Z:';
-        document.getElementById('labelAlt').innerText = Blockly.Msg["BKY_STATUS_ALTITUDE"] || 'Altitude:';
-        document.getElementById('labelDir').innerText = Blockly.Msg["BKY_STATUS_DIRECTION"] || 'Direction:';
-        document.getElementById('labelStatus').innerText = Blockly.Msg["BKY_STATUS_FLIGHT"] || 'Status:';
-
-        // Update flight status if drone exists
-        if (typeof drone !== 'undefined' && drone) {
-          document.getElementById('flightStatus').innerText = drone.flying
-            ? (Blockly.Msg["BKY_FLIGHT_IN_FLIGHT"] || "In Flight")
-            : (Blockly.Msg["BKY_FLIGHT_ON_GROUND"] || "On Ground");
-        }
-
-        // Re-init Blockly workspace
-        Blockly.setLocale(selectedLang);
         localStorage.setItem('selectedLanguage', selectedLang);
-        if(workspace){
-          workspace.dispose();
-          workspace = null;
-        }
-        document.getElementById('blocklyDiv').innerText='';
-        defineCustomBlocks();
-        initBlockly();
-        if (currentXmlText) loadWorkspaceFromXmlText(currentXmlText, false);
+        location.reload();
       }
 
       document.getElementById('languageSelect').addEventListener('change', function() {
