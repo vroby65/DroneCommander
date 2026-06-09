@@ -276,6 +276,21 @@
     <td>Yes</td>
   </tr>
   <tr>
+    <td><code>go to x [X] y [Y] z [Z]</code></td>
+    <td>Move the drone to an absolute position, where Y is altitude. The drone turns and leans toward the destination and uses the current speed setting.</td>
+    <td>Yes</td>
+  </tr>
+  <tr>
+    <td><code>move by x [X] y [Y] z [Z]</code></td>
+    <td>Move the drone by a relative offset from its current position. The drone turns and leans toward the destination and uses the current speed setting.</td>
+    <td>Yes</td>
+  </tr>
+  <tr>
+    <td><code>return to base</code></td>
+    <td>Move the drone back to the base at X=0, Z=0 while keeping its current altitude. The drone turns and leans toward the base and uses the current speed setting.</td>
+    <td>Yes</td>
+  </tr>
+  <tr>
     <td><code>wait [N]</code></td>
     <td>Pause the program for the specified number of seconds before continuing to the next block.</td>
     <td>No</td>
@@ -287,13 +302,13 @@
   </tr>
   <tr>
     <td><code>speed [N]</code></td>
-    <td>Set the drone's movement speed (0–10). Higher values make the drone move faster during <code>walk</code> commands. The default speed is 1.0.</td>
+    <td>Set the drone's movement speed (0–10). Higher values make the drone move faster during <code>walk</code>, <code>go to</code>, <code>move by</code>, and <code>return to base</code> commands. The default speed is 1.0.</td>
     <td>No</td>
   </tr>
 </table>
 
 <div class="note">
-  <strong>Note:</strong> The drone can only <code>walk</code> (move forward) and <code>slide</code> (move sideways) while flying. <code>set_angle</code> and <code>change_angle</code> change the drone's facing direction without moving it.
+  <strong>Note:</strong> The drone can only <code>walk</code>, <code>slide</code>, <code>go to</code>, <code>move by</code>, and <code>return to base</code> while flying. <code>set_angle</code> and <code>change_angle</code> change the drone's facing direction without moving it.
 </div>
 
 <hr>
@@ -667,9 +682,9 @@
 <h3>Best practices</h3>
 <ul>
   <li><strong>Start with Start:</strong> Always begin your program with a <code>Start</code> block to define the execution entry point clearly.</li>
-  <li><strong>Take off first:</strong> Movement commands (walk, slide, set_angle, etc.) only work while the drone is in flight. Always include <code>take off</code> before movement.</li>
+  <li><strong>Take off first:</strong> Movement commands (<code>walk</code>, <code>slide</code>, <code>go to</code>, <code>move by</code>, <code>return to base</code>, etc.) only work while the drone is in flight. Always include <code>take off</code> before movement.</li>
   <li><strong>Terrain awareness:</strong> The drone automatically adapts to terrain height. When landing, it descends to the ground level at its current position, which may vary in hilly scenarios.</li>
-  <li><strong>Speed control:</strong> The <code>speed</code> block affects how fast the drone moves with <code>walk</code>. Speed range is 0–10; default is 1.0.</li>
+  <li><strong>Speed control:</strong> The <code>speed</code> block affects how fast the drone moves with <code>walk</code>, <code>go to</code>, <code>move by</code>, and <code>return to base</code>. Speed range is 0–10; default is 1.0.</li>
   <li><strong>Smoke as a debugging tool:</strong> Enable smoke to visualize the drone's flight path.</li>
 </ul>
 

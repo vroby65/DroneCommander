@@ -276,6 +276,21 @@
     <td>Oui</td>
   </tr>
   <tr>
+    <td><code>aller à x [X] y [Y] z [Z]</code></td>
+    <td>Déplace le drone vers une position absolue, où Y est l'altitude. Le drone tourne et s'incline vers la destination avec la vitesse actuelle.</td>
+    <td>Oui</td>
+  </tr>
+  <tr>
+    <td><code>déplacer de x [X] y [Y] z [Z]</code></td>
+    <td>Déplace le drone d'un décalage relatif depuis sa position actuelle. Le drone tourne et s'incline vers la destination avec la vitesse actuelle.</td>
+    <td>Oui</td>
+  </tr>
+  <tr>
+    <td><code>retour à la base</code></td>
+    <td>Ramène le drone à la base en X=0, Z=0 tout en conservant l'altitude actuelle. Le drone tourne et s'incline vers la base avec la vitesse actuelle.</td>
+    <td>Oui</td>
+  </tr>
+  <tr>
     <td><code>attendre [N]</code></td>
     <td>Met le programme en pause pendant le nombre de secondes spécifié avant de passer au bloc suivant.</td>
     <td>Non</td>
@@ -287,13 +302,13 @@
   </tr>
   <tr>
     <td><code>vitesse [N]</code></td>
-    <td>Définit la vitesse de déplacement du drone (0–10). Des valeurs plus élevées font bouger le drone plus rapidement lors des commandes <code>avancer</code>. La vitesse par défaut est 1.0.</td>
+    <td>Définit la vitesse de déplacement du drone (0–10). Des valeurs plus élevées font bouger le drone plus rapidement lors des commandes <code>avancer</code>, <code>aller à</code>, <code>déplacer de</code> et <code>retour à la base</code>. La vitesse par défaut est 1.0.</td>
     <td>Non</td>
   </tr>
 </table>
 
 <div class="note">
-  <strong>Note :</strong> Le drone ne peut que <code>avancer</code> (se déplacer vers l'avant) et <code>glisser</code> (se déplacer latéralement) pendant le vol. <code>régler l'angle</code> et <code>modifier l'angle</code> changent la direction du drone sans le déplacer.
+  <strong>Note :</strong> Le drone ne peut exécuter <code>avancer</code>, <code>glisser</code>, <code>aller à</code>, <code>déplacer de</code> et <code>retour à la base</code> que pendant le vol. <code>régler l'angle</code> et <code>modifier l'angle</code> changent la direction du drone sans le déplacer.
 </div>
 
 <hr>
@@ -667,9 +682,9 @@
 <h3>Bonnes pratiques</h3>
 <ul>
   <li><strong>Commencez par Start :</strong> Commencez toujours votre programme par un bloc <code>Start</code> pour définir clairement le point d'entrée de l'exécution.</li>
-  <li><strong>Décollez d'abord :</strong> Les commandes de déplacement (avancer, glisser, régler l'angle, etc.) ne fonctionnent que lorsque le drone est en vol. Incluez toujours <code>décoller</code> avant tout déplacement.</li>
+  <li><strong>Décollez d'abord :</strong> Les commandes de déplacement (<code>avancer</code>, <code>glisser</code>, <code>aller à</code>, <code>déplacer de</code>, <code>retour à la base</code>, etc.) ne fonctionnent que lorsque le drone est en vol. Incluez toujours <code>décoller</code> avant tout déplacement.</li>
   <li><strong>Conscience du terrain :</strong> Le drone s'adapte automatiquement à la hauteur du terrain. Lors de l'atterrissage, il descend au niveau du sol à sa position actuelle, qui peut varier dans les scénarios vallonnés.</li>
-  <li><strong>Contrôle de la vitesse :</strong> Le bloc <code>vitesse</code> affecte la rapidité avec laquelle le drone se déplace avec <code>avancer</code>. La plage de vitesse est de 0 à 10 ; la valeur par défaut est 1.0.</li>
+  <li><strong>Contrôle de la vitesse :</strong> Le bloc <code>vitesse</code> affecte la rapidité avec laquelle le drone se déplace avec <code>avancer</code>, <code>aller à</code>, <code>déplacer de</code> et <code>retour à la base</code>. La plage de vitesse est de 0 à 10 ; la valeur par défaut est 1.0.</li>
   <li><strong>La fumée comme outil de débogage :</strong> Activez la fumée pour visualiser la trajectoire de vol du drone.</li>
 </ul>
 

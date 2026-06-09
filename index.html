@@ -217,7 +217,18 @@
     
     <script>
       // --- Definition of custom blocks ---
+      const customBlockTypes = [
+        "take_off", "land", "set_altitude", "change_altitude", "set_angle",
+        "change_angle", "slide", "walk", "go_to", "move_by", "return_to_base",
+        "wait", "smoke", "set_speed", "sensor_keypressed", "sensor_x",
+        "sensor_z", "sensor_altitude", "sensor_direction", "sensor_speed",
+        "start_block", "end_block"
+      ];
+
       function defineCustomBlocks(){
+        customBlockTypes.forEach(type => {
+          if (Blockly.Blocks[type]) delete Blockly.Blocks[type];
+        });
         Blockly.defineBlocksWithJsonArray([
           {
             "type": "take_off",
@@ -306,6 +317,42 @@
             "nextStatement": null,
             "colour": 20,
             "tooltip": Blockly.Msg["BKY_DRONE_WALK_TOOLTIP"]
+          },
+          {
+            "type": "go_to",
+            "message0": Blockly.Msg["BKY_DRONE_GO_TO"],
+            "args0": [
+              { "type": "input_value", "name": "X", "check": "Number" },
+              { "type": "input_value", "name": "Y", "check": "Number" },
+              { "type": "input_value", "name": "Z", "check": "Number" }
+            ],
+            "inputsInline": true,
+            "previousStatement": null,
+            "nextStatement": null,
+            "colour": 20,
+            "tooltip": Blockly.Msg["BKY_DRONE_GO_TO_TOOLTIP"]
+          },
+          {
+            "type": "move_by",
+            "message0": Blockly.Msg["BKY_DRONE_MOVE_BY"],
+            "args0": [
+              { "type": "input_value", "name": "X", "check": "Number" },
+              { "type": "input_value", "name": "Y", "check": "Number" },
+              { "type": "input_value", "name": "Z", "check": "Number" }
+            ],
+            "inputsInline": true,
+            "previousStatement": null,
+            "nextStatement": null,
+            "colour": 20,
+            "tooltip": Blockly.Msg["BKY_DRONE_MOVE_BY_TOOLTIP"]
+          },
+          {
+            "type": "return_to_base",
+            "message0": Blockly.Msg["BKY_DRONE_RETURN_TO_BASE"],
+            "previousStatement": null,
+            "nextStatement": null,
+            "colour": 20,
+            "tooltip": Blockly.Msg["BKY_DRONE_RETURN_TO_BASE_TOOLTIP"]
           },
           {
             "type": "wait",
@@ -497,6 +544,19 @@
         var dist = Blockly.JavaScript.valueToCode(block, 'DIST', Blockly.JavaScript.ORDER_ATOMIC) || '0';
         return 'await drone.walk(' + dist + ');\n';
       };
+      Blockly.JavaScript.forBlock['go_to'] = block => {
+        var x = Blockly.JavaScript.valueToCode(block, 'X', Blockly.JavaScript.ORDER_ATOMIC) || '0';
+        var y = Blockly.JavaScript.valueToCode(block, 'Y', Blockly.JavaScript.ORDER_ATOMIC) || '0';
+        var z = Blockly.JavaScript.valueToCode(block, 'Z', Blockly.JavaScript.ORDER_ATOMIC) || '0';
+        return 'await drone.goTo(' + x + ', ' + y + ', ' + z + ');\n';
+      };
+      Blockly.JavaScript.forBlock['move_by'] = block => {
+        var x = Blockly.JavaScript.valueToCode(block, 'X', Blockly.JavaScript.ORDER_ATOMIC) || '0';
+        var y = Blockly.JavaScript.valueToCode(block, 'Y', Blockly.JavaScript.ORDER_ATOMIC) || '0';
+        var z = Blockly.JavaScript.valueToCode(block, 'Z', Blockly.JavaScript.ORDER_ATOMIC) || '0';
+        return 'await drone.moveBy(' + x + ', ' + y + ', ' + z + ');\n';
+      };
+      Blockly.JavaScript.forBlock['return_to_base'] = block => 'await drone.returnToBase();\n';
       Blockly.JavaScript.forBlock['wait'] = block => {
         var dist = Blockly.JavaScript.valueToCode(block, 'DIST', Blockly.JavaScript.ORDER_ATOMIC) || '0';
         return 'await waitSeconds(' + dist + ');\n';
@@ -576,6 +636,8 @@
         const duration = getNumber(value);
         return duration > 0 ? duration : 0;
       };
+      const normalizeDegrees = angle => ((angle % 360) + 360) % 360;
+      const getShortestAngleDelta = (from, to) => ((to - from + 540) % 360) - 180;
       const sleep = ms => new Promise(resolve => setTimeout(resolve, getDuration(ms)));
       const waitSeconds = seconds => sleep(Number(seconds) * 1000);
       const graphicsProfiles = {
@@ -1032,6 +1094,19 @@
                   "inputs": { "SLIDE": { "shadow": { "type": "math_number", "fields": { "NUM": "1" } } } } },
                 { "kind": "block", "type": "walk",
                   "inputs": { "DIST": { "shadow": { "type": "math_number", "fields": { "NUM": "1" } } } } },
+                { "kind": "block", "type": "go_to",
+                  "inputs": {
+                    "X": { "shadow": { "type": "math_number", "fields": { "NUM": "0" } } },
+                    "Y": { "shadow": { "type": "math_number", "fields": { "NUM": "10" } } },
+                    "Z": { "shadow": { "type": "math_number", "fields": { "NUM": "0" } } }
+                  } },
+                { "kind": "block", "type": "move_by",
+                  "inputs": {
+                    "X": { "shadow": { "type": "math_number", "fields": { "NUM": "1" } } },
+                    "Y": { "shadow": { "type": "math_number", "fields": { "NUM": "0" } } },
+                    "Z": { "shadow": { "type": "math_number", "fields": { "NUM": "0" } } }
+                  } },
+                { "kind": "block", "type": "return_to_base" },
                 { "kind": "block", "type": "wait",
                   "inputs": { "DIST": { "shadow": { "type": "math_number", "fields": { "NUM": "1" } } } } },
                 { "kind": "block", "type": "smoke" },
@@ -1730,6 +1805,123 @@ function loadScenario(file) {
               });
             } else if (callback) callback();
             return Promise.resolve();
+          },
+          goTo(x, y, z, callback) {
+            x = getNumber(x);
+            y = getNumber(y, this.altitude);
+            z = getNumber(z);
+            return this.moveToInternal(-z, y, -x, callback);
+          },
+          moveBy(x, y, z, callback) {
+            x = getNumber(x);
+            y = getNumber(y);
+            z = getNumber(z);
+            return this.moveToInternal(
+              this.mesh.position.x - z,
+              this.altitude + y,
+              this.mesh.position.z - x,
+              callback
+            );
+          },
+          returnToBase(callback) {
+            return this.moveToInternal(0, this.altitude, 0, callback);
+          },
+          moveToInternal(targetX, targetY, targetZ, callback) {
+            targetX = getNumber(targetX, this.mesh.position.x);
+            targetY = getNumber(targetY, this.altitude);
+            targetZ = getNumber(targetZ, this.mesh.position.z);
+            if (this.flying) {
+              return addCommand(next => {
+                updateDroneSound(basePlaybackRate + 1.0);
+
+                const startX = this.mesh.position.x;
+                const startY = this.altitude;
+                const startZ = this.mesh.position.z;
+                const safeTargetY = Math.max(targetY, getSafeAltitudeAt(targetX, targetZ));
+                const deltaX = targetX - startX;
+                const deltaY = safeTargetY - startY;
+                const deltaZ = targetZ - startZ;
+                const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ);
+                const horizontalDistance = Math.sqrt(deltaX * deltaX + deltaZ * deltaZ);
+
+                this.speed = Math.min(Math.max(getNumber(this.speed, 1.0), 0.0), 10.0);
+                if (distance === 0 || this.speed === 0) {
+                  updateDroneSound(basePlaybackRate);
+                  next();
+                  if (callback) callback();
+                  return;
+                }
+
+                const startDirection = normalizeDegrees(this.direction);
+                const targetDirection = horizontalDistance > 0
+                  ? normalizeDegrees(THREE.MathUtils.radToDeg(Math.atan2(deltaX, deltaZ)) + 90)
+                  : startDirection;
+                const yawDelta = getShortestAngleDelta(startDirection, targetDirection);
+                const moveDuration = distance * 50 / this.speed;
+                const leanAngle = horizontalDistance > 0 ? 10 : 0;
+
+                const move = () => {
+                  animateProperty(
+                    val => {
+                      this.mesh.rotation.z = THREE.MathUtils.degToRad(leanAngle * val);
+                    },
+                    0, 1, 100,
+                    () => {
+                      animateProperty(
+                        val => {
+                          const currentX = startX + deltaX * val;
+                          const currentZ = startZ + deltaZ * val;
+                          const minAltitude = getSafeAltitudeAt(currentX, currentZ);
+                          const currentY = Math.max(startY + deltaY * val, minAltitude);
+                          this.mesh.position.x = currentX;
+                          this.mesh.position.y = currentY;
+                          this.mesh.position.z = currentZ;
+                          this.altitude = currentY;
+                          updateStatus();
+                        },
+                        0, 1, moveDuration,
+                        () => {
+                          this.mesh.position.x = targetX;
+                          this.mesh.position.y = Math.max(safeTargetY, getSafeAltitudeAt(targetX, targetZ));
+                          this.mesh.position.z = targetZ;
+                          this.altitude = this.mesh.position.y;
+                          animateProperty(
+                            val => {
+                              this.mesh.rotation.z = THREE.MathUtils.degToRad(leanAngle * (1 - val));
+                            },
+                            0, 1, 100,
+                            () => {
+                              this.direction = targetDirection;
+                              this.mesh.rotation.y = THREE.MathUtils.degToRad(this.direction);
+                              this.mesh.rotation.z = 0;
+                              updateDroneSound(basePlaybackRate);
+                              updateStatus();
+                              next();
+                              if (callback) callback();
+                            }
+                          );
+                        }
+                      );
+                    }
+                  );
+                };
+
+                if (horizontalDistance > 0) {
+                  animateProperty(
+                    val => {
+                      this.direction = normalizeDegrees(startDirection + yawDelta * val);
+                      this.mesh.rotation.y = THREE.MathUtils.degToRad(this.direction);
+                      updateStatus();
+                    },
+                    0, 1, 250,
+                    move
+                  );
+                } else {
+                  move();
+                }
+              });
+            } else if (callback) callback();
+            return Promise.resolve();
           }
         }
         setupStatusInputs();
@@ -2039,10 +2231,17 @@ function loadScenario(file) {
       document.addEventListener('mouseup', () => { isResizing = false; }, { passive: true });
         
       // --- Localization ---
+      const loadedLanguageFiles = new Set(['en']);
+
       function loadLanguageFile(lang, callback) {
+        if (loadedLanguageFiles.has(lang)) {
+          if (callback) callback();
+          return;
+        }
         var script = document.createElement('script');
         script.src = 'libs/Msg/' + lang + '.js';
         script.onload = function() {
+          loadedLanguageFiles.add(lang);
           if (callback) callback();
         };
         document.head.appendChild(script);
@@ -2085,11 +2284,12 @@ function loadScenario(file) {
         // Re-init Blockly workspace
         Blockly.setLocale(selectedLang);
         localStorage.setItem('selectedLanguage', selectedLang);
-        defineCustomBlocks();
         if(workspace){
           workspace.dispose();
+          workspace = null;
         }
         document.getElementById('blocklyDiv').innerText='';
+        defineCustomBlocks();
         initBlockly();
         if (currentXmlText) loadWorkspaceFromXmlText(currentXmlText, false);
       }
@@ -2146,20 +2346,18 @@ if (scenarioSelect.options[0]) scenarioSelect.options[0].text = Blockly.Msg.BKY_
       }
 
       window.onload = function() {
-          defineCustomBlocks();
-          initBlockly();
-          restoreProgramFromLocalStorage();
-          initThree();
-          document.getElementById('graphicsSelect').value = graphicsProfileName;
-          applyGraphicsProfile(graphicsProfileName);
-          updateWebGLCanvas();
-          animate();
           var savedLang = localStorage.getItem('selectedLanguage') || 'en';
           document.getElementById('languageSelect').value = savedLang;
           loadLanguageFile(savedLang, function() {
             updateLanguage(savedLang);
+            restoreProgramFromLocalStorage();
+            initThree();
+            document.getElementById('graphicsSelect').value = graphicsProfileName;
+            applyGraphicsProfile(graphicsProfileName);
+            updateWebGLCanvas();
+            animate();
+            loadScenarioList();
           });
-          loadScenarioList();
       };
     </script>
   </body>

@@ -463,6 +463,15 @@ Blockly.Msg["BKY_DRONE_SLIDE_TOOLTIP"] = "Fai scivolare il drone";
 Blockly.Msg["BKY_DRONE_WALK"] = "avanza %1";
 Blockly.Msg["BKY_DRONE_WALK_TOOLTIP"] = "Sposta il drone in avanti";
 
+Blockly.Msg["BKY_DRONE_GO_TO"] = "vai a x %1 y %2 z %3";
+Blockly.Msg["BKY_DRONE_GO_TO_TOOLTIP"] = "Sposta il drone a una posizione assoluta usando la velocità corrente";
+
+Blockly.Msg["BKY_DRONE_MOVE_BY"] = "spostati x %1 y %2 z %3";
+Blockly.Msg["BKY_DRONE_MOVE_BY_TOOLTIP"] = "Sposta il drone di uno scostamento relativo usando la velocità corrente";
+
+Blockly.Msg["BKY_DRONE_RETURN_TO_BASE"] = "torna alla base";
+Blockly.Msg["BKY_DRONE_RETURN_TO_BASE_TOOLTIP"] = "Riporta il drone alla base usando la velocità corrente";
+
 Blockly.Msg["BKY_DRONE_WAIT"] = "aspetta %1";
 Blockly.Msg["BKY_DRONE_WAIT_TOOLTIP"] = "Fai attendere il drone";
 
