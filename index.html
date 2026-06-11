@@ -1372,6 +1372,7 @@ function loadScenario(file) {
           undefined,
           err => console.warn(`❌ OBJ "${obj.model}" non caricato:`, err));
         },
+        undefined,
         err => console.warn(`❌ MTL "${obj.material}" non caricato:`, err));
       });
     })
@@ -1478,6 +1479,13 @@ function loadScenario(file) {
           }
         );
             
+        function createStlMaterial(geometry, fallbackColor) {
+          if (geometry.hasColors) {
+            return new THREE.MeshPhongMaterial({ vertexColors: true, shininess: 30 });
+          }
+          return new THREE.MeshPhongMaterial({ color: fallbackColor, shininess: 30 });
+        }
+
         function addPropellers() {
           if (!drone.mesh) {
             console.error("Il drone non è stato caricato, impossibile aggiungere le eliche!");
@@ -1487,7 +1495,8 @@ function loadScenario(file) {
           const loader = new THREE.STLLoader();
           loader.load('models/elica.stl', (propellerGeometry) => {
             //propellerGeometry.computeVertexNormals();  
-            const propellerMaterial = new THREE.MeshPhongMaterial({ color: 0xFF0000 });
+            propellerGeometry.translate(0, -8, 0);
+            const propellerMaterial = createStlMaterial(propellerGeometry, 0xFF0000);
                   
             const positions = [
               { x:-580, z:-620 },  
@@ -1501,7 +1510,6 @@ function loadScenario(file) {
             positions.forEach((pos, index) => {
               const propeller = new THREE.Mesh(propellerGeometry, propellerMaterial);
               propeller.position.set(pos.x, 200.0, pos.z); 
-              propeller.geometry.translate(0, -8, 0);
               propeller.userData.noCollision = true;
               propeller.castShadow = activeGraphicsProfile.shadows;
 
@@ -1515,7 +1523,7 @@ function loadScenario(file) {
         const loader = new THREE.STLLoader();
         loader.load('models/drone.stl', (geometry) => {
           geometry.computeVertexNormals();  
-          const material = new THREE.MeshPhongMaterial({ color: 0x404040 });
+          const material = createStlMaterial(geometry, 0x404040);
           const object = new THREE.Mesh(geometry, material);
           object.scale.set(0.005, 0.005, 0.005);
           object.position.set(0, 1.4, 0);
