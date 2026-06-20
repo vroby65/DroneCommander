@@ -286,6 +286,16 @@
     <td>Ja</td>
   </tr>
   <tr>
+    <td><code>Kurve abs x [X] y [Y] z [Z] xd [XD] yd [YD] zd [ZD]</code></td>
+    <td>Fliegt eine Kurve durch drei Punkte: die aktuelle Position, den absoluten Zwischenpunkt X/Y/Z und das absolute Ziel XD/YD/ZD. Die aktuelle Geschwindigkeit steuert die Bewegung.</td>
+    <td>Ja</td>
+  </tr>
+  <tr>
+    <td><code>Kurve x [X] y [Y] z [Z] xd [XD] yd [YD] zd [ZD]</code></td>
+    <td>Fliegt eine Kurve durch drei Punkte mit relativen Koordinaten: die aktuelle Position, den Zwischenpunkt mit dem Versatz X/Y/Z von der aktuellen Position und das Ziel mit dem Versatz XD/YD/ZD von diesem Zwischenpunkt. Die aktuelle Geschwindigkeit steuert die Bewegung.</td>
+    <td>Ja</td>
+  </tr>
+  <tr>
     <td><code>zur Basis zurück</code></td>
     <td>Bringt die Drohne zur Basis bei X=0, Z=0 und Höhe 10 zurück. Die Drohne dreht sich und neigt sich mit der aktuellen Geschwindigkeit zur Basis.</td>
     <td>Ja</td>
@@ -302,13 +312,13 @@
   </tr>
   <tr>
     <td><code>Geschwindigkeit [N]</code></td>
-    <td>Setzt die Bewegungsgeschwindigkeit der Drohne (0–10). Höhere Werte lassen die Drohne bei <code>gehen</code>-, <code>gehe zu</code>-, <code>verschieben um</code>- und <code>zur Basis zurück</code>-Befehlen schneller fliegen. Die Standardgeschwindigkeit ist 1,0.</td>
+    <td>Setzt die Bewegungsgeschwindigkeit der Drohne (0–10). Höhere Werte lassen die Drohne bei <code>gehen</code>-, <code>gehe zu</code>-, <code>verschieben um</code>-, <code>Kurve abs</code>-, <code>Kurve</code>- und <code>zur Basis zurück</code>-Befehlen schneller fliegen. Die Standardgeschwindigkeit ist 1,0.</td>
     <td>Nein</td>
   </tr>
 </table>
 
 <div class="note">
-  <strong>Hinweis:</strong> Die Drohne kann <code>gehen</code>, <code>gleiten</code>, <code>gehe zu</code>, <code>verschieben um</code> und <code>zur Basis zurück</code> nur w&auml;hrend des Flugs ausf&uuml;hren. <code>Winkel setzen</code> und <code>Winkel &auml;ndern</code> &auml;ndern die Blickrichtung der Drohne, ohne sie zu bewegen.
+  <strong>Hinweis:</strong> Die Drohne kann <code>gehen</code>, <code>gleiten</code>, <code>gehe zu</code>, <code>verschieben um</code>, <code>Kurve abs</code>, <code>Kurve</code> und <code>zur Basis zurück</code> nur w&auml;hrend des Flugs ausf&uuml;hren. <code>Winkel setzen</code> und <code>Winkel &auml;ndern</code> &auml;ndern die Blickrichtung der Drohne, ohne sie zu bewegen.
 </div>
 
 <hr>
@@ -682,9 +692,9 @@
 <h3>Bewährte Methoden</h3>
 <ul>
   <li><strong>Mit Start beginnen:</strong> Beginnen Sie Ihr Programm immer mit einem <code>Start</code>-Block, um den Ausf&uuml;hrungseinstiegspunkt klar zu definieren.</li>
-  <li><strong>Zuerst abheben:</strong> Bewegungsbefehle (<code>gehen</code>, <code>gleiten</code>, <code>gehe zu</code>, <code>verschieben um</code>, <code>zur Basis zurück</code> usw.) funktionieren nur, w&auml;hrend die Drohne in der Luft ist. F&uuml;gen Sie immer <code>abheben</code> vor Bewegungen ein.</li>
+  <li><strong>Zuerst abheben:</strong> Bewegungsbefehle (<code>gehen</code>, <code>gleiten</code>, <code>gehe zu</code>, <code>verschieben um</code>, <code>Kurve abs</code>, <code>Kurve</code>, <code>zur Basis zurück</code> usw.) funktionieren nur, w&auml;hrend die Drohne in der Luft ist. F&uuml;gen Sie immer <code>abheben</code> vor Bewegungen ein.</li>
   <li><strong>Geländebewusstsein:</strong> Die Drohne passt sich automatisch an die Geländehöhe an. Bei der Landung sinkt sie auf die Bodenhöhe an ihrer aktuellen Position, die in hügeligen Szenarien variieren kann.</li>
-  <li><strong>Geschwindigkeitssteuerung:</strong> Der <code>Geschwindigkeit</code>-Block beeinflusst, wie schnell sich die Drohne mit <code>gehen</code>, <code>gehe zu</code>, <code>verschieben um</code> und <code>zur Basis zurück</code> bewegt. Der Geschwindigkeitsbereich ist 0–10; die Standardeinstellung ist 1,0.</li>
+  <li><strong>Geschwindigkeitssteuerung:</strong> Der <code>Geschwindigkeit</code>-Block beeinflusst, wie schnell sich die Drohne mit <code>gehen</code>, <code>gehe zu</code>, <code>verschieben um</code>, <code>Kurve abs</code>, <code>Kurve</code> und <code>zur Basis zurück</code> bewegt. Der Geschwindigkeitsbereich ist 0–10; die Standardeinstellung ist 1,0.</li>
   <li><strong>Rauch als Debugging-Werkzeug:</strong> Aktivieren Sie Rauch, um den Flugpfad der Drohne sichtbar zu machen.</li>
 </ul>
 

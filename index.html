@@ -219,7 +219,7 @@
       // --- Definition of custom blocks ---
       const customBlockTypes = [
         "take_off", "land", "return_to_base", "set_altitude", "change_altitude", "set_angle",
-        "change_angle", "slide", "walk", "go_to", "move_by",
+        "change_angle", "slide", "walk", "go_to", "move_by", "curve_abs", "curve",
         "wait", "smoke", "set_speed", "sensor_keypressed", "sensor_x",
         "sensor_z", "sensor_altitude", "sensor_direction", "sensor_speed",
         "start_block", "end_block"
@@ -345,6 +345,40 @@
             "nextStatement": null,
             "colour": 20,
             "tooltip": Blockly.Msg["BKY_DRONE_MOVE_BY_TOOLTIP"]
+          },
+          {
+            "type": "curve_abs",
+            "message0": Blockly.Msg["BKY_DRONE_CURVE_ABS"],
+            "args0": [
+              { "type": "input_value", "name": "X", "check": "Number" },
+              { "type": "input_value", "name": "Y", "check": "Number" },
+              { "type": "input_value", "name": "Z", "check": "Number" },
+              { "type": "input_value", "name": "XD", "check": "Number" },
+              { "type": "input_value", "name": "YD", "check": "Number" },
+              { "type": "input_value", "name": "ZD", "check": "Number" }
+            ],
+            "inputsInline": true,
+            "previousStatement": null,
+            "nextStatement": null,
+            "colour": 20,
+            "tooltip": Blockly.Msg["BKY_DRONE_CURVE_ABS_TOOLTIP"]
+          },
+          {
+            "type": "curve",
+            "message0": Blockly.Msg["BKY_DRONE_CURVE"],
+            "args0": [
+              { "type": "input_value", "name": "X", "check": "Number" },
+              { "type": "input_value", "name": "Y", "check": "Number" },
+              { "type": "input_value", "name": "Z", "check": "Number" },
+              { "type": "input_value", "name": "XD", "check": "Number" },
+              { "type": "input_value", "name": "YD", "check": "Number" },
+              { "type": "input_value", "name": "ZD", "check": "Number" }
+            ],
+            "inputsInline": true,
+            "previousStatement": null,
+            "nextStatement": null,
+            "colour": 20,
+            "tooltip": Blockly.Msg["BKY_DRONE_CURVE_TOOLTIP"]
           },
           {
             "type": "return_to_base",
@@ -555,6 +589,24 @@
         var y = Blockly.JavaScript.valueToCode(block, 'Y', Blockly.JavaScript.ORDER_ATOMIC) || '0';
         var z = Blockly.JavaScript.valueToCode(block, 'Z', Blockly.JavaScript.ORDER_ATOMIC) || '0';
         return 'await drone.moveBy(' + x + ', ' + y + ', ' + z + ');\n';
+      };
+      Blockly.JavaScript.forBlock['curve_abs'] = block => {
+        var x = Blockly.JavaScript.valueToCode(block, 'X', Blockly.JavaScript.ORDER_ATOMIC) || '0';
+        var y = Blockly.JavaScript.valueToCode(block, 'Y', Blockly.JavaScript.ORDER_ATOMIC) || '0';
+        var z = Blockly.JavaScript.valueToCode(block, 'Z', Blockly.JavaScript.ORDER_ATOMIC) || '0';
+        var xd = Blockly.JavaScript.valueToCode(block, 'XD', Blockly.JavaScript.ORDER_ATOMIC) || '0';
+        var yd = Blockly.JavaScript.valueToCode(block, 'YD', Blockly.JavaScript.ORDER_ATOMIC) || '0';
+        var zd = Blockly.JavaScript.valueToCode(block, 'ZD', Blockly.JavaScript.ORDER_ATOMIC) || '0';
+        return 'await drone.curveAbs(' + x + ', ' + y + ', ' + z + ', ' + xd + ', ' + yd + ', ' + zd + ');\n';
+      };
+      Blockly.JavaScript.forBlock['curve'] = block => {
+        var x = Blockly.JavaScript.valueToCode(block, 'X', Blockly.JavaScript.ORDER_ATOMIC) || '0';
+        var y = Blockly.JavaScript.valueToCode(block, 'Y', Blockly.JavaScript.ORDER_ATOMIC) || '0';
+        var z = Blockly.JavaScript.valueToCode(block, 'Z', Blockly.JavaScript.ORDER_ATOMIC) || '0';
+        var xd = Blockly.JavaScript.valueToCode(block, 'XD', Blockly.JavaScript.ORDER_ATOMIC) || '0';
+        var yd = Blockly.JavaScript.valueToCode(block, 'YD', Blockly.JavaScript.ORDER_ATOMIC) || '0';
+        var zd = Blockly.JavaScript.valueToCode(block, 'ZD', Blockly.JavaScript.ORDER_ATOMIC) || '0';
+        return 'await drone.curve(' + x + ', ' + y + ', ' + z + ', ' + xd + ', ' + yd + ', ' + zd + ');\n';
       };
       Blockly.JavaScript.forBlock['return_to_base'] = block => 'await drone.returnToBase();\n';
       Blockly.JavaScript.forBlock['wait'] = block => {
@@ -1107,6 +1159,24 @@
                     "X": { "shadow": { "type": "math_number", "fields": { "NUM": "1" } } },
                     "Y": { "shadow": { "type": "math_number", "fields": { "NUM": "0" } } },
                     "Z": { "shadow": { "type": "math_number", "fields": { "NUM": "0" } } }
+                  } },
+                { "kind": "block", "type": "curve_abs",
+                  "inputs": {
+                    "X": { "shadow": { "type": "math_number", "fields": { "NUM": "5" } } },
+                    "Y": { "shadow": { "type": "math_number", "fields": { "NUM": "12" } } },
+                    "Z": { "shadow": { "type": "math_number", "fields": { "NUM": "5" } } },
+                    "XD": { "shadow": { "type": "math_number", "fields": { "NUM": "10" } } },
+                    "YD": { "shadow": { "type": "math_number", "fields": { "NUM": "10" } } },
+                    "ZD": { "shadow": { "type": "math_number", "fields": { "NUM": "0" } } }
+                  } },
+                { "kind": "block", "type": "curve",
+                  "inputs": {
+                    "X": { "shadow": { "type": "math_number", "fields": { "NUM": "5" } } },
+                    "Y": { "shadow": { "type": "math_number", "fields": { "NUM": "2" } } },
+                    "Z": { "shadow": { "type": "math_number", "fields": { "NUM": "5" } } },
+                    "XD": { "shadow": { "type": "math_number", "fields": { "NUM": "10" } } },
+                    "YD": { "shadow": { "type": "math_number", "fields": { "NUM": "0" } } },
+                    "ZD": { "shadow": { "type": "math_number", "fields": { "NUM": "0" } } }
                   } },
                 { "kind": "block", "type": "wait",
                   "inputs": { "DIST": { "shadow": { "type": "math_number", "fields": { "NUM": "1" } } } } },
@@ -1831,8 +1901,146 @@ function loadScenario(file) {
               callback
             );
           },
+          curveAbs(x, y, z, xd, yd, zd, callback) {
+            x = getNumber(x);
+            y = getNumber(y, this.altitude);
+            z = getNumber(z);
+            xd = getNumber(xd);
+            yd = getNumber(yd, this.altitude);
+            zd = getNumber(zd);
+            return this.curveToInternal(-z, y, -x, -zd, yd, -xd, callback);
+          },
+          curve(x, y, z, xd, yd, zd, callback) {
+            x = getNumber(x);
+            y = getNumber(y);
+            z = getNumber(z);
+            xd = getNumber(xd);
+            yd = getNumber(yd);
+            zd = getNumber(zd);
+            return this.curveToInternal(-z, y, -x, -zd, yd, -xd, callback, true);
+          },
           returnToBase(callback) {
             return this.moveToInternal(0, defaultFlightAltitude, 0, callback);
+          },
+          curveToInternal(viaX, viaY, viaZ, targetX, targetY, targetZ, callback, useRelativeOffsets = false) {
+            viaX = getNumber(viaX, this.mesh.position.x);
+            viaY = getNumber(viaY, this.altitude);
+            viaZ = getNumber(viaZ, this.mesh.position.z);
+            targetX = getNumber(targetX, this.mesh.position.x);
+            targetY = getNumber(targetY, this.altitude);
+            targetZ = getNumber(targetZ, this.mesh.position.z);
+            if (this.flying) {
+              return addCommand(next => {
+                updateDroneSound(basePlaybackRate + 1.0);
+
+                const startPoint = new THREE.Vector3(this.mesh.position.x, this.altitude, this.mesh.position.z);
+                const resolvedViaX = useRelativeOffsets ? startPoint.x + viaX : viaX;
+                const resolvedViaY = useRelativeOffsets ? startPoint.y + viaY : viaY;
+                const resolvedViaZ = useRelativeOffsets ? startPoint.z + viaZ : viaZ;
+                const resolvedTargetX = useRelativeOffsets ? resolvedViaX + targetX : targetX;
+                const resolvedTargetY = useRelativeOffsets ? resolvedViaY + targetY : targetY;
+                const resolvedTargetZ = useRelativeOffsets ? resolvedViaZ + targetZ : targetZ;
+                const viaPoint = new THREE.Vector3(
+                  resolvedViaX,
+                  Math.max(resolvedViaY, getSafeAltitudeAt(resolvedViaX, resolvedViaZ)),
+                  resolvedViaZ
+                );
+                const targetPoint = new THREE.Vector3(
+                  resolvedTargetX,
+                  Math.max(resolvedTargetY, getSafeAltitudeAt(resolvedTargetX, resolvedTargetZ)),
+                  resolvedTargetZ
+                );
+                const curvePath = new THREE.CatmullRomCurve3([startPoint, viaPoint, targetPoint], false, 'centripetal');
+                const distance = curvePath.getLength();
+                const horizontalDistance = Math.max(
+                  Math.hypot(viaPoint.x - startPoint.x, viaPoint.z - startPoint.z),
+                  Math.hypot(targetPoint.x - viaPoint.x, targetPoint.z - viaPoint.z),
+                  Math.hypot(targetPoint.x - startPoint.x, targetPoint.z - startPoint.z)
+                );
+
+                this.speed = Math.min(Math.max(getNumber(this.speed, 1.0), 0.0), 10.0);
+                if (distance === 0 || this.speed === 0) {
+                  updateDroneSound(basePlaybackRate);
+                  next();
+                  if (callback) callback();
+                  return;
+                }
+
+                const getDirectionAt = (progress, fallback) => {
+                  const tangent = curvePath.getTangent(Math.min(Math.max(progress, 0), 1));
+                  if (Math.hypot(tangent.x, tangent.z) === 0) return fallback;
+                  return normalizeDegrees(THREE.MathUtils.radToDeg(Math.atan2(tangent.x, tangent.z)) + 90);
+                };
+
+                const startDirection = normalizeDegrees(this.direction);
+                const initialDirection = getDirectionAt(0, startDirection);
+                const yawDelta = getShortestAngleDelta(startDirection, initialDirection);
+                const moveDuration = distance * 50 / this.speed;
+                const leanAngle = horizontalDistance > 0 ? 10 : 0;
+
+                const move = () => {
+                  animateProperty(
+                    val => {
+                      this.mesh.rotation.z = THREE.MathUtils.degToRad(leanAngle * val);
+                    },
+                    0, 1, 100,
+                    () => {
+                      animateProperty(
+                        val => {
+                          const currentPoint = curvePath.getPoint(val);
+                          const minAltitude = getSafeAltitudeAt(currentPoint.x, currentPoint.z);
+                          const currentY = Math.max(currentPoint.y, minAltitude);
+                          this.mesh.position.x = currentPoint.x;
+                          this.mesh.position.y = currentY;
+                          this.mesh.position.z = currentPoint.z;
+                          this.altitude = currentY;
+                          this.direction = getDirectionAt(Math.min(val + 0.01, 1), this.direction);
+                          this.mesh.rotation.y = THREE.MathUtils.degToRad(this.direction);
+                          updateStatus();
+                        },
+                        0, 1, moveDuration,
+                        () => {
+                          this.mesh.position.x = targetPoint.x;
+                          this.mesh.position.y = Math.max(targetPoint.y, getSafeAltitudeAt(targetPoint.x, targetPoint.z));
+                          this.mesh.position.z = targetPoint.z;
+                          this.altitude = this.mesh.position.y;
+                          this.direction = getDirectionAt(1, this.direction);
+                          this.mesh.rotation.y = THREE.MathUtils.degToRad(this.direction);
+                          animateProperty(
+                            val => {
+                              this.mesh.rotation.z = THREE.MathUtils.degToRad(leanAngle * (1 - val));
+                            },
+                            0, 1, 100,
+                            () => {
+                              this.mesh.rotation.z = 0;
+                              updateDroneSound(basePlaybackRate);
+                              updateStatus();
+                              next();
+                              if (callback) callback();
+                            }
+                          );
+                        }
+                      );
+                    }
+                  );
+                };
+
+                if (horizontalDistance > 0) {
+                  animateProperty(
+                    val => {
+                      this.direction = normalizeDegrees(startDirection + yawDelta * val);
+                      this.mesh.rotation.y = THREE.MathUtils.degToRad(this.direction);
+                      updateStatus();
+                    },
+                    0, 1, 250,
+                    move
+                  );
+                } else {
+                  move();
+                }
+              });
+            } else if (callback) callback();
+            return Promise.resolve();
           },
           moveToInternal(targetX, targetY, targetZ, callback) {
             targetX = getNumber(targetX, this.mesh.position.x);

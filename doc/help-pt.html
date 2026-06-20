@@ -286,6 +286,16 @@
     <td>Sim</td>
   </tr>
   <tr>
+    <td><code>curva abs x [X] y [Y] z [Z] xd [XD] yd [YD] zd [ZD]</code></td>
+    <td>Faz o drone voar numa curva que passa por três pontos: a posição atual, o ponto intermédio absoluto X/Y/Z e o destino absoluto XD/YD/ZD. A velocidade atual controla o movimento.</td>
+    <td>Sim</td>
+  </tr>
+  <tr>
+    <td><code>curva x [X] y [Y] z [Z] xd [XD] yd [YD] zd [ZD]</code></td>
+    <td>Faz o drone voar numa curva que passa por três pontos com coordenadas relativas: a posição atual, o ponto intermédio com deslocamento X/Y/Z a partir da posição atual e o destino com deslocamento XD/YD/ZD a partir desse ponto intermédio. A velocidade atual controla o movimento.</td>
+    <td>Sim</td>
+  </tr>
+  <tr>
     <td><code>voltar à base</code></td>
     <td>Leva o drone de volta à base em X=0, Z=0 e altitude 10. O drone roda e inclina-se para a base usando a velocidade atual.</td>
     <td>Sim</td>
@@ -302,13 +312,13 @@
   </tr>
   <tr>
     <td><code>velocidade [N]</code></td>
-    <td>Define a velocidade de movimento do drone (0–10). Valores mais altos fazem o drone mover-se mais rápido durante comandos <code>andar</code>, <code>ir para</code>, <code>mover por</code> e <code>voltar à base</code>. A velocidade predefinida é 1.0.</td>
+    <td>Define a velocidade de movimento do drone (0–10). Valores mais altos fazem o drone mover-se mais rápido durante comandos <code>andar</code>, <code>ir para</code>, <code>mover por</code>, <code>curva abs</code>, <code>curva</code> e <code>voltar à base</code>. A velocidade predefinida é 1.0.</td>
     <td>Não</td>
   </tr>
 </table>
 
 <div class="note">
-  <strong>Nota:</strong> O drone só pode executar <code>andar</code>, <code>deslizar</code>, <code>ir para</code>, <code>mover por</code> e <code>voltar à base</code> enquanto voa. <code>definir_ângulo</code> e <code>alterar_ângulo</code> mudam a direção do drone sem o mover.
+  <strong>Nota:</strong> O drone só pode executar <code>andar</code>, <code>deslizar</code>, <code>ir para</code>, <code>mover por</code>, <code>curva abs</code>, <code>curva</code> e <code>voltar à base</code> enquanto voa. <code>definir_ângulo</code> e <code>alterar_ângulo</code> mudam a direção do drone sem o mover.
 </div>
 
 <hr>
@@ -682,9 +692,9 @@
 <h3>Melhores práticas</h3>
 <ul>
   <li><strong>Comece com Start:</strong> Inicie sempre o seu programa com um bloco <code>Start</code> para definir claramente o ponto de entrada da execução.</li>
-  <li><strong>Descole primeiro:</strong> Os comandos de movimento (<code>andar</code>, <code>deslizar</code>, <code>ir para</code>, <code>mover por</code>, <code>voltar à base</code>, etc.) só funcionam enquanto o drone está em voo. Inclua sempre <code>decolar</code> antes do movimento.</li>
+  <li><strong>Descole primeiro:</strong> Os comandos de movimento (<code>andar</code>, <code>deslizar</code>, <code>ir para</code>, <code>mover por</code>, <code>curva abs</code>, <code>curva</code>, <code>voltar à base</code>, etc.) só funcionam enquanto o drone está em voo. Inclua sempre <code>decolar</code> antes do movimento.</li>
   <li><strong>Consciência do terreno:</strong> O drone adapta-se automaticamente à altura do terreno. Ao aterrar, desce ao nível do solo na sua posição atual, que pode variar em cenários montanhosos.</li>
-  <li><strong>Controlo de velocidade:</strong> O bloco <code>velocidade</code> afeta a rapidez com que o drone se move com <code>andar</code>, <code>ir para</code>, <code>mover por</code> e <code>voltar à base</code>. O intervalo de velocidade é 0–10; o predefinido é 1.0.</li>
+  <li><strong>Controlo de velocidade:</strong> O bloco <code>velocidade</code> afeta a rapidez com que o drone se move com <code>andar</code>, <code>ir para</code>, <code>mover por</code>, <code>curva abs</code>, <code>curva</code> e <code>voltar à base</code>. O intervalo de velocidade é 0–10; o predefinido é 1.0.</li>
   <li><strong>Fumo como ferramenta de depuração:</strong> Ative o fumo para visualizar a trajetória de voo do drone.</li>
 </ul>
 

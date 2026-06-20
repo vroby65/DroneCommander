@@ -286,6 +286,16 @@
     <td>Si</td>
   </tr>
   <tr>
+    <td><code>curva abs x [X] y [Y] z [Z] xd [XD] yd [YD] zd [ZD]</code></td>
+    <td>Hace volar el dron en una curva que pasa por tres puntos: la posicion actual, el punto intermedio absoluto X/Y/Z y el destino absoluto XD/YD/ZD. La velocidad actual controla el movimiento.</td>
+    <td>Si</td>
+  </tr>
+  <tr>
+    <td><code>curva x [X] y [Y] z [Z] xd [XD] yd [YD] zd [ZD]</code></td>
+    <td>Hace volar el dron en una curva que pasa por tres puntos con coordenadas relativas: la posicion actual, el punto intermedio con desplazamiento X/Y/Z desde la posicion actual y el destino con desplazamiento XD/YD/ZD desde ese punto intermedio. La velocidad actual controla el movimiento.</td>
+    <td>Si</td>
+  </tr>
+  <tr>
     <td><code>volver a la base</code></td>
     <td>Devuelve el dron a la base en X=0, Z=0 y altitud 10. El dron gira y se inclina hacia la base usando la velocidad actual.</td>
     <td>Si</td>
@@ -302,13 +312,13 @@
   </tr>
   <tr>
     <td><code>velocidad [N]</code></td>
-    <td>Establece la velocidad de movimiento del dron (0–10). Los valores mas altos hacen que el dron se mueva mas rapido durante los comandos <code>avanzar</code>, <code>ir a</code>, <code>mover por</code> y <code>volver a la base</code>. La velocidad predeterminada es 1.0.</td>
+    <td>Establece la velocidad de movimiento del dron (0–10). Los valores mas altos hacen que el dron se mueva mas rapido durante los comandos <code>avanzar</code>, <code>ir a</code>, <code>mover por</code>, <code>curva abs</code>, <code>curva</code> y <code>volver a la base</code>. La velocidad predeterminada es 1.0.</td>
     <td>No</td>
   </tr>
 </table>
 
 <div class="note">
-  <strong>Nota:</strong> El dron solo puede ejecutar <code>avanzar</code>, <code>deslizar</code>, <code>ir a</code>, <code>mover por</code> y <code>volver a la base</code> mientras vuela. <code>fijar angulo</code> y <code>cambiar angulo</code> cambian la direccion de mirada del dron sin moverlo.
+  <strong>Nota:</strong> El dron solo puede ejecutar <code>avanzar</code>, <code>deslizar</code>, <code>ir a</code>, <code>mover por</code>, <code>curva abs</code>, <code>curva</code> y <code>volver a la base</code> mientras vuela. <code>fijar angulo</code> y <code>cambiar angulo</code> cambian la direccion de mirada del dron sin moverlo.
 </div>
 
 <hr>
@@ -682,9 +692,9 @@
 <h3>Mejores practicas</h3>
 <ul>
   <li><strong>Comienza con Start:</strong> Siempre inicia tu programa con un bloque <code>Start</code> para definir claramente el punto de entrada de la ejecucion.</li>
-  <li><strong>Despega primero:</strong> Los comandos de movimiento (<code>avanzar</code>, <code>deslizar</code>, <code>ir a</code>, <code>mover por</code>, <code>volver a la base</code>, etc.) solo funcionan mientras el dron esta en vuelo. Incluye siempre <code>despegar</code> antes del movimiento.</li>
+  <li><strong>Despega primero:</strong> Los comandos de movimiento (<code>avanzar</code>, <code>deslizar</code>, <code>ir a</code>, <code>mover por</code>, <code>curva abs</code>, <code>curva</code>, <code>volver a la base</code>, etc.) solo funcionan mientras el dron esta en vuelo. Incluye siempre <code>despegar</code> antes del movimiento.</li>
   <li><strong>Conciencia del terreno:</strong> El dron se adapta automaticamente a la altura del terreno. Al aterrizar, desciende al nivel del suelo en su posicion actual, que puede variar en escenarios con colinas.</li>
-  <li><strong>Control de velocidad:</strong> El bloque <code>velocidad</code> afecta la rapidez con que el dron se mueve con <code>avanzar</code>, <code>ir a</code>, <code>mover por</code> y <code>volver a la base</code>. El rango de velocidad es 0–10; el valor predeterminado es 1.0.</li>
+  <li><strong>Control de velocidad:</strong> El bloque <code>velocidad</code> afecta la rapidez con que el dron se mueve con <code>avanzar</code>, <code>ir a</code>, <code>mover por</code>, <code>curva abs</code>, <code>curva</code> y <code>volver a la base</code>. El rango de velocidad es 0–10; el valor predeterminado es 1.0.</li>
   <li><strong>Humo como herramienta de depuracion:</strong> Activa el humo para visualizar la trayectoria de vuelo del dron.</li>
 </ul>
 

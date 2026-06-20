@@ -286,6 +286,16 @@
     <td>Yes</td>
   </tr>
   <tr>
+    <td><code>curve abs x [X] y [Y] z [Z] xd [XD] yd [YD] zd [ZD]</code></td>
+    <td>Fly a curved path through three points: the current position, the absolute intermediate point X/Y/Z, and the absolute destination XD/YD/ZD. The current speed setting controls the movement.</td>
+    <td>Yes</td>
+  </tr>
+  <tr>
+    <td><code>curve x [X] y [Y] z [Z] xd [XD] yd [YD] zd [ZD]</code></td>
+    <td>Fly a curved path through three points using relative coordinates: the current position, the intermediate point at offset X/Y/Z from the current position, and the destination at offset XD/YD/ZD from that intermediate point. The current speed setting controls the movement.</td>
+    <td>Yes</td>
+  </tr>
+  <tr>
     <td><code>return to base</code></td>
     <td>Move the drone back to the base at X=0, Z=0 and altitude 10. The drone turns and leans toward the base and uses the current speed setting.</td>
     <td>Yes</td>
@@ -302,13 +312,13 @@
   </tr>
   <tr>
     <td><code>speed [N]</code></td>
-    <td>Set the drone's movement speed (0–10). Higher values make the drone move faster during <code>walk</code>, <code>go to</code>, <code>move by</code>, and <code>return to base</code> commands. The default speed is 1.0.</td>
+    <td>Set the drone's movement speed (0–10). Higher values make the drone move faster during <code>walk</code>, <code>go to</code>, <code>move by</code>, <code>curve abs</code>, <code>curve</code>, and <code>return to base</code> commands. The default speed is 1.0.</td>
     <td>No</td>
   </tr>
 </table>
 
 <div class="note">
-  <strong>Note:</strong> The drone can only <code>walk</code>, <code>slide</code>, <code>go to</code>, <code>move by</code>, and <code>return to base</code> while flying. <code>set_angle</code> and <code>change_angle</code> change the drone's facing direction without moving it.
+  <strong>Note:</strong> The drone can only <code>walk</code>, <code>slide</code>, <code>go to</code>, <code>move by</code>, <code>curve abs</code>, <code>curve</code>, and <code>return to base</code> while flying. <code>set_angle</code> and <code>change_angle</code> change the drone's facing direction without moving it.
 </div>
 
 <hr>
@@ -682,9 +692,9 @@
 <h3>Best practices</h3>
 <ul>
   <li><strong>Start with Start:</strong> Always begin your program with a <code>Start</code> block to define the execution entry point clearly.</li>
-  <li><strong>Take off first:</strong> Movement commands (<code>walk</code>, <code>slide</code>, <code>go to</code>, <code>move by</code>, <code>return to base</code>, etc.) only work while the drone is in flight. Always include <code>take off</code> before movement.</li>
+  <li><strong>Take off first:</strong> Movement commands (<code>walk</code>, <code>slide</code>, <code>go to</code>, <code>move by</code>, <code>curve abs</code>, <code>curve</code>, <code>return to base</code>, etc.) only work while the drone is in flight. Always include <code>take off</code> before movement.</li>
   <li><strong>Terrain awareness:</strong> The drone automatically adapts to terrain height. When landing, it descends to the ground level at its current position, which may vary in hilly scenarios.</li>
-  <li><strong>Speed control:</strong> The <code>speed</code> block affects how fast the drone moves with <code>walk</code>, <code>go to</code>, <code>move by</code>, and <code>return to base</code>. Speed range is 0–10; default is 1.0.</li>
+  <li><strong>Speed control:</strong> The <code>speed</code> block affects how fast the drone moves with <code>walk</code>, <code>go to</code>, <code>move by</code>, <code>curve abs</code>, <code>curve</code>, and <code>return to base</code>. Speed range is 0–10; default is 1.0.</li>
   <li><strong>Smoke as a debugging tool:</strong> Enable smoke to visualize the drone's flight path.</li>
 </ul>
 

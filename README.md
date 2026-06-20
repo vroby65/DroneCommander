@@ -14,7 +14,7 @@ https://vroby65.github.io/DroneCommander/
 
 - **Visual programming** with Blockly blocks for logic, loops, math, variables, functions, flow, sensors, and drone commands.
 - **3D simulation** powered by Three.js, with terrain-aware altitude and landing behavior.
-- **Drone commands** for take off, land, set/change altitude, set/change angle, walk, slide, absolute/relative 3D movement, return to base, wait, smoke trail, and speed control.
+- **Drone commands** for take off, land, set/change altitude, set/change angle, walk, slide, absolute/relative 3D movement, curved flight, return to base, wait, smoke trail, and speed control.
 - **Sensor blocks** for keyboard input, X/Z position, altitude, direction, and speed.
 - **Scenarios**: flight field, urban track, metropolis, and tropical island.
 - **Graphics profiles**: Performance, Balanced, and Quality.
@@ -53,7 +53,7 @@ Using an HTTP server is recommended because the app loads scenarios, textures, m
 ## Usage
 
 1. Drag a **Start** block into the Blockly workspace.
-2. Attach drone blocks such as **take off**, **set altitude**, **walk**, **go to**, **move by**, **return to base**, **change angle**, and **land**.
+2. Attach drone blocks such as **take off**, **set altitude**, **walk**, **go to**, **move by**, **curve abs**, **curve**, **return to base**, **change angle**, and **land**.
 3. Click the green play button to run the program in the 3D viewer.
 4. Use the status panel to inspect or adjust X, Z, altitude, direction, and flight status.
 5. Use **Save** and **Load** to export or import Blockly XML programs.

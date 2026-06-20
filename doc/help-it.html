@@ -286,6 +286,16 @@
     <td>Si</td>
   </tr>
   <tr>
+    <td><code>curva abs x [X] y [Y] z [Z] xd [XD] yd [YD] zd [ZD]</code></td>
+    <td>Fa volare il drone lungo una curva che passa per tre punti: la posizione corrente, il punto intermedio assoluto X/Y/Z e la destinazione assoluta XD/YD/ZD. La velocita' corrente controlla il movimento.</td>
+    <td>Si</td>
+  </tr>
+  <tr>
+    <td><code>curva x [X] y [Y] z [Z] xd [XD] yd [YD] zd [ZD]</code></td>
+    <td>Fa volare il drone lungo una curva che passa per tre punti con coordinate relative: la posizione corrente, il punto intermedio allo scostamento X/Y/Z dalla posizione corrente e la destinazione allo scostamento XD/YD/ZD da quel punto intermedio. La velocita' corrente controlla il movimento.</td>
+    <td>Si</td>
+  </tr>
+  <tr>
     <td><code>torna alla base</code></td>
     <td>Riporta il drone alla base in X=0, Z=0 e altitudine 10. Il drone ruota e si inclina verso la base usando la velocita' corrente.</td>
     <td>Si</td>
@@ -302,13 +312,13 @@
   </tr>
   <tr>
     <td><code>velocità [N]</code></td>
-    <td>Imposta la velocita' di movimento del drone (0–10). Valori piu' alti fanno muovere il drone piu' velocemente durante i comandi <code>avanza</code>, <code>vai a</code>, <code>spostati</code> e <code>torna alla base</code>. La velocita' predefinita e' 1.0.</td>
+    <td>Imposta la velocita' di movimento del drone (0–10). Valori piu' alti fanno muovere il drone piu' velocemente durante i comandi <code>avanza</code>, <code>vai a</code>, <code>spostati</code>, <code>curva abs</code>, <code>curva</code> e <code>torna alla base</code>. La velocita' predefinita e' 1.0.</td>
     <td>No</td>
   </tr>
 </table>
 
 <div class="note">
-  <strong>Nota:</strong> Il drone puo' eseguire <code>avanza</code>, <code>scivola</code>, <code>vai a</code>, <code>spostati</code> e <code>torna alla base</code> solo mentre vola. <code>imposta angolo</code> e <code>cambia angolo</code> cambiano la direzione del drone senza spostarlo.
+  <strong>Nota:</strong> Il drone puo' eseguire <code>avanza</code>, <code>scivola</code>, <code>vai a</code>, <code>spostati</code>, <code>curva abs</code>, <code>curva</code> e <code>torna alla base</code> solo mentre vola. <code>imposta angolo</code> e <code>cambia angolo</code> cambiano la direzione del drone senza spostarlo.
 </div>
 
 <hr>
@@ -682,9 +692,9 @@
 <h3>Buone pratiche</h3>
 <ul>
   <li><strong>Inizia con Start:</strong> Inizia sempre il programma con un blocco <code>Start</code> per definire chiaramente il punto di ingresso dell'esecuzione.</li>
-  <li><strong>Decolla prima:</strong> I comandi di movimento (<code>avanza</code>, <code>scivola</code>, <code>vai a</code>, <code>spostati</code>, <code>torna alla base</code>, ecc.) funzionano solo mentre il drone e' in volo. Includi sempre <code>decolla</code> prima del movimento.</li>
+  <li><strong>Decolla prima:</strong> I comandi di movimento (<code>avanza</code>, <code>scivola</code>, <code>vai a</code>, <code>spostati</code>, <code>curva abs</code>, <code>curva</code>, <code>torna alla base</code>, ecc.) funzionano solo mentre il drone e' in volo. Includi sempre <code>decolla</code> prima del movimento.</li>
   <li><strong>Consapevolezza del terreno:</strong> Il drone si adatta automaticamente all'altezza del terreno. Durante l'atterraggio, scende al livello del suolo nella sua posizione corrente, che puo' variare in scenari collinari.</li>
-  <li><strong>Controllo velocita':</strong> Il blocco <code>velocità</code> influenza la velocita' con cui il drone si muove con <code>avanza</code>, <code>vai a</code>, <code>spostati</code> e <code>torna alla base</code>. L'intervallo di velocita' e' 0–10; il valore predefinito e' 1.0.</li>
+  <li><strong>Controllo velocita':</strong> Il blocco <code>velocità</code> influenza la velocita' con cui il drone si muove con <code>avanza</code>, <code>vai a</code>, <code>spostati</code>, <code>curva abs</code>, <code>curva</code> e <code>torna alla base</code>. L'intervallo di velocita' e' 0–10; il valore predefinito e' 1.0.</li>
   <li><strong>Fumo come strumento di debug:</strong> Attiva il fumo per visualizzare il percorso di volo del drone.</li>
 </ul>
 
