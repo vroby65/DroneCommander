@@ -1917,7 +1917,7 @@ function loadScenario(file) {
             xd = getNumber(xd);
             yd = getNumber(yd);
             zd = getNumber(zd);
-            return this.curveToInternal(-z, y, -x, -zd, yd, -xd, callback, true);
+            return this.curveToInternal(x, y, z, xd, yd, zd, callback, true);
           },
           returnToBase(callback) {
             return this.moveToInternal(0, defaultFlightAltitude, 0, callback);
@@ -1934,12 +1934,23 @@ function loadScenario(file) {
                 updateDroneSound(basePlaybackRate + 1.0);
 
                 const startPoint = new THREE.Vector3(this.mesh.position.x, this.altitude, this.mesh.position.z);
-                const resolvedViaX = useRelativeOffsets ? startPoint.x + viaX : viaX;
-                const resolvedViaY = useRelativeOffsets ? startPoint.y + viaY : viaY;
-                const resolvedViaZ = useRelativeOffsets ? startPoint.z + viaZ : viaZ;
-                const resolvedTargetX = useRelativeOffsets ? resolvedViaX + targetX : targetX;
-                const resolvedTargetY = useRelativeOffsets ? resolvedViaY + targetY : targetY;
-                const resolvedTargetZ = useRelativeOffsets ? resolvedViaZ + targetZ : targetZ;
+                const resolveRelativeOffset = (x, y, z) => {
+                  const forwardRad = THREE.MathUtils.degToRad(this.direction - 90);
+                  const rightRad = forwardRad - Math.PI / 2;
+                  return new THREE.Vector3(
+                    Math.sin(rightRad) * x + Math.sin(forwardRad) * z,
+                    y,
+                    Math.cos(rightRad) * x + Math.cos(forwardRad) * z
+                  );
+                };
+                const viaOffset = useRelativeOffsets ? resolveRelativeOffset(viaX, viaY, viaZ) : null;
+                const targetOffset = useRelativeOffsets ? resolveRelativeOffset(targetX, targetY, targetZ) : null;
+                const resolvedViaX = useRelativeOffsets ? startPoint.x + viaOffset.x : viaX;
+                const resolvedViaY = useRelativeOffsets ? startPoint.y + viaOffset.y : viaY;
+                const resolvedViaZ = useRelativeOffsets ? startPoint.z + viaOffset.z : viaZ;
+                const resolvedTargetX = useRelativeOffsets ? resolvedViaX + targetOffset.x : targetX;
+                const resolvedTargetY = useRelativeOffsets ? resolvedViaY + targetOffset.y : targetY;
+                const resolvedTargetZ = useRelativeOffsets ? resolvedViaZ + targetOffset.z : targetZ;
                 const viaPoint = new THREE.Vector3(
                   resolvedViaX,
                   Math.max(resolvedViaY, getSafeAltitudeAt(resolvedViaX, resolvedViaZ)),
@@ -2277,7 +2288,9 @@ function loadScenario(file) {
           enforceTerrainCollision();
         }, { passive: true });
         document.getElementById('direction').addEventListener('change', e => {
-          drone.mesh.rotation.y = THREE.MathUtils.degToRad( parseFloat(-e.target.value));        
+          drone.direction = normalizeDegrees(-getNumber(e.target.value));
+          drone.mesh.rotation.y = THREE.MathUtils.degToRad(drone.direction);
+          updateStatus();
         }, { passive: true });
       };
 
