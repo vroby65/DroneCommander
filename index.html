@@ -1888,7 +1888,7 @@ function loadScenario(file) {
             x = getNumber(x);
             y = getNumber(y, this.altitude);
             z = getNumber(z);
-            return this.moveToInternal(-z, y, -x, callback);
+            return this.moveToInternal(-z, y, -x, callback, false);
           },
           moveBy(x, y, z, callback) {
             x = getNumber(x);
@@ -1898,7 +1898,8 @@ function loadScenario(file) {
               this.mesh.position.x - z,
               this.altitude + y,
               this.mesh.position.z - x,
-              callback
+              callback,
+              false
             );
           },
           curveAbs(x, y, z, xd, yd, zd, callback) {
@@ -2053,7 +2054,7 @@ function loadScenario(file) {
             } else if (callback) callback();
             return Promise.resolve();
           },
-          moveToInternal(targetX, targetY, targetZ, callback) {
+          moveToInternal(targetX, targetY, targetZ, callback, updateDirection = true) {
             targetX = getNumber(targetX, this.mesh.position.x);
             targetY = getNumber(targetY, this.altitude);
             targetZ = getNumber(targetZ, this.mesh.position.z);
@@ -2080,7 +2081,7 @@ function loadScenario(file) {
                 }
 
                 const startDirection = normalizeDegrees(this.direction);
-                const targetDirection = horizontalDistance > 0
+                const targetDirection = updateDirection && horizontalDistance > 0
                   ? normalizeDegrees(THREE.MathUtils.radToDeg(Math.atan2(deltaX, deltaZ)) + 90)
                   : startDirection;
                 const yawDelta = getShortestAngleDelta(startDirection, targetDirection);
@@ -2118,8 +2119,10 @@ function loadScenario(file) {
                             },
                             0, 1, 100,
                             () => {
-                              this.direction = targetDirection;
-                              this.mesh.rotation.y = THREE.MathUtils.degToRad(this.direction);
+                              if (updateDirection) {
+                                this.direction = targetDirection;
+                                this.mesh.rotation.y = THREE.MathUtils.degToRad(this.direction);
+                              }
                               this.mesh.rotation.z = 0;
                               updateDroneSound(basePlaybackRate);
                               updateStatus();
@@ -2133,7 +2136,7 @@ function loadScenario(file) {
                   );
                 };
 
-                if (horizontalDistance > 0) {
+                if (updateDirection && horizontalDistance > 0) {
                   animateProperty(
                     val => {
                       this.direction = normalizeDegrees(startDirection + yawDelta * val);
