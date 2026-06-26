@@ -219,7 +219,7 @@
       // --- Definition of custom blocks ---
       const customBlockTypes = [
         "take_off", "land", "return_to_base", "set_altitude", "change_altitude", "set_angle",
-        "change_angle", "slide", "walk", "go_to", "move_by", "curve_abs", "curve",
+        "change_angle", "slide", "walk", "walk_climbing", "go_to", "move_by", "curve_abs", "curve",
         "wait", "smoke", "set_speed", "sensor_keypressed", "sensor_x",
         "sensor_z", "sensor_altitude", "sensor_direction", "sensor_speed",
         "start_block", "end_block"
@@ -317,6 +317,19 @@
             "nextStatement": null,
             "colour": 20,
             "tooltip": Blockly.Msg["BKY_DRONE_WALK_TOOLTIP"]
+          },
+          {
+            "type": "walk_climbing",
+            "message0": Blockly.Msg["BKY_DRONE_WALK_CLIMBING"],
+            "args0": [
+              { "type": "input_value", "name": "DIST", "check": "Number" },
+              { "type": "input_value", "name": "CLIMB", "check": "Number" }
+            ],
+            "inputsInline": true,
+            "previousStatement": null,
+            "nextStatement": null,
+            "colour": 20,
+            "tooltip": Blockly.Msg["BKY_DRONE_WALK_CLIMBING_TOOLTIP"]
           },
           {
             "type": "go_to",
@@ -577,6 +590,11 @@
       Blockly.JavaScript.forBlock['walk'] = block => {
         var dist = Blockly.JavaScript.valueToCode(block, 'DIST', Blockly.JavaScript.ORDER_ATOMIC) || '0';
         return 'await drone.walk(' + dist + ');\n';
+      };
+      Blockly.JavaScript.forBlock['walk_climbing'] = block => {
+        var dist = Blockly.JavaScript.valueToCode(block, 'DIST', Blockly.JavaScript.ORDER_ATOMIC) || '0';
+        var climb = Blockly.JavaScript.valueToCode(block, 'CLIMB', Blockly.JavaScript.ORDER_ATOMIC) || '0';
+        return 'await drone.walkClimbing(' + dist + ', ' + climb + ');\n';
       };
       Blockly.JavaScript.forBlock['go_to'] = block => {
         var x = Blockly.JavaScript.valueToCode(block, 'X', Blockly.JavaScript.ORDER_ATOMIC) || '0';
@@ -1157,6 +1175,11 @@
                   "inputs": { "SLIDE": { "shadow": { "type": "math_number", "fields": { "NUM": "1" } } } } },
                 { "kind": "block", "type": "walk",
                   "inputs": { "DIST": { "shadow": { "type": "math_number", "fields": { "NUM": "1" } } } } },
+                { "kind": "block", "type": "walk_climbing",
+                  "inputs": {
+                    "DIST": { "shadow": { "type": "math_number", "fields": { "NUM": "1" } } },
+                    "CLIMB": { "shadow": { "type": "math_number", "fields": { "NUM": "1" } } }
+                  } },
                 { "kind": "block", "type": "go_to",
                   "inputs": {
                     "X": { "shadow": { "type": "math_number", "fields": { "NUM": "0" } } },
@@ -1901,6 +1924,85 @@ function loadScenario(file) {
                         );
                       }
                     );    
+                  }
+                );
+              });
+            } else if (callback) callback();
+            return Promise.resolve();
+          },
+          walkClimbing(distance, climb, callback) {
+            distance = getNumber(distance);
+            climb = getNumber(climb);
+            if (this.flying) {
+              return addCommand(next => {
+                updateDroneSound(basePlaybackRate + 1.0);
+                const startX = this.mesh.position.x;
+                const startY = this.altitude;
+                const startZ = this.mesh.position.z;
+                const rad = THREE.MathUtils.degToRad(this.direction - 90);
+                const targetX = startX + Math.sin(rad) * distance;
+                const targetZ = startZ + Math.cos(rad) * distance;
+                const safeTargetY = Math.max(startY + climb, getSafeAltitudeAt(targetX, targetZ));
+                const deltaX = targetX - startX;
+                const deltaY = safeTargetY - startY;
+                const deltaZ = targetZ - startZ;
+                const moveDistance = Math.sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ);
+                const leanAngle = distance === 0 ? 0 : 10 * Math.sign(distance);
+                this.speed = Math.min(Math.max(getNumber(this.speed, 1.0), 0.0), 10.0);
+                if (moveDistance === 0 || this.speed === 0) {
+                  updateDroneSound(basePlaybackRate);
+                  next();
+                  if (callback) callback();
+                  return;
+                }
+                this.mesh.rotation.y = THREE.MathUtils.degToRad(this.direction);
+                animateProperty(
+                  val => {
+                    this.mesh.rotation.z = THREE.MathUtils.degToRad(leanAngle) * val;
+                  },
+                  0, 1, 100,
+                  () => {
+                    animateProperty(
+                      val => {
+                        const currentX = startX + deltaX * val;
+                        const currentZ = startZ + deltaZ * val;
+                        const minAltitude = getSafeAltitudeAt(currentX, currentZ);
+                        const currentY = Math.max(startY + deltaY * val, minAltitude);
+                        this.mesh.position.x = currentX;
+                        this.mesh.position.y = currentY;
+                        this.mesh.position.z = currentZ;
+                        this.altitude = currentY;
+                        updateStatus();
+                      },
+                      0, 1, moveDistance * 50 / this.speed,
+                      () => {
+                        this.mesh.position.x = targetX;
+                        this.mesh.position.y = Math.max(safeTargetY, getSafeAltitudeAt(targetX, targetZ));
+                        this.mesh.position.z = targetZ;
+                        this.altitude = this.mesh.position.y;
+                        animateProperty(
+                          val => {
+                            this.mesh.rotation.z = THREE.MathUtils.degToRad(-2 * leanAngle) * val;
+                          },
+                          0, 1, 100,
+                          () => {
+                            updateDroneSound(basePlaybackRate);
+                            animateProperty(
+                              val => {
+                                this.mesh.rotation.z = THREE.MathUtils.degToRad(leanAngle) * (1-val);
+                              },
+                              0, 1, 100,
+                              () => {
+                                this.mesh.rotation.z = 0;
+                                updateStatus();
+                                next();
+                                if (callback) callback();
+                              }
+                            );
+                          }
+                        );
+                      }
+                    );
                   }
                 );
               });

@@ -463,6 +463,9 @@ Blockly.Msg["BKY_DRONE_SLIDE_TOOLTIP"] = "Fait glisser le drone";
 Blockly.Msg["BKY_DRONE_WALK"] = "avancer %1";
 Blockly.Msg["BKY_DRONE_WALK_TOOLTIP"] = "Déplace le drone vers l'avant";
 
+Blockly.Msg["BKY_DRONE_WALK_CLIMBING"] = "avancer en montant avancer %1 monter %2";
+Blockly.Msg["BKY_DRONE_WALK_CLIMBING_TOOLTIP"] = "Déplace le drone vers l'avant en montant";
+
 Blockly.Msg["BKY_DRONE_GO_TO"] = "aller à x %1 y %2 z %3";
 Blockly.Msg["BKY_DRONE_GO_TO_TOOLTIP"] = "Déplace le drone vers une position absolue avec la vitesse actuelle";
 
