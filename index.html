@@ -691,6 +691,15 @@
       };
       const normalizeDegrees = angle => ((angle % 360) + 360) % 360;
       const getShortestAngleDelta = (from, to) => ((to - from + 540) % 360) - 180;
+      const snapToCardinalDegrees = (angle, tolerance = 0.05) => {
+        const normalizedAngle = normalizeDegrees(angle);
+        for (const cardinal of [0, 90, 180, 270]) {
+          if (Math.abs(getShortestAngleDelta(normalizedAngle, cardinal)) <= tolerance) {
+            return cardinal;
+          }
+        }
+        return normalizedAngle;
+      };
       const sleep = ms => new Promise(resolve => setTimeout(resolve, getDuration(ms)));
       const waitSeconds = seconds => sleep(Number(seconds) * 1000);
       const graphicsProfiles = {
@@ -1740,6 +1749,17 @@ function loadScenario(file) {
                 if (delta < -180) delta += 360;
 
                 const startDirection = this.direction;
+                const targetDirection = normalizeDegrees(-normalizedTarget);
+
+                if (Math.abs(delta) < 0.05) {
+                  this.direction = targetDirection;
+                  this.mesh.rotation.y = THREE.MathUtils.degToRad(this.direction);
+                  updateDroneSound(basePlaybackRate);
+                  updateStatus();
+                  next();
+                  if (callback) callback();
+                  return;
+                }
 
                 animateProperty(
                   val => {
@@ -1749,7 +1769,10 @@ function loadScenario(file) {
                   },
                   0, 1, 500,
                   () => {
+                    this.direction = targetDirection;
+                    this.mesh.rotation.y = THREE.MathUtils.degToRad(this.direction);
                     updateDroneSound(basePlaybackRate);
+                    updateStatus();
                     next();
                     if (callback) callback();
                   }
@@ -1936,12 +1959,10 @@ function loadScenario(file) {
 
                 const startPoint = new THREE.Vector3(this.mesh.position.x, this.altitude, this.mesh.position.z);
                 const resolveRelativeOffset = (x, y, z) => {
-                  const forwardRad = THREE.MathUtils.degToRad(this.direction - 90);
-                  const rightRad = forwardRad - Math.PI / 2;
                   return new THREE.Vector3(
-                    Math.sin(rightRad) * x + Math.sin(forwardRad) * z,
+                    -z,
                     y,
-                    Math.cos(rightRad) * x + Math.cos(forwardRad) * z
+                    -x
                   );
                 };
                 const viaOffset = useRelativeOffsets ? resolveRelativeOffset(viaX, viaY, viaZ) : null;
@@ -1962,7 +1983,97 @@ function loadScenario(file) {
                   Math.max(resolvedTargetY, getSafeAltitudeAt(resolvedTargetX, resolvedTargetZ)),
                   resolvedTargetZ
                 );
-                const curvePath = new THREE.CatmullRomCurve3([startPoint, viaPoint, targetPoint], false, 'centripetal');
+                const startDirection = normalizeDegrees(this.direction);
+                const startForwardRad = THREE.MathUtils.degToRad(startDirection - 90);
+                const fallbackControlPoint1 = () => {
+                  const firstControlDistance = Math.max(
+                    startPoint.distanceTo(viaPoint) * 1.5,
+                    startPoint.distanceTo(targetPoint) * 0.15,
+                    1
+                  );
+                  return new THREE.Vector3(
+                    startPoint.x + Math.sin(startForwardRad) * firstControlDistance,
+                    startPoint.y,
+                    startPoint.z + Math.cos(startForwardRad) * firstControlDistance
+                  );
+                };
+                const computeArcControls = () => {
+                  const ax = startPoint.x;
+                  const az = startPoint.z;
+                  const bx = viaPoint.x;
+                  const bz = viaPoint.z;
+                  const cx = targetPoint.x;
+                  const cz = targetPoint.z;
+                  const orientation = (bx - ax) * (cz - bz) - (bz - az) * (cx - bx);
+                  if (Math.abs(orientation) < 1e-6) return null;
+
+                  const aSq = ax * ax + az * az;
+                  const bSq = bx * bx + bz * bz;
+                  const cSq = cx * cx + cz * cz;
+                  const divisor = 2 * (ax * (bz - cz) + bx * (cz - az) + cx * (az - bz));
+                  if (Math.abs(divisor) < 1e-6) return null;
+
+                  const centerX = (aSq * (bz - cz) + bSq * (cz - az) + cSq * (az - bz)) / divisor;
+                  const centerZ = (aSq * (cx - bx) + bSq * (ax - cx) + cSq * (bx - ax)) / divisor;
+                  const tangentAt = point => {
+                    const radiusX = point.x - centerX;
+                    const radiusZ = point.z - centerZ;
+                    const radiusLength = Math.hypot(radiusX, radiusZ);
+                    if (radiusLength < 1e-6) return null;
+                    const sign = orientation > 0 ? 1 : -1;
+                    return new THREE.Vector3(
+                      sign * -radiusZ / radiusLength,
+                      0,
+                      sign * radiusX / radiusLength
+                    );
+                  };
+                  const startTangent = tangentAt(startPoint);
+                  const endTangent = tangentAt(targetPoint);
+                  if (!startTangent || !endTangent) return null;
+
+                  const desiredX = (viaPoint.x - (startPoint.x + targetPoint.x) * 0.5) / 0.375;
+                  const desiredZ = (viaPoint.z - (startPoint.z + targetPoint.z) * 0.5) / 0.375;
+                  const determinant = startTangent.x * -endTangent.z - -endTangent.x * startTangent.z;
+                  let startLength;
+                  let endLength;
+
+                  if (Math.abs(determinant) > 1e-6) {
+                    startLength = (desiredX * -endTangent.z - -endTangent.x * desiredZ) / determinant;
+                    endLength = (startTangent.x * desiredZ - desiredX * startTangent.z) / determinant;
+                  } else {
+                    const combinedX = startTangent.x - endTangent.x;
+                    const combinedZ = startTangent.z - endTangent.z;
+                    const combinedLengthSq = combinedX * combinedX + combinedZ * combinedZ;
+                    if (combinedLengthSq < 1e-6) return null;
+                    startLength = (desiredX * combinedX + desiredZ * combinedZ) / combinedLengthSq;
+                    endLength = startLength;
+                  }
+
+                  if (!Number.isFinite(startLength) || !Number.isFinite(endLength) || startLength <= 0 || endLength <= 0) {
+                    return null;
+                  }
+
+                  const controlPoint1 = new THREE.Vector3(
+                    startPoint.x + startTangent.x * startLength,
+                    startPoint.y,
+                    startPoint.z + startTangent.z * startLength
+                  );
+                  const controlPoint2 = new THREE.Vector3(
+                    targetPoint.x - endTangent.x * endLength,
+                    targetPoint.y,
+                    targetPoint.z - endTangent.z * endLength
+                  );
+                  controlPoint2.y = (viaPoint.y - startPoint.y * 0.125 - controlPoint1.y * 0.375 - targetPoint.y * 0.125) / 0.375;
+                  return { controlPoint1, controlPoint2 };
+                };
+                const arcControls = computeArcControls();
+                const controlPoint1 = arcControls ? arcControls.controlPoint1 : fallbackControlPoint1();
+                const controlPoint2 = arcControls ? arcControls.controlPoint2 : viaPoint.clone()
+                  .sub(startPoint.clone().multiplyScalar(0.125))
+                  .sub(controlPoint1.clone().multiplyScalar(0.375))
+                  .sub(targetPoint.clone().multiplyScalar(0.125))
+                  .divideScalar(0.375);
+                const curvePath = new THREE.CubicBezierCurve3(startPoint, controlPoint1, controlPoint2, targetPoint);
                 const distance = curvePath.getLength();
                 const horizontalDistance = Math.max(
                   Math.hypot(viaPoint.x - startPoint.x, viaPoint.z - startPoint.z),
@@ -1981,12 +2092,9 @@ function loadScenario(file) {
                 const getDirectionAt = (progress, fallback) => {
                   const tangent = curvePath.getTangent(Math.min(Math.max(progress, 0), 1));
                   if (Math.hypot(tangent.x, tangent.z) === 0) return fallback;
-                  return normalizeDegrees(THREE.MathUtils.radToDeg(Math.atan2(tangent.x, tangent.z)) + 90);
+                  return snapToCardinalDegrees(THREE.MathUtils.radToDeg(Math.atan2(tangent.x, tangent.z)) + 90);
                 };
 
-                const startDirection = normalizeDegrees(this.direction);
-                const initialDirection = getDirectionAt(0, startDirection);
-                const yawDelta = getShortestAngleDelta(startDirection, initialDirection);
                 const moveDuration = distance * 50 / this.speed;
                 const leanAngle = horizontalDistance > 0 ? 10 : 0;
 
@@ -2006,7 +2114,7 @@ function loadScenario(file) {
                           this.mesh.position.y = currentY;
                           this.mesh.position.z = currentPoint.z;
                           this.altitude = currentY;
-                          this.direction = getDirectionAt(Math.min(val + 0.01, 1), this.direction);
+                          this.direction = getDirectionAt(val, this.direction);
                           this.mesh.rotation.y = THREE.MathUtils.degToRad(this.direction);
                           updateStatus();
                         },
@@ -2037,19 +2145,7 @@ function loadScenario(file) {
                   );
                 };
 
-                if (horizontalDistance > 0) {
-                  animateProperty(
-                    val => {
-                      this.direction = normalizeDegrees(startDirection + yawDelta * val);
-                      this.mesh.rotation.y = THREE.MathUtils.degToRad(this.direction);
-                      updateStatus();
-                    },
-                    0, 1, 250,
-                    move
-                  );
-                } else {
-                  move();
-                }
+                move();
               });
             } else if (callback) callback();
             return Promise.resolve();

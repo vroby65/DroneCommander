@@ -14,7 +14,8 @@ https://vroby65.github.io/DroneCommander/
 
 - **Visual programming** with Blockly blocks for logic, loops, math, variables, functions, flow, sensors, and drone commands.
 - **3D simulation** powered by Three.js, with terrain-aware altitude and landing behavior.
-- **Drone commands** for take off, land, set/change altitude, set/change angle, walk, slide, absolute/relative 3D movement, curved flight, return to base, wait, smoke trail, and speed control.
+- **Drone commands** for take off, land, set/change altitude, set/change angle, walk, slide, absolute/relative 3D movement, smooth curved flight, return to base, wait, smoke trail, and speed control.
+- **Smooth curve handling** with arc-based curved flight, continuous drone orientation, and clean cardinal direction endings such as 0 and 180 degrees.
 - **Sensor blocks** for keyboard input, X/Z position, altitude, direction, and speed.
 - **Scenarios**: flight field, urban track, metropolis, and tropical island.
 - **Graphics profiles**: Performance, Balanced, and Quality.
@@ -58,6 +59,12 @@ Using an HTTP server is recommended because the app loads scenarios, textures, m
 4. Use the status panel to inspect or adjust X, Z, altitude, direction, and flight status.
 5. Use **Save** and **Load** to export or import Blockly XML programs.
 6. Switch scenario or graphics profile from the toolbar when needed.
+
+## Curved Flight Notes
+
+The **curve** and **curve abs** blocks fly through the current position, an intermediate point, and a destination point. Curves are interpolated as smooth arcs where possible, so repeated circular or semicircular paths avoid sharp direction changes between segments.
+
+For relative **curve** blocks, X/Y/Z values are interpreted as offsets in the program coordinate system. Near-cardinal final headings are snapped to exact values, so a semicircle can finish at 180 degrees and a full circle can finish at 0 degrees without tiny floating-point drift.
 
 ## Project Structure
 
