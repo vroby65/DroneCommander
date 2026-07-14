@@ -2052,10 +2052,12 @@ function loadScenario(file) {
 
                 const startPoint = new THREE.Vector3(this.mesh.position.x, this.altitude, this.mesh.position.z);
                 const resolveRelativeOffset = (x, y, z) => {
+                  const forwardRad = THREE.MathUtils.degToRad(this.direction - 90);
+                  const rightRad = forwardRad - Math.PI / 2;
                   return new THREE.Vector3(
-                    -z,
+                    Math.sin(rightRad) * x + Math.sin(forwardRad) * z,
                     y,
-                    -x
+                    Math.cos(rightRad) * x + Math.cos(forwardRad) * z
                   );
                 };
                 const viaOffset = useRelativeOffsets ? resolveRelativeOffset(viaX, viaY, viaZ) : null;

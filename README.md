@@ -64,7 +64,7 @@ Using an HTTP server is recommended because the app loads scenarios, textures, m
 
 The **curve** and **curve abs** blocks fly through the current position, an intermediate point, and a destination point. Curves are interpolated as smooth arcs where possible and do not change the drone direction.
 
-For **curve abs**, both the intermediate point and destination use absolute program coordinates. For relative **curve** blocks, X/Y/Z is an offset from the current position, while XD/YD/ZD is an offset from that intermediate point.
+For **curve abs**, both the intermediate point and destination use absolute program coordinates. For relative **curve** blocks, X/Y/Z is an offset from the current position, while XD/YD/ZD is an offset from that intermediate point. Both offsets rotate with the drone's current direction: Z is forward/backward and X is right/left.
 
 ## Project Structure
 
