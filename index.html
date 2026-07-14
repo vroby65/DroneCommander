@@ -2184,46 +2184,37 @@ function loadScenario(file) {
 
                 const moveDuration = distance * 50 / this.speed;
                 const leanAngle = horizontalDistance > 0 ? 10 : 0;
+                const leanTransition = Math.min(100 / moveDuration, 0.5);
 
                 const move = () => {
                   animateProperty(
                     val => {
-                      this.mesh.rotation.z = THREE.MathUtils.degToRad(leanAngle * val);
-                    },
-                    0, 1, 100,
-                    () => {
-                      animateProperty(
-                        val => {
-                          const currentPoint = curvePath.getPoint(val);
-                          const minAltitude = getSafeAltitudeAt(currentPoint.x, currentPoint.z);
-                          const currentY = Math.max(currentPoint.y, minAltitude);
-                          this.mesh.position.x = currentPoint.x;
-                          this.mesh.position.y = currentY;
-                          this.mesh.position.z = currentPoint.z;
-                          this.altitude = currentY;
-                          updateStatus();
-                        },
-                        0, 1, moveDuration,
-                        () => {
-                          this.mesh.position.x = targetPoint.x;
-                          this.mesh.position.y = Math.max(targetPoint.y, getSafeAltitudeAt(targetPoint.x, targetPoint.z));
-                          this.mesh.position.z = targetPoint.z;
-                          this.altitude = this.mesh.position.y;
-                          animateProperty(
-                            val => {
-                              this.mesh.rotation.z = THREE.MathUtils.degToRad(leanAngle * (1 - val));
-                            },
-                            0, 1, 100,
-                            () => {
-                              this.mesh.rotation.z = 0;
-                              updateDroneSound(basePlaybackRate);
-                              updateStatus();
-                              next();
-                              if (callback) callback();
-                            }
-                          );
-                        }
+                      const leanProgress = Math.min(
+                        val / leanTransition,
+                        (1 - val) / leanTransition,
+                        1
                       );
+                      this.mesh.rotation.z = THREE.MathUtils.degToRad(leanAngle * leanProgress);
+                      const currentPoint = curvePath.getPoint(val);
+                      const minAltitude = getSafeAltitudeAt(currentPoint.x, currentPoint.z);
+                      const currentY = Math.max(currentPoint.y, minAltitude);
+                      this.mesh.position.x = currentPoint.x;
+                      this.mesh.position.y = currentY;
+                      this.mesh.position.z = currentPoint.z;
+                      this.altitude = currentY;
+                      updateStatus();
+                    },
+                    0, 1, moveDuration,
+                    () => {
+                      this.mesh.position.x = targetPoint.x;
+                      this.mesh.position.y = Math.max(targetPoint.y, getSafeAltitudeAt(targetPoint.x, targetPoint.z));
+                      this.mesh.position.z = targetPoint.z;
+                      this.altitude = this.mesh.position.y;
+                      this.mesh.rotation.z = 0;
+                      updateDroneSound(basePlaybackRate);
+                      updateStatus();
+                      next();
+                      if (callback) callback();
                     }
                   );
                 };
