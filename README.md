@@ -74,7 +74,11 @@ For **curve abs**, both the intermediate point and destination use absolute prog
 
 ## Project Structure
 
-- `index.html` - Main app, Blockly blocks, generators, UI, and Three.js simulation.
+- `index.html` - Application shell, layout, and ordered script loading.
+- `js/blockly.js` - Custom Blockly blocks, JavaScript generators, toolbox setup, and workspace persistence.
+- `js/drone-commands.js` - Three.js simulation, command queue, flight commands, scenarios, collision handling, audio, and rendering.
+- `js/ui.js` - Camera controls, status inputs, program actions, layout, localization, and selectors.
+- `js/app.js` - Startup sequence that initializes localization, Blockly, Three.js, and the render loop.
 - `doc/` - Help pages in supported languages.
 - `backgrounds/` - Scenario definitions.
 - `models/` - Drone and scene models.
