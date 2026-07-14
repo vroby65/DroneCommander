@@ -709,15 +709,6 @@
       };
       const normalizeDegrees = angle => ((angle % 360) + 360) % 360;
       const getShortestAngleDelta = (from, to) => ((to - from + 540) % 360) - 180;
-      const snapToCardinalDegrees = (angle, tolerance = 0.05) => {
-        const normalizedAngle = normalizeDegrees(angle);
-        for (const cardinal of [0, 90, 180, 270]) {
-          if (Math.abs(getShortestAngleDelta(normalizedAngle, cardinal)) <= tolerance) {
-            return cardinal;
-          }
-        }
-        return normalizedAngle;
-      };
       const sleep = ms => new Promise(resolve => setTimeout(resolve, getDuration(ms)));
       const waitSeconds = seconds => sleep(Number(seconds) * 1000);
       const graphicsProfiles = {
@@ -2085,19 +2076,20 @@ function loadScenario(file) {
                   Math.max(resolvedTargetY, getSafeAltitudeAt(resolvedTargetX, resolvedTargetZ)),
                   resolvedTargetZ
                 );
-                const startDirection = normalizeDegrees(this.direction);
-                const startForwardRad = THREE.MathUtils.degToRad(startDirection - 90);
-                const fallbackControlPoint1 = () => {
-                  const firstControlDistance = Math.max(
-                    startPoint.distanceTo(viaPoint) * 1.5,
-                    startPoint.distanceTo(targetPoint) * 0.15,
-                    1
+                const computeInterpolatingControls = () => {
+                  // Elevate to a cubic the quadratic Bezier curve whose midpoint
+                  // is viaPoint. Unlike the old fallback, these controls depend
+                  // only on the requested coordinates, never on drone direction.
+                  const quadraticControl = viaPoint.clone()
+                    .multiplyScalar(2)
+                    .sub(startPoint.clone().add(targetPoint).multiplyScalar(0.5));
+                  const controlPoint1 = startPoint.clone().add(
+                    quadraticControl.clone().sub(startPoint).multiplyScalar(2 / 3)
                   );
-                  return new THREE.Vector3(
-                    startPoint.x + Math.sin(startForwardRad) * firstControlDistance,
-                    startPoint.y,
-                    startPoint.z + Math.cos(startForwardRad) * firstControlDistance
+                  const controlPoint2 = targetPoint.clone().add(
+                    quadraticControl.clone().sub(targetPoint).multiplyScalar(2 / 3)
                   );
+                  return { controlPoint1, controlPoint2 };
                 };
                 const computeArcControls = () => {
                   const ax = startPoint.x;
@@ -2169,12 +2161,9 @@ function loadScenario(file) {
                   return { controlPoint1, controlPoint2 };
                 };
                 const arcControls = computeArcControls();
-                const controlPoint1 = arcControls ? arcControls.controlPoint1 : fallbackControlPoint1();
-                const controlPoint2 = arcControls ? arcControls.controlPoint2 : viaPoint.clone()
-                  .sub(startPoint.clone().multiplyScalar(0.125))
-                  .sub(controlPoint1.clone().multiplyScalar(0.375))
-                  .sub(targetPoint.clone().multiplyScalar(0.125))
-                  .divideScalar(0.375);
+                const controls = arcControls || computeInterpolatingControls();
+                const controlPoint1 = controls.controlPoint1;
+                const controlPoint2 = controls.controlPoint2;
                 const curvePath = new THREE.CubicBezierCurve3(startPoint, controlPoint1, controlPoint2, targetPoint);
                 const distance = curvePath.getLength();
                 const horizontalDistance = Math.max(
@@ -2190,12 +2179,6 @@ function loadScenario(file) {
                   if (callback) callback();
                   return;
                 }
-
-                const getDirectionAt = (progress, fallback) => {
-                  const tangent = curvePath.getTangent(Math.min(Math.max(progress, 0), 1));
-                  if (Math.hypot(tangent.x, tangent.z) === 0) return fallback;
-                  return snapToCardinalDegrees(THREE.MathUtils.radToDeg(Math.atan2(tangent.x, tangent.z)) + 90);
-                };
 
                 const moveDuration = distance * 50 / this.speed;
                 const leanAngle = horizontalDistance > 0 ? 10 : 0;
@@ -2216,8 +2199,6 @@ function loadScenario(file) {
                           this.mesh.position.y = currentY;
                           this.mesh.position.z = currentPoint.z;
                           this.altitude = currentY;
-                          this.direction = getDirectionAt(val, this.direction);
-                          this.mesh.rotation.y = THREE.MathUtils.degToRad(this.direction);
                           updateStatus();
                         },
                         0, 1, moveDuration,
@@ -2226,8 +2207,6 @@ function loadScenario(file) {
                           this.mesh.position.y = Math.max(targetPoint.y, getSafeAltitudeAt(targetPoint.x, targetPoint.z));
                           this.mesh.position.z = targetPoint.z;
                           this.altitude = this.mesh.position.y;
-                          this.direction = getDirectionAt(1, this.direction);
-                          this.mesh.rotation.y = THREE.MathUtils.degToRad(this.direction);
                           animateProperty(
                             val => {
                               this.mesh.rotation.z = THREE.MathUtils.degToRad(leanAngle * (1 - val));
