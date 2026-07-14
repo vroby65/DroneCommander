@@ -471,7 +471,7 @@ Blockly.Msg["BKY_DRONE_GO_TO"] = "ir para x %1 y %2 z %3";
 Blockly.Msg["BKY_DRONE_GO_TO_TOOLTIP"] = "Move o drone para uma posição absoluta usando a velocidade atual";
 
 Blockly.Msg["BKY_DRONE_MOVE_BY"] = "mover por x %1 y %2 z %3";
-Blockly.Msg["BKY_DRONE_MOVE_BY_TOOLTIP"] = "Move o drone por um deslocamento relativo usando a velocidade atual";
+Blockly.Msg["BKY_DRONE_MOVE_BY_TOOLTIP"] = "Move relativamente à direção atual: X direita/esquerda, Y cima/baixo, Z frente/trás";
 
 Blockly.Msg["BKY_DRONE_CURVE_ABS"] = "curva abs x %1 y %2 z %3 xd %4 yd %5 zd %6";
 Blockly.Msg["BKY_DRONE_CURVE_ABS_TOOLTIP"] = "Faz o drone voar em uma curva que passa pela posição atual, por um ponto intermediário absoluto e por um destino absoluto";

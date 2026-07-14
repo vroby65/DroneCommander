@@ -709,6 +709,15 @@
       };
       const normalizeDegrees = angle => ((angle % 360) + 360) % 360;
       const getShortestAngleDelta = (from, to) => ((to - from + 540) % 360) - 180;
+      const resolveRelativeOffset = (x, y, z, direction) => {
+        const forwardRad = THREE.MathUtils.degToRad(direction - 90);
+        const rightRad = forwardRad - Math.PI / 2;
+        return new THREE.Vector3(
+          Math.sin(rightRad) * x + Math.sin(forwardRad) * z,
+          y,
+          Math.cos(rightRad) * x + Math.cos(forwardRad) * z
+        );
+      };
       const sleep = ms => new Promise(resolve => setTimeout(resolve, getDuration(ms)));
       const waitSeconds = seconds => sleep(Number(seconds) * 1000);
       const graphicsProfiles = {
@@ -2010,10 +2019,11 @@ function loadScenario(file) {
             x = getNumber(x);
             y = getNumber(y);
             z = getNumber(z);
+            const offset = resolveRelativeOffset(x, y, z, this.direction);
             return this.moveToInternal(
-              this.mesh.position.x - z,
-              this.altitude + y,
-              this.mesh.position.z - x,
+              this.mesh.position.x + offset.x,
+              this.altitude + offset.y,
+              this.mesh.position.z + offset.z,
               callback,
               false
             );
@@ -2051,17 +2061,12 @@ function loadScenario(file) {
                 updateDroneSound(basePlaybackRate + 1.0);
 
                 const startPoint = new THREE.Vector3(this.mesh.position.x, this.altitude, this.mesh.position.z);
-                const resolveRelativeOffset = (x, y, z) => {
-                  const forwardRad = THREE.MathUtils.degToRad(this.direction - 90);
-                  const rightRad = forwardRad - Math.PI / 2;
-                  return new THREE.Vector3(
-                    Math.sin(rightRad) * x + Math.sin(forwardRad) * z,
-                    y,
-                    Math.cos(rightRad) * x + Math.cos(forwardRad) * z
-                  );
-                };
-                const viaOffset = useRelativeOffsets ? resolveRelativeOffset(viaX, viaY, viaZ) : null;
-                const targetOffset = useRelativeOffsets ? resolveRelativeOffset(targetX, targetY, targetZ) : null;
+                const viaOffset = useRelativeOffsets
+                  ? resolveRelativeOffset(viaX, viaY, viaZ, this.direction)
+                  : null;
+                const targetOffset = useRelativeOffsets
+                  ? resolveRelativeOffset(targetX, targetY, targetZ, this.direction)
+                  : null;
                 const resolvedViaX = useRelativeOffsets ? startPoint.x + viaOffset.x : viaX;
                 const resolvedViaY = useRelativeOffsets ? startPoint.y + viaOffset.y : viaY;
                 const resolvedViaZ = useRelativeOffsets ? startPoint.z + viaOffset.z : viaZ;

@@ -60,6 +60,10 @@ Using an HTTP server is recommended because the app loads scenarios, textures, m
 5. Use **Save** and **Load** to export or import Blockly XML programs.
 6. Switch scenario or graphics profile from the toolbar when needed.
 
+## Relative Movement Coordinates
+
+The **move by** block interprets X/Y/Z relative to the drone's current direction. X moves right/left, Y moves up/down, and Z moves forward/backward. Changing the drone angle rotates the X/Z movement axes while leaving Y vertical.
+
 ## Curved Flight Notes
 
 The **curve** and **curve abs** blocks fly through the current position, an intermediate point, and a destination point. Curves are interpolated as smooth arcs where possible and do not change the drone direction.
