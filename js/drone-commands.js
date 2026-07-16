@@ -29,6 +29,70 @@ const resolveRelativeOffset = (x, y, z, direction) => {
         Math.cos(rightRad) * x + Math.cos(forwardRad) * z
     );
 };
+
+// Build a cubic arc in the plane defined by the three path points. Computing
+// the circle in 3D keeps vertical and tilted curves circular too, instead of
+// reducing them to a parabolic fallback when their X/Z projection is a line.
+const computeArcControls = (startPoint, viaPoint, targetPoint) => {
+    const startToVia = viaPoint.clone().sub(startPoint);
+    const startToTarget = targetPoint.clone().sub(startPoint);
+    const normal = new THREE.Vector3().crossVectors(startToVia, startToTarget);
+    const normalLengthSq = normal.lengthSq();
+    const pointScale = startToVia.lengthSq() * startToTarget.lengthSq();
+    if (pointScale === 0 || normalLengthSq <= pointScale * 1e-12) return null;
+
+    const centerOffset = new THREE.Vector3()
+        .crossVectors(startToTarget, normal)
+        .multiplyScalar(startToVia.lengthSq())
+        .add(
+            new THREE.Vector3()
+                .crossVectors(normal, startToVia)
+                .multiplyScalar(startToTarget.lengthSq())
+        )
+        .multiplyScalar(1 / (2 * normalLengthSq));
+    const center = startPoint.clone().add(centerOffset);
+    const tangentAt = point => {
+        const radius = point.clone().sub(center);
+        if (radius.lengthSq() < 1e-12) return null;
+        return new THREE.Vector3().crossVectors(normal, radius).normalize();
+    };
+    const startTangent = tangentAt(startPoint);
+    const endTangent = tangentAt(targetPoint);
+    if (!startTangent || !endTangent) return null;
+
+    // A cubic Bezier is at 1/8 P0 + 3/8 P1 + 3/8 P2 + 1/8 P3
+    // halfway through. Solve the two tangent lengths so it crosses viaPoint.
+    const desired = viaPoint.clone()
+        .sub(startPoint.clone().add(targetPoint).multiplyScalar(0.5))
+        .multiplyScalar(1 / 0.375);
+    const reverseEndTangent = endTangent.clone().multiplyScalar(-1);
+    const tangentDot = startTangent.dot(reverseEndTangent);
+    const determinant = 1 - tangentDot * tangentDot;
+    let startLength;
+    let endLength;
+
+    if (Math.abs(determinant) > 1e-6) {
+        const startProjection = startTangent.dot(desired);
+        const endProjection = reverseEndTangent.dot(desired);
+        startLength = (startProjection - tangentDot * endProjection) / determinant;
+        endLength = (endProjection - tangentDot * startProjection) / determinant;
+    } else {
+        const combined = startTangent.clone().add(reverseEndTangent);
+        const combinedLengthSq = combined.lengthSq();
+        if (combinedLengthSq < 1e-6) return null;
+        startLength = desired.dot(combined) / combinedLengthSq;
+        endLength = startLength;
+    }
+
+    if (!Number.isFinite(startLength) || !Number.isFinite(endLength) || startLength <= 0 || endLength <= 0) {
+        return null;
+    }
+
+    return {
+        controlPoint1: startPoint.clone().add(startTangent.multiplyScalar(startLength)),
+        controlPoint2: targetPoint.clone().sub(endTangent.multiplyScalar(endLength))
+    };
+};
 const sleep = ms => new Promise(resolve => setTimeout(resolve, getDuration(ms)));
 const waitSeconds = seconds => sleep(Number(seconds) * 1000);
 const graphicsProfiles = {
@@ -1111,79 +1175,7 @@ const initThree = () => {
                             controlPoint2
                         };
                     };
-                    const computeArcControls = () => {
-                        const ax = startPoint.x;
-                        const az = startPoint.z;
-                        const bx = viaPoint.x;
-                        const bz = viaPoint.z;
-                        const cx = targetPoint.x;
-                        const cz = targetPoint.z;
-                        const orientation = (bx - ax) * (cz - bz) - (bz - az) * (cx - bx);
-                        if (Math.abs(orientation) < 1e-6) return null;
-
-                        const aSq = ax * ax + az * az;
-                        const bSq = bx * bx + bz * bz;
-                        const cSq = cx * cx + cz * cz;
-                        const divisor = 2 * (ax * (bz - cz) + bx * (cz - az) + cx * (az - bz));
-                        if (Math.abs(divisor) < 1e-6) return null;
-
-                        const centerX = (aSq * (bz - cz) + bSq * (cz - az) + cSq * (az - bz)) / divisor;
-                        const centerZ = (aSq * (cx - bx) + bSq * (ax - cx) + cSq * (bx - ax)) / divisor;
-                        const tangentAt = point => {
-                            const radiusX = point.x - centerX;
-                            const radiusZ = point.z - centerZ;
-                            const radiusLength = Math.hypot(radiusX, radiusZ);
-                            if (radiusLength < 1e-6) return null;
-                            const sign = orientation > 0 ? 1 : -1;
-                            return new THREE.Vector3(
-                                sign * -radiusZ / radiusLength,
-                                0,
-                                sign * radiusX / radiusLength
-                            );
-                        };
-                        const startTangent = tangentAt(startPoint);
-                        const endTangent = tangentAt(targetPoint);
-                        if (!startTangent || !endTangent) return null;
-
-                        const desiredX = (viaPoint.x - (startPoint.x + targetPoint.x) * 0.5) / 0.375;
-                        const desiredZ = (viaPoint.z - (startPoint.z + targetPoint.z) * 0.5) / 0.375;
-                        const determinant = startTangent.x * -endTangent.z - -endTangent.x * startTangent.z;
-                        let startLength;
-                        let endLength;
-
-                        if (Math.abs(determinant) > 1e-6) {
-                            startLength = (desiredX * -endTangent.z - -endTangent.x * desiredZ) / determinant;
-                            endLength = (startTangent.x * desiredZ - desiredX * startTangent.z) / determinant;
-                        } else {
-                            const combinedX = startTangent.x - endTangent.x;
-                            const combinedZ = startTangent.z - endTangent.z;
-                            const combinedLengthSq = combinedX * combinedX + combinedZ * combinedZ;
-                            if (combinedLengthSq < 1e-6) return null;
-                            startLength = (desiredX * combinedX + desiredZ * combinedZ) / combinedLengthSq;
-                            endLength = startLength;
-                        }
-
-                        if (!Number.isFinite(startLength) || !Number.isFinite(endLength) || startLength <= 0 || endLength <= 0) {
-                            return null;
-                        }
-
-                        const controlPoint1 = new THREE.Vector3(
-                            startPoint.x + startTangent.x * startLength,
-                            startPoint.y,
-                            startPoint.z + startTangent.z * startLength
-                        );
-                        const controlPoint2 = new THREE.Vector3(
-                            targetPoint.x - endTangent.x * endLength,
-                            targetPoint.y,
-                            targetPoint.z - endTangent.z * endLength
-                        );
-                        controlPoint2.y = (viaPoint.y - startPoint.y * 0.125 - controlPoint1.y * 0.375 - targetPoint.y * 0.125) / 0.375;
-                        return {
-                            controlPoint1,
-                            controlPoint2
-                        };
-                    };
-                    const arcControls = computeArcControls();
+                    const arcControls = computeArcControls(startPoint, viaPoint, targetPoint);
                     const controls = arcControls || computeInterpolatingControls();
                     const controlPoint1 = controls.controlPoint1;
                     const controlPoint2 = controls.controlPoint2;

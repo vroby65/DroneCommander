@@ -106,7 +106,7 @@
 <p>Keine Programmierkenntnisse erforderlich – f&uuml;gen Sie einfach Blöcke zusammen und dr&uuml;cken Sie auf Start!</p>
 
 <div class="tip">
-  <strong>Schnellstart:</strong> Ziehen Sie einen <code>Start</code>-Block, f&uuml;gen Sie einen <code>abheben</code>-Block und dann einen <code>landen</code>-Block an, und klicken Sie auf ▶ Ausf&uuml;hren. Ihre Drohne wird abheben und landen!
+  <strong>Schnellstart:</strong> Ziehen Sie einen <code>Beginn</code>-Block, f&uuml;gen Sie einen <code>abheben</code>-Block und dann einen <code>landen</code>-Block an, und klicken Sie auf ▶ Ausf&uuml;hren. Ihre Drohne wird abheben und landen!
 </div>
 
 <hr>
@@ -167,9 +167,9 @@
 
 <h3>So erstellen Sie ein Programm</h3>
 <ol>
-  <li>Jedes Programm sollte mit einem <strong>Start</strong>-Block beginnen (aus der Kategorie <em>Flow</em>).</li>
-  <li>F&uuml;gen Sie <strong>Drohnen</strong>-Befehlsblöcke in der gew&uuml;nschten Reihenfolge unter dem Start-Block an.</li>
-  <li>Optional k&ouml;nnen Sie mit einem <strong>End</strong>-Block abschlie&szlig;en.</li>
+  <li>Jedes Programm sollte mit einem <strong>Beginn</strong>-Block beginnen (aus der Kategorie <em>Flow</em>).</li>
+  <li>F&uuml;gen Sie <strong>Drohnen</strong>-Befehlsblöcke in der gew&uuml;nschten Reihenfolge unter dem Beginn-Block an.</li>
+  <li>Optional k&ouml;nnen Sie mit einem <strong>Ende</strong>-Block abschlie&szlig;en.</li>
   <li>Klicken Sie auf ▶ <strong>Ausf&uuml;hren</strong>, um zu sehen, wie die Drohne Ihr Programm ausf&uuml;hrt.</li>
 </ol>
 
@@ -292,12 +292,12 @@
   </tr>
   <tr>
     <td><code>Kurve abs x [X] y [Y] z [Z] xd [XD] yd [YD] zd [ZD]</code></td>
-    <td>Fliegt eine Kurve durch drei Punkte: die aktuelle Position, den absoluten Zwischenpunkt X/Y/Z und das absolute Ziel XD/YD/ZD. Die aktuelle Geschwindigkeit steuert die Bewegung.</td>
+    <td>Fliegt eine Kurve durch drei Punkte: die aktuelle Position, den absoluten Zwischenpunkt X/Y/Z und das absolute Ziel XD/YD/ZD. Der Bogen wird in der von den drei Punkten definierten 3D-Ebene berechnet, sodass die Kurve horizontal, vertikal oder geneigt verlaufen kann. Die aktuelle Geschwindigkeit steuert die Bewegung.</td>
     <td>Ja</td>
   </tr>
   <tr>
     <td><code>Kurve x [X] y [Y] z [Z] xd [XD] yd [YD] zd [ZD]</code></td>
-    <td>Fliegt eine Kurve durch drei Punkte mit Koordinaten relativ zur aktuellen Drohnenrichtung: Z bedeutet vorwärts/rückwärts und X rechts/links. X/Y/Z versetzt den Zwischenpunkt von der aktuellen Position; XD/YD/ZD versetzt das Ziel von diesem Zwischenpunkt. Die aktuelle Geschwindigkeit steuert die Bewegung.</td>
+    <td>Fliegt eine Kurve durch drei Punkte mit Koordinaten relativ zur aktuellen Drohnenrichtung: Z bedeutet vorwärts/rückwärts und X rechts/links. X/Y/Z versetzt den Zwischenpunkt von der aktuellen Position; XD/YD/ZD versetzt das Ziel von diesem Zwischenpunkt. Der Bogen wird in der von den drei Punkten definierten 3D-Ebene berechnet, sodass die Kurve horizontal, vertikal oder geneigt verlaufen kann. Die aktuelle Geschwindigkeit steuert die Bewegung.</td>
     <td>Ja</td>
   </tr>
   <tr>
@@ -387,17 +387,17 @@
     <th>Beschreibung</th>
   </tr>
   <tr>
-    <td><code>Start</code></td>
+    <td><code>Beginn</code></td>
     <td>Der Einstiegspunkt jedes Programms. Alle Drohnenbefehle m&uuml;ssen unter diesem Block angeschlossen werden. Er hat eine "Hut"-Form und keine Verbindung an der Oberseite.</td>
   </tr>
   <tr>
-    <td><code>End</code></td>
+    <td><code>Ende</code></td>
     <td>Ein optionaler Block, der das Ende des Programms markiert. Blöcke darunter werden nicht ausgef&uuml;hrt.</td>
   </tr>
 </table>
 
 <div class="tip">
-  <strong>Tipp:</strong> Wenn Sie keinen <code>Start</code>-Block einf&uuml;gen, wird das Programm zwar trotzdem ausgef&uuml;hrt, aber die Blöcke könnten in unerwarteter Reihenfolge ablaufen. Beginnen Sie immer mit <code>Start</code>.
+  <strong>Tipp:</strong> Wenn Sie keinen <code>Beginn</code>-Block einf&uuml;gen, wird das Programm zwar trotzdem ausgef&uuml;hrt, aber die Blöcke könnten in unerwarteter Reihenfolge ablaufen. Beginnen Sie immer mit <code>Beginn</code>.
 </div>
 
 <hr>
@@ -494,7 +494,7 @@
 <h2 id="files">Dateiverwaltung</h2>
 
 <h3>Neu</h3>
-<p>Klicken Sie auf <strong>Neu</strong>, um das aktuelle Programm zu l&ouml;schen und mit einer leeren Arbeitsfläche zu beginnen, die nur einen <code>Start</code>-Block enth&auml;lt. Sie werden gefragt, ob Sie das aktuelle Programm zuerst speichern m&ouml;chten.</p>
+<p>Klicken Sie auf <strong>Neu</strong>, um das aktuelle Programm zu l&ouml;schen und mit einer leeren Arbeitsfläche zu beginnen, die nur einen <code>Beginn</code>-Block enth&auml;lt. Sie werden gefragt, ob Sie das aktuelle Programm zuerst speichern m&ouml;chten.</p>
 
 <h3>Speichern</h3>
 <p>Klicken Sie auf <strong>Speichern</strong>, um Ihr aktuelles Programm als <code>.xml</code>-Datei herunterzuladen. Sie werden nach einem Dateinamen gefragt. Das Programm wird au&szlig;erdem automatisch im lokalen Speicher Ihres Browsers gespeichert.</p>
@@ -599,44 +599,44 @@
 <h3>1. Einfacher Start und Landung</h3>
 <p>Das einfachste Programm – die Drohne fliegt hoch und kommt wieder herunter.</p>
 <pre>
-  Start
+  Beginn
   ├── abheben
   └── landen
-  End</pre>
+  Ende</pre>
 
 <p>Was passiert: Die Drohne steigt auf 10 m, schwebt kurz, sinkt dann und landet auf dem Boden darunter.</p>
 
 <h3>2. Vorw&auml;rtsflug mit R&uuml;ckkehr</h3>
 <p>Vorw&auml;rts fliegen, umdrehen und zur&uuml;ckkommen.</p>
 <pre>
-  Start
+  Beginn
   ├── abheben
   ├── gehen 10
   ├── Winkel setzen 180
   ├── gehen 10
   └── landen
-  End</pre>
+  Ende</pre>
 
 <p>Was passiert: Die Drohne hebt ab, fliegt 10 Meter vorw&auml;rts, dreht sich um 180°, fliegt 10 Meter zur&uuml;ck und landet am Ausgangspunkt.</p>
 
 <h3>3. Quadratisches Muster</h3>
 <p>In einem Quadrat fliegen, indem wiederholt bewegt und gedreht wird.</p>
 <pre>
-  Start
+  Beginn
   ├── abheben
   ├── H&ouml;he setzen 5
   ├── wiederhole 4 mal
   │   ├── gehen 5
   │   └── Winkel &auml;ndern 90
   └── landen
-  End</pre>
+  Ende</pre>
 
 <p>Was passiert: Die Drohne fliegt ein 5×5 Meter gro&szlig;es Quadratmuster in 5 m H&ouml;he, bevor sie landet.</p>
 
 <h3>4. Tastaturgesteuerte Drohne</h3>
 <p>Mit der Tastatur die Drohne in Echtzeit steuern. Dies verwendet eine <code>solange wahr</code>-Schleife mit Sensor-Blöcken.</p>
 <pre>
-  Start
+  Beginn
   ├── abheben
   ├── solange wahr
   │   ├── wenn Taste "Pfeil Oben" gedr&uuml;ckt
@@ -649,7 +649,7 @@
   │   │   └── Winkel &auml;ndern 5
   │   └── warten 0.1
   └── landen
-  End</pre>
+  Ende</pre>
 
 <div class="tip">
   <strong>Tipp:</strong> Klicken Sie bei tastaturgesteuerten Programmen zuerst auf die 3D-Ansicht, um den Tastaturfokus sicherzustellen, und verwenden Sie dann die Pfeiltasten zur Steuerung der Drohne.
@@ -658,7 +658,7 @@
 <h3>5. H&ouml;henbewusster Flug</h3>
 <p>Auf H&ouml;he steigen, vorw&auml;rts fliegen und Sensoren verwenden.</p>
 <pre>
-  Start
+  Beginn
   ├── abheben
   ├── H&ouml;he setzen 8
   ├── Geschwindigkeit 3
@@ -668,14 +668,14 @@
   ├── gehen 10
   ├── Rauch falsch
   └── landen
-  End</pre>
+  Ende</pre>
 
 <p>Was passiert: Die Drohne steigt auf 8 m, bewegt sich schnell mit Geschwindigkeit 3 vorw&auml;rts, dreht sich, hinterl&auml;sst 10 m lang eine Rauchspur und landet dann.</p>
 
 <h3>6. Automatisierte Patrouille mit Schleifen</h3>
 <p>Ein rechteckiges Gebiet kontinuierlich patrouillieren (bis zum Stopp).</p>
 <pre>
-  Start
+  Beginn
   ├── abheben
   ├── H&ouml;he setzen 4
   ├── Geschwindigkeit 2
@@ -686,7 +686,7 @@
   │   ├── Winkel &auml;ndern 90
   │   └── warten 0.5
   └── landen
-  End</pre>
+  Ende</pre>
 
 <p>Was passiert: Die Drohne fliegt ein rechteckiges Patrouillenmuster in 4 m H&ouml;he, bis Sie auf Stopp klicken.</p>
 
@@ -696,7 +696,7 @@
 
 <h3>Bewährte Methoden</h3>
 <ul>
-  <li><strong>Mit Start beginnen:</strong> Beginnen Sie Ihr Programm immer mit einem <code>Start</code>-Block, um den Ausf&uuml;hrungseinstiegspunkt klar zu definieren.</li>
+  <li><strong>Mit Beginn anfangen:</strong> Beginnen Sie Ihr Programm immer mit einem <code>Beginn</code>-Block, um den Ausf&uuml;hrungseinstiegspunkt klar zu definieren.</li>
   <li><strong>Zuerst abheben:</strong> Bewegungsbefehle (<code>gehen</code>, <code>steigend gehen</code>, <code>gleiten</code>, <code>gehe zu</code>, <code>verschieben um</code>, <code>Kurve abs</code>, <code>Kurve</code>, <code>zur Basis zur&uuml;ck</code> usw.) funktionieren nur, w&auml;hrend die Drohne in der Luft ist. F&uuml;gen Sie immer <code>abheben</code> vor Bewegungen ein.</li>
   <li><strong>Geländebewusstsein:</strong> Die Drohne passt sich automatisch an die Geländehöhe an. Bei der Landung sinkt sie auf die Bodenhöhe an ihrer aktuellen Position, die in hügeligen Szenarien variieren kann.</li>
   <li><strong>Geschwindigkeitssteuerung:</strong> Der <code>Geschwindigkeit</code>-Block beeinflusst, wie schnell sich die Drohne mit <code>gehen</code>, <code>steigend gehen</code>, <code>gehe zu</code>, <code>verschieben um</code>, <code>Kurve abs</code>, <code>Kurve</code> und <code>zur Basis zur&uuml;ck</code> bewegt. Der Geschwindigkeitsbereich ist 0–10; die Standardeinstellung ist 1,0.</li>

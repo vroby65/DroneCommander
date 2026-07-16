@@ -522,6 +522,9 @@ Blockly.Msg["BKY_SENSOR_SPEED_TOOLTIP"] = "Renvoie la vitesse du drone";
 Blockly.Msg["BKY_FLOW_START_TOOLTIP"] = "démarrage du programme";
 Blockly.Msg["BKY_FLOW_END_TOOLTIP"] = "arrêt du programme";
 
+Blockly.Msg["BKY_FLOW_START"] = "Début";
+Blockly.Msg["BKY_FLOW_END"] = "Fin";
+
 
 // Menu
 Blockly.Msg.BKY_NEW = "Nouveau";

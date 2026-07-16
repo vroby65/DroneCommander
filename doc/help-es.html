@@ -106,7 +106,7 @@
 <p>No se requiere experiencia en programacion — solo une los bloques y presiona Ejecutar!</p>
 
 <div class="tip">
-  <strong>Inicio rapido:</strong> Arrastra un bloque <code>Start</code>, adjunta un bloque <code>despegar</code>, luego un bloque <code>aterrizar</code>, y haz clic en ▶ Ejecutar. Tu dron despegara y aterrizara!
+  <strong>Inicio rapido:</strong> Arrastra un bloque <code>Inicio</code>, adjunta un bloque <code>despegar</code>, luego un bloque <code>aterrizar</code>, y haz clic en ▶ Ejecutar. Tu dron despegara y aterrizara!
 </div>
 
 <hr>
@@ -167,9 +167,9 @@
 
 <h3>Como construir un programa</h3>
 <ol>
-  <li>Cada programa debe comenzar con un bloque <strong>Start</strong> (de la categoria <em>Flow</em>).</li>
-  <li>Adjunta bloques de comando del <strong>Dron</strong> debajo del bloque Start en el orden en que deseas que se ejecuten.</li>
-  <li>Opcionalmente, termina con un bloque <strong>End</strong>.</li>
+  <li>Cada programa debe comenzar con un bloque <strong>Inicio</strong> (de la categoria <em>Flow</em>).</li>
+  <li>Adjunta bloques de comando del <strong>Dron</strong> debajo del bloque Inicio en el orden en que deseas que se ejecuten.</li>
+  <li>Opcionalmente, termina con un bloque <strong>Fin</strong>.</li>
   <li>Haz clic en ▶ <strong>Ejecutar</strong> para ver al dron ejecutar tu programa.</li>
 </ol>
 
@@ -292,12 +292,12 @@
   </tr>
   <tr>
     <td><code>curva abs x [X] y [Y] z [Z] xd [XD] yd [YD] zd [ZD]</code></td>
-    <td>Hace volar el dron en una curva que pasa por tres puntos: la posicion actual, el punto intermedio absoluto X/Y/Z y el destino absoluto XD/YD/ZD. La velocidad actual controla el movimiento.</td>
+    <td>Hace volar el dron en una curva que pasa por tres puntos: la posicion actual, el punto intermedio absoluto X/Y/Z y el destino absoluto XD/YD/ZD. El arco se calcula en el plano 3D definido por los tres puntos, por lo que la curva puede ser horizontal, vertical o inclinada. La velocidad actual controla el movimiento.</td>
     <td>Si</td>
   </tr>
   <tr>
     <td><code>curva x [X] y [Y] z [Z] xd [XD] yd [YD] zd [ZD]</code></td>
-    <td>Hace volar el dron en una curva que pasa por tres puntos con coordenadas relativas a su direccion actual: Z indica adelante/atras y X derecha/izquierda. X/Y/Z desplaza el punto intermedio desde la posicion actual; XD/YD/ZD desplaza el destino desde ese punto intermedio. La velocidad actual controla el movimiento.</td>
+    <td>Hace volar el dron en una curva que pasa por tres puntos con coordenadas relativas a su direccion actual: Z indica adelante/atras y X derecha/izquierda. X/Y/Z desplaza el punto intermedio desde la posicion actual; XD/YD/ZD desplaza el destino desde ese punto intermedio. El arco se calcula en el plano 3D definido por los tres puntos, por lo que la curva puede ser horizontal, vertical o inclinada. La velocidad actual controla el movimiento.</td>
     <td>Si</td>
   </tr>
   <tr>
@@ -387,17 +387,17 @@
     <th>Descripcion</th>
   </tr>
   <tr>
-    <td><code>Start</code></td>
+    <td><code>Inicio</code></td>
     <td>El punto de entrada de cada programa. Todos los comandos del dron deben estar conectados debajo de este bloque. Tiene forma de "sombrero" y no tiene conexion en la parte superior.</td>
   </tr>
   <tr>
-    <td><code>End</code></td>
+    <td><code>Fin</code></td>
     <td>Un bloque opcional para marcar el final del programa. Los bloques debajo de el no se ejecutaran.</td>
   </tr>
 </table>
 
 <div class="tip">
-  <strong>Consejo:</strong> Si no incluyes un bloque <code>Start</code>, el programa aun se ejecutara pero puede ejecutar los bloques en un orden inesperado. Siempre comienza con <code>Start</code>.
+  <strong>Consejo:</strong> Si no incluyes un bloque <code>Inicio</code>, el programa aun se ejecutara pero puede ejecutar los bloques en un orden inesperado. Siempre comienza con <code>Inicio</code>.
 </div>
 
 <hr>
@@ -494,7 +494,7 @@
 <h2 id="files">Gestion de archivos</h2>
 
 <h3>Nuevo</h3>
-<p>Haz clic en <strong>Nuevo</strong> para limpiar el programa actual y comenzar con un espacio de trabajo nuevo que contiene solo un bloque <code>Start</code>. Se te preguntara si deseas guardar el programa actual primero.</p>
+<p>Haz clic en <strong>Nuevo</strong> para limpiar el programa actual y comenzar con un espacio de trabajo nuevo que contiene solo un bloque <code>Inicio</code>. Se te preguntara si deseas guardar el programa actual primero.</p>
 
 <h3>Guardar</h3>
 <p>Haz clic en <strong>Guardar</strong> para descargar tu programa actual como un archivo <code>.xml</code>. Se te solicitara un nombre de archivo. El programa tambien se guarda automaticamente en el almacenamiento local de tu navegador.</p>
@@ -599,44 +599,44 @@
 <h3>1. Despegue y aterrizaje basicos</h3>
 <p>El programa mas simple — el dron sube y vuelve a bajar.</p>
 <pre>
-  Start
+  Inicio
   ├── despegar
   └── aterrizar
-  End</pre>
+  Fin</pre>
 
 <p>Que sucede: El dron se eleva a 10m, flota brevemente, luego desciende y aterriza en el suelo.</p>
 
 <h3>2. Vuelo hacia adelante con regreso</h3>
 <p>Vuela hacia adelante, date la vuelta y regresa.</p>
 <pre>
-  Start
+  Inicio
   ├── despegar
   ├── avanzar 10
   ├── fijar angulo 180
   ├── avanzar 10
   └── aterrizar
-  End</pre>
+  Fin</pre>
 
 <p>Que sucede: El dron despega, vuela 10 metros hacia adelante, gira 180°, vuela 10 metros de regreso y aterriza en el punto original.</p>
 
 <h3>3. Patron cuadrado</h3>
 <p>Vuela en un cuadrado moviendote y girando repetidamente.</p>
 <pre>
-  Start
+  Inicio
   ├── despegar
   ├── fijar altitud 5
   ├── repetir 4 veces
   │   ├── avanzar 5
   │   └── cambiar angulo 90
   └── aterrizar
-  End</pre>
+  Fin</pre>
 
 <p>Que sucede: El dron vuela un patron cuadrado de 5×5 metros a 5m de altitud antes de aterrizar.</p>
 
 <h3>4. Dron controlado por teclado</h3>
 <p>Usa el teclado para volar el dron en tiempo real. Esto utiliza un bucle <code>while true</code> con bloques de sensores.</p>
 <pre>
-  Start
+  Inicio
   ├── despegar
   ├── mientras verdadero
   │   ├── si tecla "Flecha Arriba" presionada
@@ -649,7 +649,7 @@
   │   │   └── cambiar angulo 5
   │   └── esperar 0.1
   └── aterrizar
-  End</pre>
+  Fin</pre>
 
 <div class="tip">
   <strong>Consejo:</strong> Al ejecutar programas controlados por teclado, haz clic primero en la vista 3D para asegurar el foco del teclado, luego usa las teclas de flecha para controlar el dron.
@@ -658,7 +658,7 @@
 <h3>5. Vuelo con conciencia de altitud</h3>
 <p>Asciende a una altitud, avanza y usa sensores.</p>
 <pre>
-  Start
+  Inicio
   ├── despegar
   ├── fijar altitud 8
   ├── velocidad 3
@@ -668,14 +668,14 @@
   ├── avanzar 10
   ├── humo falso
   └── aterrizar
-  End</pre>
+  Fin</pre>
 
 <p>Que sucede: El dron asciende a 8m, avanza rapidamente a velocidad 3, gira, deja una estela de humo durante 10m, luego aterriza.</p>
 
 <h3>6. Patrulla automatica con bucles</h3>
 <p>Patrulla un area rectangular continuamente (hasta que se detenga).</p>
 <pre>
-  Start
+  Inicio
   ├── despegar
   ├── fijar altitud 4
   ├── velocidad 2
@@ -686,7 +686,7 @@
   │   ├── cambiar angulo 90
   │   └── esperar 0.5
   └── aterrizar
-  End</pre>
+  Fin</pre>
 
 <p>Que sucede: El dron vuela un patron de patrulla rectangular a 4m de altitud hasta que hagas clic en Detener.</p>
 
@@ -696,7 +696,7 @@
 
 <h3>Mejores practicas</h3>
 <ul>
-  <li><strong>Comienza con Start:</strong> Siempre inicia tu programa con un bloque <code>Start</code> para definir claramente el punto de entrada de la ejecucion.</li>
+  <li><strong>Comienza con Inicio:</strong> Siempre inicia tu programa con un bloque <code>Inicio</code> para definir claramente el punto de entrada de la ejecucion.</li>
   <li><strong>Despega primero:</strong> Los comandos de movimiento (<code>avanzar</code>, <code>avanzar subiendo</code>, <code>deslizar</code>, <code>ir a</code>, <code>mover por</code>, <code>curva abs</code>, <code>curva</code>, <code>volver a la base</code>, etc.) solo funcionan mientras el dron esta en vuelo. Incluye siempre <code>despegar</code> antes del movimiento.</li>
   <li><strong>Conciencia del terreno:</strong> El dron se adapta automaticamente a la altura del terreno. Al aterrizar, desciende al nivel del suelo en su posicion actual, que puede variar en escenarios con colinas.</li>
   <li><strong>Control de velocidad:</strong> El bloque <code>velocidad</code> afecta la rapidez con que el dron se mueve con <code>avanzar</code>, <code>avanzar subiendo</code>, <code>ir a</code>, <code>mover por</code>, <code>curva abs</code>, <code>curva</code> y <code>volver a la base</code>. El rango de velocidad es 0–10; el valor predeterminado es 1.0.</li>

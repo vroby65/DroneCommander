@@ -106,7 +106,7 @@
 <p>Não é necessária experiência em programação — basta encaixar os blocos e pressionar Executar!</p>
 
 <div class="tip">
-  <strong>Início rápido:</strong> Arraste um bloco <code>Start</code>, conecte um bloco <code>decolar</code>, depois um bloco <code>aterrar</code> e clique em ▶ Executar. O seu drone vai descolar e aterrar!
+  <strong>Início rápido:</strong> Arraste um bloco <code>Início</code>, conecte um bloco <code>decolar</code>, depois um bloco <code>aterrar</code> e clique em ▶ Executar. O seu drone vai descolar e aterrar!
 </div>
 
 <hr>
@@ -167,9 +167,9 @@
 
 <h3>Como construir um programa</h3>
 <ol>
-  <li>Cada programa deve começar com um bloco <strong>Start</strong> (da categoria <em>Flow</em>).</li>
-  <li>Conecte blocos de comando de <strong>Drone</strong> abaixo do bloco Start na ordem em que deseja que sejam executados.</li>
-  <li>Opcionalmente, termine com um bloco <strong>End</strong>.</li>
+  <li>Cada programa deve começar com um bloco <strong>Início</strong> (da categoria <em>Flow</em>).</li>
+  <li>Conecte blocos de comando de <strong>Drone</strong> abaixo do bloco Início na ordem em que deseja que sejam executados.</li>
+  <li>Opcionalmente, termine com um bloco <strong>Fim</strong>.</li>
   <li>Clique em ▶ <strong>Executar</strong> para ver o drone executar o seu programa.</li>
 </ol>
 
@@ -292,12 +292,12 @@
   </tr>
   <tr>
     <td><code>curva abs x [X] y [Y] z [Z] xd [XD] yd [YD] zd [ZD]</code></td>
-    <td>Faz o drone voar numa curva que passa por três pontos: a posição atual, o ponto intermédio absoluto X/Y/Z e o destino absoluto XD/YD/ZD. A velocidade atual controla o movimento.</td>
+    <td>Faz o drone voar numa curva que passa por três pontos: a posição atual, o ponto intermédio absoluto X/Y/Z e o destino absoluto XD/YD/ZD. O arco é calculado no plano 3D definido pelos três pontos, pelo que a curva pode ser horizontal, vertical ou inclinada. A velocidade atual controla o movimento.</td>
     <td>Sim</td>
   </tr>
   <tr>
     <td><code>curva x [X] y [Y] z [Z] xd [XD] yd [YD] zd [ZD]</code></td>
-    <td>Faz o drone voar numa curva que passa por três pontos com coordenadas relativas à direção atual: Z indica frente/trás e X direita/esquerda. X/Y/Z desloca o ponto intermédio a partir da posição atual; XD/YD/ZD desloca o destino a partir desse ponto intermédio. A velocidade atual controla o movimento.</td>
+    <td>Faz o drone voar numa curva que passa por três pontos com coordenadas relativas à direção atual: Z indica frente/trás e X direita/esquerda. X/Y/Z desloca o ponto intermédio a partir da posição atual; XD/YD/ZD desloca o destino a partir desse ponto intermédio. O arco é calculado no plano 3D definido pelos três pontos, pelo que a curva pode ser horizontal, vertical ou inclinada. A velocidade atual controla o movimento.</td>
     <td>Sim</td>
   </tr>
   <tr>
@@ -387,17 +387,17 @@
     <th>Descrição</th>
   </tr>
   <tr>
-    <td><code>Start</code></td>
+    <td><code>Início</code></td>
     <td>O ponto de entrada de cada programa. Todos os comandos do drone devem ser conectados abaixo deste bloco. Tem uma forma de "chapéu" e não tem conexão na parte superior.</td>
   </tr>
   <tr>
-    <td><code>End</code></td>
+    <td><code>Fim</code></td>
     <td>Um bloco opcional para marcar o fim do programa. Quaisquer blocos abaixo dele não serão executados.</td>
   </tr>
 </table>
 
 <div class="tip">
-  <strong>Dica:</strong> Se não incluir um bloco <code>Start</code>, o programa ainda será executado, mas pode executar blocos numa ordem inesperada. Comece sempre com <code>Start</code>.
+  <strong>Dica:</strong> Se não incluir um bloco <code>Início</code>, o programa ainda será executado, mas pode executar blocos numa ordem inesperada. Comece sempre com <code>Início</code>.
 </div>
 
 <hr>
@@ -494,7 +494,7 @@
 <h2 id="files">Gestão de Ficheiros</h2>
 
 <h3>Novo</h3>
-<p>Clique em <strong>Novo</strong> para limpar o programa atual e começar com uma área de trabalho nova contendo apenas um bloco <code>Start</code>. Será perguntado se deseja salvar o programa atual primeiro.</p>
+<p>Clique em <strong>Novo</strong> para limpar o programa atual e começar com uma área de trabalho nova contendo apenas um bloco <code>Início</code>. Será perguntado se deseja salvar o programa atual primeiro.</p>
 
 <h3>Salvar</h3>
 <p>Clique em <strong>Salvar</strong> para descarregar o seu programa atual como um ficheiro <code>.xml</code>. Será solicitado um nome para o ficheiro. O programa também é automaticamente salvo no armazenamento local do seu navegador.</p>
@@ -599,44 +599,44 @@
 <h3>1. Descolagem e Aterragem Básicas</h3>
 <p>O programa mais simples — o drone sobe e volta a descer.</p>
 <pre>
-  Start
+  Início
   ├── decolar
   └── aterrar
-  End</pre>
+  Fim</pre>
 
 <p>O que acontece: O drone eleva-se a 10m, paira brevemente, depois desce e aterra no solo abaixo.</p>
 
 <h3>2. Voo para a Frente com Regresso</h3>
 <p>Voe para a frente, vire-se e volte.</p>
 <pre>
-  Start
+  Início
   ├── decolar
   ├── andar 10
   ├── definir ângulo 180
   ├── andar 10
   └── aterrar
-  End</pre>
+  Fim</pre>
 
 <p>O que acontece: O drone descola, voa 10 metros para a frente, vira 180°, voa 10 metros para trás e aterra no local original.</p>
 
 <h3>3. Padrão Quadrado</h3>
 <p>Voe num quadrado movendo-se e virando repetidamente.</p>
 <pre>
-  Start
+  Início
   ├── decolar
   ├── definir altitude 5
   ├── repetir 4 vezes
   │   ├── andar 5
   │   └── alterar ângulo 90
   └── aterrar
-  End</pre>
+  Fim</pre>
 
 <p>O que acontece: O drone voa num padrão quadrado de 5×5 metros a 5m de altitude antes de aterrar.</p>
 
 <h3>4. Drone Controlado por Teclado</h3>
 <p>Use o teclado para pilotar o drone em tempo real. Isto usa um laço <code>while verdadeiro</code> com blocos de sensores.</p>
 <pre>
-  Start
+  Início
   ├── decolar
   ├── enquanto verdadeiro
   │   ├── se tecla "Seta para Cima" pressionada
@@ -649,7 +649,7 @@
   │   │   └── alterar ângulo 5
   │   └── esperar 0.1
   └── aterrar
-  End</pre>
+  Fim</pre>
 
 <div class="tip">
   <strong>Dica:</strong> Ao executar programas controlados por teclado, clique primeiro na vista 3D para garantir o foco do teclado e, em seguida, use as setas para controlar o drone.
@@ -658,7 +658,7 @@
 <h3>5. Voo com Sensores de Altitude</h3>
 <p>Suba a altitude, mova-se para a frente e use sensores.</p>
 <pre>
-  Start
+  Início
   ├── decolar
   ├── definir altitude 8
   ├── definir velocidade 3
@@ -668,14 +668,14 @@
   ├── andar 10
   ├── fumaça falso
   └── aterrar
-  End</pre>
+  Fim</pre>
 
 <p>O que acontece: O drone sobe a 8m, move-se para a frente rapidamente a velocidade 3, vira, deixa um rasto de fumo por 10m e depois aterra.</p>
 
 <h3>6. Patrulha Automática com Laços</h3>
 <p>Patrulhe uma área retangular continuamente (até ser parado).</p>
 <pre>
-  Start
+  Início
   ├── decolar
   ├── definir altitude 4
   ├── definir velocidade 2
@@ -686,7 +686,7 @@
   │   ├── alterar ângulo 90
   │   └── esperar 0.5
   └── aterrar
-  End</pre>
+  Fim</pre>
 
 <p>O que acontece: O drone voa num padrão de patrulha retangular a 4m de altitude até clicar em Parar.</p>
 
@@ -696,7 +696,7 @@
 
 <h3>Melhores práticas</h3>
 <ul>
-  <li><strong>Comece com Start:</strong> Inicie sempre o seu programa com um bloco <code>Start</code> para definir claramente o ponto de entrada da execução.</li>
+  <li><strong>Comece com Início:</strong> Inicie sempre o seu programa com um bloco <code>Início</code> para definir claramente o ponto de entrada da execução.</li>
   <li><strong>Descole primeiro:</strong> Os comandos de movimento (<code>andar</code>, <code>andar subindo</code>, <code>deslizar</code>, <code>ir para</code>, <code>mover por</code>, <code>curva abs</code>, <code>curva</code>, <code>voltar à base</code>, etc.) só funcionam enquanto o drone está em voo. Inclua sempre <code>decolar</code> antes do movimento.</li>
   <li><strong>Consciência do terreno:</strong> O drone adapta-se automaticamente à altura do terreno. Ao aterrar, desce ao nível do solo na sua posição atual, que pode variar em cenários montanhosos.</li>
   <li><strong>Controlo de velocidade:</strong> O bloco <code>velocidade</code> afeta a rapidez com que o drone se move com <code>andar</code>, <code>andar subindo</code>, <code>ir para</code>, <code>mover por</code>, <code>curva abs</code>, <code>curva</code> e <code>voltar à base</code>. O intervalo de velocidade é 0–10; o predefinido é 1.0.</li>

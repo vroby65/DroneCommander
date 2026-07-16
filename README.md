@@ -66,7 +66,7 @@ The **move by** block interprets X/Y/Z relative to the drone's current direction
 
 ## Curved Flight Notes
 
-The **curve** and **curve abs** blocks fly through the current position, an intermediate point, and a destination point. Curves are interpolated as smooth arcs where possible and do not change the drone direction.
+The **curve** and **curve abs** blocks fly through the current position, an intermediate point, and a destination point. Curves are interpolated as smooth arcs where possible and do not change the drone direction. The arc is calculated in the 3D plane defined by the three points, so circular paths can be horizontal, vertical, or tilted.
 
 The drone banks while moving along a curve, so consecutive curve commands transition without separate pauses for tilting and straightening the drone.
 
