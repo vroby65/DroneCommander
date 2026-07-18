@@ -20,6 +20,7 @@ https://vroby65.github.io/DroneCommander/
 - **Scenarios**: flight field, urban track, metropolis, and tropical island.
 - **Graphics profiles**: Performance, Balanced, and Quality.
 - **Program management** with New, Save, Load, autosave to browser local storage, and remembered file names.
+- **Ryze/DJI Tello execution** through the companion [Drone Commander Tello Driver](https://github.com/vroby65/DroneCommander-Driver).
 - **Multilingual UI and help** in English, Italian, French, German, Spanish, Portuguese, Arabic, Simplified Chinese, Korean, and Japanese.
 - **Resizable layout** with a Blockly editor, 3D viewer, and a status panel directly below the viewer with live program-variable values.
 
@@ -59,6 +60,12 @@ Using an HTTP server is recommended because the app loads scenarios, textures, m
 4. Use the panel directly below the 3D viewer to inspect or adjust X, Z, altitude, direction, and flight status. During execution it also lists every Blockly variable and its current value, one per line.
 5. Use **Save** and **Load** to export or import Blockly XML programs.
 6. Switch scenario or graphics profile from the toolbar when needed.
+
+## Fly On A Real Tello
+
+The companion [Drone Commander Tello Driver](https://github.com/vroby65/DroneCommander-Driver) is a native Go/Fyne application that loads the XML programs saved by Drone Commander and executes them on a Ryze/DJI Tello through Tello SDK 2.0.
+
+Create and test the program in this simulator, save it as an XML file, then open it in the driver. Test it again in the driver's offline simulation mode before connecting to the drone's `TELLO-...` Wi-Fi network. For indoor flight, the driver interprets one Drone Commander unit as one centimeter and enforces the Tello movement limits documented in its README.
 
 ## Relative Movement Coordinates
 
