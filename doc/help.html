@@ -138,7 +138,7 @@
 
 <ul>
   <li><strong>Left Panel</strong> — The Blockly editor where you build your flight program.</li>
-  <li><strong>Right Panel</strong> — The 3D simulation view with a status bar at the bottom.</li>
+  <li><strong>Right Panel</strong> — The 3D simulation view with the status panel directly below it.</li>
 </ul>
 
 <p><strong>Left panel menu bar (top of the editor):</strong></p>
@@ -414,7 +414,7 @@
 <ul>
   <li>Each block runs sequentially with a small delay between commands so you can see the movement.</li>
   <li>The drone's sound (propeller noise) plays during flight.</li>
-  <li>The status panel updates in real time with position, altitude, and direction.</li>
+  <li>The status panel updates in real time with position, altitude, direction, and the current value of each Blockly variable.</li>
   <li>Propellers spin visibly during flight.</li>
   <li>Smoke trails are rendered if smoke mode is enabled.</li>
 </ul>
@@ -460,7 +460,7 @@
 
 <h2 id="status">Status Panel</h2>
 
-<p>The status panel is shown at the bottom of the right panel. It displays the drone's current telemetry and allows manual adjustments:</p>
+<p>The status panel is shown directly below the 3D view. It displays the drone's current telemetry, allows manual adjustments, and monitors program variables during execution:</p>
 
 <table class="block-table">
   <tr>
@@ -486,6 +486,10 @@
   <tr>
     <td><strong>Status</strong></td>
     <td>Shows "On Ground" or "In Flight" depending on the drone's state.</td>
+  </tr>
+  <tr>
+    <td><strong>Variables</strong></td>
+    <td>Lists every Blockly variable and its current value, one per line. A dash is shown until a variable is initialized; the latest values remain visible when execution ends.</td>
   </tr>
 </table>
 

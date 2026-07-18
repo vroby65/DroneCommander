@@ -156,10 +156,55 @@ const setupStatusInputs = () => {
     });
 };
 
+const formatProgramVariableValue = value => {
+    if (value === undefined) return '—';
+    if (typeof value === 'string') return JSON.stringify(value);
+    if (typeof value === 'number' || typeof value === 'boolean' || value === null) return String(value);
+
+    try {
+        const serializedValue = JSON.stringify(value);
+        return serializedValue === undefined ? String(value) : serializedValue;
+    } catch (error) {
+        return String(value);
+    }
+};
+
+function __droneCommanderUpdateVariables(variables) {
+    const valuesContainer = document.getElementById('variableValues');
+    valuesContainer.replaceChildren();
+
+    if (!variables.length) {
+        valuesContainer.textContent = '—';
+        return;
+    }
+
+    variables.forEach(([name, value]) => {
+        const variableValue = document.createElement('span');
+        variableValue.className = 'variableValue';
+        variableValue.textContent = `${name} = ${formatProgramVariableValue(value)}`;
+        valuesContainer.appendChild(variableValue);
+    });
+}
+
+const getGeneratedProgramVariables = () => {
+    const variableModels = workspace.getAllVariables();
+    if (!variableModels.length) return [];
+
+    Blockly.JavaScript.init(workspace);
+    const variableType = Blockly.Names.NameType.VARIABLE;
+    const variables = variableModels.map(variable => ({
+        displayName: variable.name,
+        codeName: Blockly.JavaScript.nameDB_.getName(variable.getId(), variableType)
+    }));
+    Blockly.JavaScript.finish('');
+    return variables;
+};
+
 // Program file actions and generated-code execution
 document.getElementById('newBtn').addEventListener('click', () => {
     setProgramName(defaultProgramName);
     loadWorkspaceFromXmlText(defaultWorkspaceXmlText);
+    __droneCommanderUpdateVariables([]);
 });
 document.getElementById('saveBtn').addEventListener('click', () => {
     const requestedName = prompt(Blockly.Msg.BKY_SAVE_PROMPT || 'File name:', programName);
@@ -189,6 +234,7 @@ document.getElementById('fileInput').addEventListener('change', event => {
         if (loadWorkspaceFromXmlText(xmlText, false)) {
             setProgramName(file.name);
             saveProgramToLocalStorage();
+            __droneCommanderUpdateVariables([]);
         }
         event.target.value = '';
     };
@@ -204,14 +250,21 @@ document.getElementById('runBtn').addEventListener('click', () => {
     document.getElementById("runBtn").disabled = true;
     resetScene();
 
+    Blockly.JavaScript.addReservedWords('__droneCommanderUpdateVariables');
     let code = Blockly.JavaScript.workspaceToCode(workspace);
+    const programVariables = getGeneratedProgramVariables();
+    __droneCommanderUpdateVariables(programVariables.map(variable => [variable.displayName, undefined]));
+    const variableSnapshotCode = programVariables.length ?
+        `__droneCommanderUpdateVariables([${programVariables.map(variable =>
+            `[${JSON.stringify(variable.displayName)}, typeof ${variable.codeName} === 'undefined' ? undefined : ${variable.codeName}]`
+        ).join(',')}]);` : '';
     delay = 10;
     run = true;
 
     // Flight commands return promises. Make user procedures asynchronous and add
     // a short cooperative pause/checkpoint after each generated statement.
     code = code.replace(/\bfunction\b/g, 'async function');
-    code = code.replace(/\n/g, ';\n  await sleep(delay);delay=10;if(run!=true)return;');
+    code = code.replace(/\n/g, `;\n  ${variableSnapshotCode}await sleep(delay);delay=10;if(run!=true)return;`);
     const wrappedCode = `
       async function _run() {
         ${code}
@@ -327,6 +380,7 @@ function applyLocalizedStrings() {
     document.getElementById('labelAlt').innerText = Blockly.Msg["BKY_STATUS_ALTITUDE"] || 'Altitude:';
     document.getElementById('labelDir').innerText = Blockly.Msg["BKY_STATUS_DIRECTION"] || 'Direction:';
     document.getElementById('labelStatus').innerText = Blockly.Msg["BKY_STATUS_FLIGHT"] || 'Status:';
+    document.getElementById('labelVariables').innerText = (Blockly.Msg["BKY_CATEGORY_VARIABLES"] || 'Variables') + ':';
 
     // Current flight status
     if (typeof drone !== 'undefined' && drone) {

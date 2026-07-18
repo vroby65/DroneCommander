@@ -138,7 +138,7 @@
 
 <ul>
   <li><strong>Linkes Panel</strong> – Der Blockly-Editor, in dem Sie Ihr Flugprogramm erstellen.</li>
-  <li><strong>Rechtes Panel</strong> – Die 3D-Simulationsansicht mit einer Statusleiste am unteren Rand.</li>
+  <li><strong>Rechtes Panel</strong> – Die 3D-Simulationsansicht mit dem Status-Panel direkt darunter.</li>
 </ul>
 
 <p><strong>Men&uuml;leiste des linken Panels (oben im Editor):</strong></p>
@@ -414,7 +414,7 @@
 <ul>
   <li>Jeder Block wird nacheinander mit einer kleinen Verz&ouml;gerung zwischen den Befehlen ausgef&uuml;hrt, damit Sie die Bewegung sehen k&ouml;nnen.</li>
   <li>Das Drohnenger&auml;usch (Propellerl&auml;rm) ert&ouml;nt w&auml;hrend des Flugs.</li>
-  <li>Das Status-Panel aktualisiert sich in Echtzeit mit Position, H&ouml;he und Richtung.</li>
+  <li>Das Status-Panel aktualisiert sich in Echtzeit mit Position, H&ouml;he, Richtung und dem aktuellen Wert jeder Blockly-Variablen.</li>
   <li>Die Propeller drehen sich sichtbar w&auml;hrend des Flugs.</li>
   <li>Rauchspuren werden dargestellt, wenn der Rauchmodus aktiviert ist.</li>
 </ul>
@@ -460,7 +460,7 @@
 
 <h2 id="status">Status-Panel</h2>
 
-<p>Das Status-Panel wird am unteren Rand des rechten Panels angezeigt. Es zeigt die aktuelle Telemetrie der Drohne und erm&ouml;glicht manuelle Anpassungen:</p>
+<p>Das Status-Panel wird direkt unter der 3D-Ansicht angezeigt. Es zeigt die aktuelle Telemetrie der Drohne, erm&ouml;glicht manuelle Anpassungen und &uuml;berwacht die Programmvariablen w&auml;hrend der Ausf&uuml;hrung:</p>
 
 <table class="block-table">
   <tr>
@@ -486,6 +486,10 @@
   <tr>
     <td><strong>Status</strong></td>
     <td>Zeigt "Am Boden" oder "Im Flug" je nach Zustand der Drohne an.</td>
+  </tr>
+  <tr>
+    <td><strong>Variablen</strong></td>
+    <td>Listet jede Blockly-Variable und ihren aktuellen Wert in einer eigenen Zeile auf. Bis zur Initialisierung wird ein Gedankenstrich angezeigt; die letzten Werte bleiben nach dem Programmende sichtbar.</td>
   </tr>
 </table>
 

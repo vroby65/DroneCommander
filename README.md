@@ -21,7 +21,7 @@ https://vroby65.github.io/DroneCommander/
 - **Graphics profiles**: Performance, Balanced, and Quality.
 - **Program management** with New, Save, Load, autosave to browser local storage, and remembered file names.
 - **Multilingual UI and help** in English, Italian, French, German, Spanish, and Portuguese.
-- **Resizable layout** with a Blockly editor, 3D viewer, toolbar, and status panel.
+- **Resizable layout** with a Blockly editor, 3D viewer, and a status panel directly below the viewer with live program-variable values.
 
 ## Screenshots
 
@@ -56,7 +56,7 @@ Using an HTTP server is recommended because the app loads scenarios, textures, m
 1. Drag a **Start** block into the Blockly workspace.
 2. Attach drone blocks such as **take off**, **set altitude**, **walk**, **walk climbing**, **go to**, **move by**, **curve abs**, **curve**, **return to base**, **change angle**, and **land**.
 3. Click the green play button to run the program in the 3D viewer.
-4. Use the status panel to inspect or adjust X, Z, altitude, direction, and flight status.
+4. Use the panel directly below the 3D viewer to inspect or adjust X, Z, altitude, direction, and flight status. During execution it also lists every Blockly variable and its current value, one per line.
 5. Use **Save** and **Load** to export or import Blockly XML programs.
 6. Switch scenario or graphics profile from the toolbar when needed.
 
@@ -77,7 +77,7 @@ For **curve abs**, both the intermediate point and destination use absolute prog
 - `index.html` - Application shell, layout, and ordered script loading.
 - `js/blockly.js` - Custom Blockly blocks, JavaScript generators, toolbox setup, and workspace persistence.
 - `js/drone-commands.js` - Three.js simulation, command queue, flight commands, scenarios, collision handling, audio, and rendering.
-- `js/ui.js` - Camera controls, status inputs, program actions, layout, localization, and selectors.
+- `js/ui.js` - Camera controls, status inputs, live program-variable monitoring, program actions, layout, localization, and selectors.
 - `js/app.js` - Startup sequence that initializes localization, Blockly, Three.js, and the render loop.
 - `doc/` - Help pages in supported languages.
 - `backgrounds/` - Scenario definitions.

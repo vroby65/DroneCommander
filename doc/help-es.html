@@ -138,7 +138,7 @@
 
 <ul>
   <li><strong>Panel izquierdo</strong> — El editor de Blockly donde construyes tu programa de vuelo.</li>
-  <li><strong>Panel derecho</strong> — La vista de simulacion 3D con una barra de estado en la parte inferior.</li>
+  <li><strong>Panel derecho</strong> — La vista de simulacion 3D con el panel de estado justo debajo.</li>
 </ul>
 
 <p><strong>Barra de menu del panel izquierdo (parte superior del editor):</strong></p>
@@ -414,7 +414,7 @@
 <ul>
   <li>Cada bloque se ejecuta secuencialmente con un pequeno retraso entre comandos para que puedas ver el movimiento.</li>
   <li>El sonido del dron (ruido de helice) se reproduce durante el vuelo.</li>
-  <li>El panel de estado se actualiza en tiempo real con la posicion, altitud y direccion.</li>
+  <li>El panel de estado se actualiza en tiempo real con la posicion, altitud, direccion y el valor actual de cada variable de Blockly.</li>
   <li>Las helices giran visiblemente durante el vuelo.</li>
   <li>Las estelas de humo se renderizan si el modo de humo esta activado.</li>
 </ul>
@@ -460,7 +460,7 @@
 
 <h2 id="status">Panel de estado</h2>
 
-<p>El panel de estado se muestra en la parte inferior del panel derecho. Muestra la telemetria actual del dron y permite ajustes manuales:</p>
+<p>El panel de estado se muestra justo debajo de la vista 3D. Presenta la telemetria actual del dron, permite ajustes manuales y supervisa las variables del programa durante la ejecucion:</p>
 
 <table class="block-table">
   <tr>
@@ -486,6 +486,10 @@
   <tr>
     <td><strong>Estado</strong></td>
     <td>Muestra "En suelo" o "En vuelo" segun el estado del dron.</td>
+  </tr>
+  <tr>
+    <td><strong>Variables</strong></td>
+    <td>Enumera cada variable de Blockly y su valor actual, una por linea. Muestra un guion hasta que la variable se inicializa y mantiene visibles los ultimos valores al finalizar la ejecucion.</td>
   </tr>
 </table>
 
