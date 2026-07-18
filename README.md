@@ -20,7 +20,7 @@ https://vroby65.github.io/DroneCommander/
 - **Scenarios**: flight field, urban track, metropolis, and tropical island.
 - **Graphics profiles**: Performance, Balanced, and Quality.
 - **Program management** with New, Save, Load, autosave to browser local storage, and remembered file names.
-- **Multilingual UI and help** in English, Italian, French, German, Spanish, and Portuguese.
+- **Multilingual UI and help** in English, Italian, French, German, Spanish, Portuguese, Arabic, Simplified Chinese, Korean, and Japanese.
 - **Resizable layout** with a Blockly editor, 3D viewer, and a status panel directly below the viewer with live program-variable values.
 
 ## Screenshots

@@ -1,0 +1,92 @@
+body {
+  font-family: "Segoe UI", "Noto Sans", "Noto Sans CJK SC", "Noto Sans CJK KR", "Noto Sans CJK JP", sans-serif;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 24px;
+  background: #f5f5f5;
+  color: #222;
+  line-height: 1.6;
+}
+h1 { color: #20a39e; border-bottom: 3px solid #20a39e; padding-bottom: 8px; }
+h2 { color: #20a39e; margin-top: 32px; border-bottom: 1px solid #ccc; padding-bottom: 4px; }
+h3 { color: #333; margin-top: 20px; }
+code {
+  background: #e8e8e8;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 14px;
+}
+.block-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 12px 0;
+}
+.block-table th,
+.block-table td {
+  border: 1px solid #ccc;
+  padding: 8px 12px;
+  text-align: left;
+  vertical-align: top;
+}
+.block-table th { background: #20a39e; color: #fff; }
+.block-table tr:nth-child(even) { background: #f0f0f0; }
+.note,
+.tip {
+  padding: 12px 16px;
+  margin: 16px 0;
+  border-radius: 4px;
+}
+.note { background: #fff8e1; border-left: 4px solid #f7c948; }
+.tip { background: #e8f5e9; border-left: 4px solid #66bb6a; }
+.category-section {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 16px 0;
+}
+.category-tag {
+  display: inline-block;
+  padding: 4px 14px;
+  border-radius: 16px;
+  color: #fff;
+  font-weight: bold;
+  font-size: 14px;
+}
+.cat-logic { background: #4b9cd3; }
+.cat-loops { background: #f7c948; color: #333; }
+.cat-math { background: #f86624; }
+.cat-text { background: #8c6bb1; }
+.cat-lists { background: #3aafb9; }
+.cat-variables { background: #ff8c42; }
+.cat-functions { background: #db5461; }
+.cat-sensors { background: #90be6d; }
+.cat-drone { background: #20a39e; }
+.cat-flow { background: #888; }
+ul,
+ol { padding-left: 24px; }
+footer {
+  margin-top: 48px;
+  padding-top: 16px;
+  border-top: 1px solid #ccc;
+  font-size: 14px;
+  color: #666;
+  text-align: center;
+}
+html[dir="rtl"] .block-table th,
+html[dir="rtl"] .block-table td { text-align: right; }
+html[dir="rtl"] ul,
+html[dir="rtl"] ol {
+  padding-right: 24px;
+  padding-left: 0;
+}
+html[dir="rtl"] .note,
+html[dir="rtl"] .tip {
+  border-right: 4px solid;
+  border-left: 0;
+}
+html[dir="rtl"] .note { border-right-color: #f7c948; }
+html[dir="rtl"] .tip { border-right-color: #66bb6a; }
+@media (max-width: 640px) {
+  body { padding: 12px; }
+  .block-table { display: block; overflow-x: auto; }
+}

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Drone Commander - 도움말</title>
+  <link rel="stylesheet" href="help.css">
+</head>
+<body>
+
+<h1>Drone Commander</h1>
+<p><strong>Drone Commander</strong>는 Blockly 시각적 프로그래밍으로 드론 비행을 제어하는 브라우저 애플리케이션입니다. 블록을 조립하고 프로그램을 실행하면 드론이 Three.js 실시간 3D 장면에서 명령을 수행합니다.</p>
+
+<div class="tip"><strong>빠른 시작:</strong> <code>시작</code> 블록을 놓고 그 아래에 <code>이륙</code>과 <code>착륙</code> 블록을 연결한 다음 녹색 ▶ 버튼을 누르세요.</div>
+
+<h2>목차</h2>
+<ol>
+  <li><a href="#interface">인터페이스 개요</a></li>
+  <li><a href="#editor">Blockly 편집기</a></li>
+  <li><a href="#drone-blocks">드론 블록</a></li>
+  <li><a href="#sensors">센서와 흐름</a></li>
+  <li><a href="#controls">실행 및 카메라 제어</a></li>
+  <li><a href="#status">상태와 변수</a></li>
+  <li><a href="#files">파일, 시나리오 및 그래픽</a></li>
+  <li><a href="#tips">사용 팁과 문제 해결</a></li>
+</ol>
+
+<h2 id="interface">인터페이스 개요</h2>
+<p>크기를 조절할 수 있는 구분선을 기준으로 화면이 두 패널로 나뉩니다.</p>
+<ul>
+  <li><strong>왼쪽 패널:</strong> 비행 프로그램을 만드는 Blockly 편집기와 언어, 파일, 시나리오, 그래픽 제어 메뉴입니다.</li>
+  <li><strong>오른쪽 패널:</strong> 3D 드론 화면이며, 바로 아래에 비행 상태와 프로그램 변수가 표시됩니다.</li>
+</ul>
+<p>오른쪽 도구 모음에는 전체 화면, 현재 파일 이름, ▶ 실행 및 ■ 정지 버튼이 있습니다. 전체 화면에서는 편집기와 상태 패널이 잠시 숨겨집니다.</p>
+
+<h2 id="editor">Blockly 편집기</h2>
+<ol>
+  <li>도구 상자에서 <code>시작</code> 블록을 끌어옵니다.</li>
+  <li>그 아래에 드론, 논리, 반복 및 기타 블록을 연결합니다.</li>
+  <li>숫자, 텍스트, 센서 또는 변수 블록을 알맞은 입력에 끼웁니다.</li>
+  <li>▶ 실행을 누릅니다. 프로그램 흐름에 연결된 블록만 순서대로 실행됩니다.</li>
+</ol>
+
+<div class="category-section">
+  <span class="category-tag cat-logic">논리</span>
+  <span class="category-tag cat-loops">반복</span>
+  <span class="category-tag cat-math">수학</span>
+  <span class="category-tag cat-text">텍스트</span>
+  <span class="category-tag cat-lists">목록</span>
+  <span class="category-tag cat-variables">변수</span>
+  <span class="category-tag cat-functions">함수</span>
+  <span class="category-tag cat-sensors">센서</span>
+  <span class="category-tag cat-drone">드론</span>
+  <span class="category-tag cat-flow">흐름</span>
+</div>
+
+<p>마우스 휠로 작업 공간을 확대하고 빈 공간을 드래그해 이동할 수 있습니다. 블록을 마우스 오른쪽 버튼으로 누르면 복제, 삭제, 주석 기능을 사용할 수 있습니다. 프로그램과 파일 이름은 브라우저 로컬 저장소에 자동 저장됩니다.</p>
+
+<h2 id="drone-blocks">드론 블록</h2>
+<p>별도의 설명이 없는 이동 명령은 드론이 이륙한 상태에서만 동작합니다. 거리와 고도는 시뮬레이터 단위를 사용합니다.</p>
+
+<table class="block-table">
+  <tr><th>블록</th><th>설명</th></tr>
+  <tr><td><code>이륙</code></td><td>프로펠러를 시작하고 기본 비행 고도 10까지 상승합니다.</td></tr>
+  <tr><td><code>착륙</code></td><td>현재 위치의 지면 높이까지 내려가 프로펠러를 멈춥니다.</td></tr>
+  <tr><td><code>고도 설정 [N]</code></td><td>지정한 절대 고도로 부드럽게 이동합니다.</td></tr>
+  <tr><td><code>고도 변경 [N]</code></td><td>상대값만큼 상승하거나 하강하며 안전 고도 아래로 내려가지 않습니다.</td></tr>
+  <tr><td><code>각도 설정 [N]</code></td><td>방향을 0~359도의 절대 각도로 설정합니다.</td></tr>
+  <tr><td><code>각도 변경 [N]</code></td><td>상대 각도만큼 회전합니다. 예: 90은 오른쪽, -90은 왼쪽 회전입니다.</td></tr>
+  <tr><td><code>옆으로 이동 [N]</code></td><td>양수는 오른쪽, 음수는 왼쪽으로 이동합니다.</td></tr>
+  <tr><td><code>전진 [N]</code></td><td>드론이 바라보는 방향으로 지정한 거리만큼 이동합니다.</td></tr>
+  <tr><td><code>전진 [N] 상승 [N]</code></td><td>앞으로 이동하면서 고도를 상대적으로 변경합니다.</td></tr>
+  <tr><td><code>이동 위치 x y z</code></td><td>절대 좌표로 이동하며 Y는 고도를 뜻합니다.</td></tr>
+  <tr><td><code>상대 이동 x y z</code></td><td>현재 방향 기준으로 X는 오른쪽/왼쪽, Y는 위/아래, Z는 앞/뒤입니다.</td></tr>
+  <tr><td><code>절대 곡선</code></td><td>현재 위치에서 절대 중간점을 지나 절대 목적지까지 3D 원호로 비행합니다.</td></tr>
+  <tr><td><code>상대 곡선</code></td><td>현재 방향을 기준으로 한 중간점과 목적지 오프셋을 사용해 3D 곡선으로 비행합니다.</td></tr>
+  <tr><td><code>기지로 복귀</code></td><td>X=0, Z=0, 고도 10인 기지로 돌아갑니다.</td></tr>
+  <tr><td><code>대기 [N]</code></td><td>지정한 초만큼 프로그램을 일시 정지합니다. 이륙 상태가 아니어도 됩니다.</td></tr>
+  <tr><td><code>연기 [참/거짓]</code></td><td>비행 경로를 보여 주는 연기 효과를 켜거나 끕니다.</td></tr>
+  <tr><td><code>속도 [N]</code></td><td>이동 속도를 0~10으로 설정합니다. 기본값은 1입니다.</td></tr>
+</table>
+
+<div class="note"><strong>좌표 참고:</strong> <code>상대 이동</code>과 <code>상대 곡선</code>은 드론 방향에 따라 회전합니다. Z는 항상 앞/뒤, X는 오른쪽/왼쪽입니다. 절대 좌표는 회전하지 않습니다.</div>
+
+<h2 id="sensors">센서와 흐름</h2>
+<table class="block-table">
+  <tr><th>블록</th><th>반환값</th><th>설명</th></tr>
+  <tr><td><code>키 [KEY] 눌림</code></td><td>불리언</td><td>방향키, 스페이스, 엔터 또는 A~Z를 감지합니다. 조건과 반복문에서 사용할 수 있습니다.</td></tr>
+  <tr><td><code>X</code> / <code>Z</code></td><td>숫자</td><td>드론의 현재 수평 좌표를 반환합니다.</td></tr>
+  <tr><td><code>고도</code></td><td>숫자</td><td>현재 고도를 반환합니다.</td></tr>
+  <tr><td><code>방향</code></td><td>숫자</td><td>현재 방향 각도를 반환합니다.</td></tr>
+  <tr><td><code>속도</code></td><td>숫자</td><td>현재 속도 설정을 반환합니다.</td></tr>
+  <tr><td><code>시작</code></td><td>흐름</td><td>프로그램의 시작점입니다. 명령을 이 블록 아래에 연결합니다.</td></tr>
+  <tr><td><code>끝</code></td><td>흐름</td><td>선택적으로 사용하는 프로그램 종료 표시입니다.</td></tr>
+</table>
+
+<h2 id="controls">실행 및 카메라 제어</h2>
+<ul>
+  <li><strong>▶ 실행:</strong> 장면을 초기화한 뒤 Blockly 프로그램을 단계별로 실행합니다. 실행 중에는 실행 버튼이 비활성화됩니다.</li>
+  <li><strong>■ 정지:</strong> 프로그램과 현재 동작을 즉시 멈춥니다. 다시 누르면 드론을 초기화합니다.</li>
+  <li><strong>오른쪽 버튼 드래그:</strong> 드론 주위로 카메라를 회전합니다.</li>
+  <li><strong>마우스 휠:</strong> 확대하거나 축소합니다.</li>
+  <li><strong>가운데 버튼:</strong> 드론 뒤쪽 시점으로 돌아갑니다.</li>
+  <li><strong>왼쪽 버튼:</strong> 기본 카메라로 복원하며, 비행 중에는 추적 시점으로 전환할 수 있습니다.</li>
+</ul>
+<p>“성능”과 “균형” 그래픽에서는 지면 표시와 파란 고도선으로 드론 위치와 높이를 확인할 수 있습니다.</p>
+
+<h2 id="status">상태와 변수</h2>
+<p>3D 화면 바로 아래 패널에는 다음 정보가 실시간으로 표시됩니다.</p>
+<ul>
+  <li><strong>X, Z, 고도, 방향:</strong> 편집할 수 있습니다. 값을 바꾸고 Enter를 누르면 지형 충돌을 확인한 후 위치나 방향이 즉시 변경됩니다.</li>
+  <li><strong>상태:</strong> 드론이 “지상”인지 “비행 중”인지 표시합니다.</li>
+  <li><strong>변수:</strong> 프로그램 실행 중 모든 Blockly 변수와 현재 값을 한 줄에 하나씩 표시합니다. 초기화 전에는 “—”가 보이며 실행 종료 후 마지막 값이 유지됩니다.</li>
+</ul>
+
+<h2 id="files">파일, 시나리오 및 그래픽</h2>
+<ul>
+  <li><strong>새로 만들기:</strong> <code>시작</code> 블록만 있는 새 프로그램을 만듭니다.</li>
+  <li><strong>저장:</strong> 프로그램을 Blockly XML 파일로 다운로드합니다.</li>
+  <li><strong>불러오기:</strong> XML 파일로 현재 프로그램을 교체합니다.</li>
+  <li><strong>자동 저장:</strong> 변경할 때마다 현재 브라우저에 저장됩니다. 로컬 저장소를 지우면 데이터도 삭제됩니다.</li>
+</ul>
+<p>시나리오 메뉴에서 비행장, 도심 트랙, 대도시, 열대 섬을 선택할 수 있습니다. 시나리오를 바꾸면 드론과 카메라가 초기화됩니다.</p>
+<table class="block-table">
+  <tr><th>그래픽</th><th>용도</th></tr>
+  <tr><td>성능</td><td>낮은 해상도와 비활성화된 그림자로 저사양 장치에 적합합니다.</td></tr>
+  <tr><td>균형</td><td>화질과 속도를 조절한 기본 설정입니다.</td></tr>
+  <tr><td>고품질</td><td>높은 해상도, 그림자, 자세한 연기를 사용하며 성능이 좋은 장치에 적합합니다.</td></tr>
+</table>
+<p>언어, 시나리오, 그래픽 설정과 파일 이름은 브라우저에 저장됩니다. 언어 메뉴는 English, Italiano, Français, Deutsch, Español, Português, العربية, 简体中文, 한국어, 日本語를 지원합니다.</p>
+
+<h2 id="tips">사용 팁과 문제 해결</h2>
+<ul>
+  <li>항상 <code>시작</code>으로 프로그램을 시작하고 이동 명령 전에 <code>이륙</code>을 사용하세요.</li>
+  <li><code>연기</code>로 경로를 확인하고 <code>속도</code>로 이동 속도를 조절하세요.</li>
+  <li>드론은 지면과 장면의 장애물을 통과하지 않으며 고도는 안전한 값으로 자동 제한됩니다.</li>
+  <li>드론이 움직이지 않으면 상태가 “비행 중”인지, 블록이 프로그램 흐름에 연결되어 있는지 확인하세요.</li>
+  <li>3D 화면이 비어 있으면 WebGL을 지원하는 최신 Chrome, Firefox 또는 Edge를 사용하세요.</li>
+  <li>실행이 느리면 “성능” 그래픽을 선택하세요.</li>
+  <li>소리는 브라우저 자동 재생 정책 때문에 사용자가 ▶ 버튼을 누른 뒤 시작됩니다.</li>
+</ul>
+
+<footer>
+  Drone Commander — MIT License. 제작자: <a href="https://github.com/vroby65">vroby65</a>.<br>
+  <a href="https://github.com/vroby65/DroneCommander">GitHub 저장소</a>
+</footer>
+
+</body>
+</html>

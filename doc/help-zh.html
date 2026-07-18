@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Drone Commander - 帮助</title>
+  <link rel="stylesheet" href="help.css">
+</head>
+<body>
+
+<h1>Drone Commander</h1>
+<p><strong>Drone Commander</strong> 是一个使用 Blockly 可视化编程控制无人机飞行的浏览器应用。组合积木、运行程序，然后在 Three.js 实时 3D 场景中观察无人机执行命令。</p>
+
+<div class="tip"><strong>快速开始：</strong>拖入一个<code>开始</code>积木，在下面连接<code>起飞</code>和<code>降落</code>积木，然后单击绿色的 ▶ 按钮。</div>
+
+<h2>目录</h2>
+<ol>
+  <li><a href="#interface">界面概览</a></li>
+  <li><a href="#editor">Blockly 编辑器</a></li>
+  <li><a href="#drone-blocks">无人机积木</a></li>
+  <li><a href="#sensors">传感器和流程</a></li>
+  <li><a href="#controls">运行和相机控制</a></li>
+  <li><a href="#status">状态和变量</a></li>
+  <li><a href="#files">文件、场景和画质</a></li>
+  <li><a href="#tips">使用技巧与故障排除</a></li>
+</ol>
+
+<h2 id="interface">界面概览</h2>
+<p>界面由一个可调整宽度的分隔条分成两个面板：</p>
+<ul>
+  <li><strong>左侧面板：</strong>用于创建飞行程序的 Blockly 编辑器，以及语言、文件、场景和画质控件。</li>
+  <li><strong>右侧面板：</strong>3D 无人机画面；其下方是飞行状态和程序变量。</li>
+</ul>
+<p>右侧工具栏包含全屏、当前文件名、▶ 运行和 ■ 停止按钮。全屏模式会暂时隐藏编辑器和状态面板。</p>
+
+<h2 id="editor">Blockly 编辑器</h2>
+<ol>
+  <li>从工具箱拖入<code>开始</code>积木。</li>
+  <li>将无人机、逻辑、循环和其他积木连接在它下面。</li>
+  <li>将数字、文本、传感器或变量积木插入对应的输入。</li>
+  <li>单击 ▶ 运行。只有与程序连接的积木会按顺序执行。</li>
+</ol>
+
+<div class="category-section">
+  <span class="category-tag cat-logic">逻辑</span>
+  <span class="category-tag cat-loops">循环</span>
+  <span class="category-tag cat-math">数学</span>
+  <span class="category-tag cat-text">文本</span>
+  <span class="category-tag cat-lists">列表</span>
+  <span class="category-tag cat-variables">变量</span>
+  <span class="category-tag cat-functions">函数</span>
+  <span class="category-tag cat-sensors">传感器</span>
+  <span class="category-tag cat-drone">无人机</span>
+  <span class="category-tag cat-flow">流程</span>
+</div>
+
+<p>用鼠标滚轮缩放工作区；拖动空白区域可平移；右键积木可以复制、删除或添加注释。程序和文件名会自动保存在浏览器本地存储中。</p>
+
+<h2 id="drone-blocks">无人机积木</h2>
+<p>除特别说明外，移动命令只在无人机已经起飞时生效。距离和高度使用模拟器单位。</p>
+
+<table class="block-table">
+  <tr><th>积木</th><th>说明</th></tr>
+  <tr><td><code>起飞</code></td><td>启动螺旋桨并上升到默认飞行高度 10。</td></tr>
+  <tr><td><code>降落</code></td><td>下降到当前位置的地面高度并停止螺旋桨。</td></tr>
+  <tr><td><code>设置高度 [N]</code></td><td>平滑移动到指定的绝对高度。</td></tr>
+  <tr><td><code>改变高度 [N]</code></td><td>按相对值上升或下降；不会低于安全高度。</td></tr>
+  <tr><td><code>设置角度 [N]</code></td><td>将朝向设置为 0–359 度的绝对角度。</td></tr>
+  <tr><td><code>改变角度 [N]</code></td><td>按相对角度旋转，例如 90 向右转，-90 向左转。</td></tr>
+  <tr><td><code>横移 [N]</code></td><td>正值向右，负值向左。</td></tr>
+  <tr><td><code>前进 [N]</code></td><td>沿无人机当前朝向前进指定距离。</td></tr>
+  <tr><td><code>前进 [N] 爬升 [N]</code></td><td>向前移动并同时相对改变高度。</td></tr>
+  <tr><td><code>移动到 x y z</code></td><td>移动到绝对坐标；Y 表示高度。</td></tr>
+  <tr><td><code>相对移动 x y z</code></td><td>以当前朝向为基准：X 为右/左，Y 为上/下，Z 为前/后。</td></tr>
+  <tr><td><code>绝对曲线</code></td><td>从当前位置经过绝对中间点，沿 3D 圆弧飞到绝对目标点。</td></tr>
+  <tr><td><code>相对曲线</code></td><td>使用相对于当前朝向的中间点和目标偏移量飞行 3D 曲线。</td></tr>
+  <tr><td><code>返回基地</code></td><td>返回 X=0、Z=0、高度 10 的基地。</td></tr>
+  <tr><td><code>等待 [N]</code></td><td>暂停程序指定秒数；不要求无人机已起飞。</td></tr>
+  <tr><td><code>烟雾 [真/假]</code></td><td>打开或关闭用于显示飞行轨迹的烟雾。</td></tr>
+  <tr><td><code>速度 [N]</code></td><td>设置移动速度（0–10），默认值为 1。</td></tr>
+</table>
+
+<div class="note"><strong>坐标提示：</strong><code>相对移动</code>和<code>相对曲线</code>会随无人机朝向旋转；Z 始终表示前/后，X 表示右/左。绝对坐标不会旋转。</div>
+
+<h2 id="sensors">传感器和流程</h2>
+<table class="block-table">
+  <tr><th>积木</th><th>返回值</th><th>说明</th></tr>
+  <tr><td><code>按键 [KEY] 被按下</code></td><td>布尔值</td><td>检测方向键、空格、回车或 A–Z，适合放在条件和循环中。</td></tr>
+  <tr><td><code>X</code> / <code>Z</code></td><td>数字</td><td>返回无人机当前的水平坐标。</td></tr>
+  <tr><td><code>高度</code></td><td>数字</td><td>返回当前高度。</td></tr>
+  <tr><td><code>方向</code></td><td>数字</td><td>返回当前朝向角度。</td></tr>
+  <tr><td><code>速度</code></td><td>数字</td><td>返回当前速度设置。</td></tr>
+  <tr><td><code>开始</code></td><td>流程</td><td>程序入口；把命令连接在它下面。</td></tr>
+  <tr><td><code>结束</code></td><td>流程</td><td>可选的程序结束标记。</td></tr>
+</table>
+
+<h2 id="controls">运行和相机控制</h2>
+<ul>
+  <li><strong>▶ 运行：</strong>重置场景，然后逐步执行 Blockly 程序。运行期间运行按钮会被禁用。</li>
+  <li><strong>■ 停止：</strong>立即停止程序和当前动作；再次单击可重置无人机。</li>
+  <li><strong>右键拖动：</strong>环绕无人机旋转相机。</li>
+  <li><strong>鼠标滚轮：</strong>放大或缩小。</li>
+  <li><strong>中键：</strong>恢复无人机后方视角。</li>
+  <li><strong>左键：</strong>恢复默认相机；飞行时可进入跟随视角。</li>
+</ul>
+<p>在“性能”和“平衡”画质下，地面标记和蓝色高度线可帮助判断无人机的位置和高度。</p>
+
+<h2 id="status">状态和变量</h2>
+<p>3D 画面正下方的面板会实时显示：</p>
+<ul>
+  <li><strong>X、Z、高度和方向：</strong>可编辑；修改后按 Enter 会立即更新无人机位置或朝向，并进行地形碰撞检查。</li>
+  <li><strong>状态：</strong>显示无人机“在地面”或“飞行中”。</li>
+  <li><strong>变量：</strong>程序运行时，每个 Blockly 变量及其当前值单独显示一行。未初始化时显示“—”，程序结束后保留最后的值。</li>
+</ul>
+
+<h2 id="files">文件、场景和画质</h2>
+<ul>
+  <li><strong>新建：</strong>创建只含<code>开始</code>积木的空程序。</li>
+  <li><strong>保存：</strong>将程序下载为 Blockly XML 文件。</li>
+  <li><strong>加载：</strong>从 XML 文件替换当前程序。</li>
+  <li><strong>自动保存：</strong>修改后自动保存到当前浏览器；清除本地存储会删除这些数据。</li>
+</ul>
+<p>场景菜单可选择飞行场、城市跑道、大都市和热带岛屿。切换场景时无人机和相机会重置。</p>
+<table class="block-table">
+  <tr><th>画质</th><th>用途</th></tr>
+  <tr><td>性能</td><td>较低分辨率、无阴影，适合低功耗设备。</td></tr>
+  <tr><td>平衡</td><td>默认设置，兼顾画质和速度。</td></tr>
+  <tr><td>高质量</td><td>更高分辨率、阴影和烟雾细节，适合性能较强的设备。</td></tr>
+</table>
+<p>语言、场景、画质和文件名会保存在浏览器中。语言菜单支持 English、Italiano、Français、Deutsch、Español、Português、العربية、简体中文、한국어 和 日本語。</p>
+
+<h2 id="tips">使用技巧与故障排除</h2>
+<ul>
+  <li>始终以<code>开始</code>开头，并在移动命令之前使用<code>起飞</code>。</li>
+  <li>使用<code>烟雾</code>查看路径，使用<code>速度</code>控制移动节奏。</li>
+  <li>无人机不会穿过地面和场景障碍物；高度会自动限制在安全值。</li>
+  <li>如果无人机不移动，请确认状态为“飞行中”，并检查积木是否连接到程序流程。</li>
+  <li>如果 3D 画面为空，请使用支持 WebGL 的最新版 Chrome、Firefox 或 Edge。</li>
+  <li>如果运行缓慢，请选择“性能”画质。</li>
+  <li>声音需要用户单击 ▶ 后才能播放，这是浏览器的自动播放限制。</li>
+</ul>
+
+<footer>
+  Drone Commander — MIT License。作者：<a href="https://github.com/vroby65">vroby65</a>。<br>
+  <a href="https://github.com/vroby65/DroneCommander">GitHub 仓库</a>
+</footer>
+
+</body>
+</html>

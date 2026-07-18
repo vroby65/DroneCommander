@@ -3,6 +3,8 @@
 
 window.addEventListener('load', () => {
     const savedLang = localStorage.getItem('selectedLanguage') || 'en';
+    document.documentElement.lang = savedLang;
+    document.documentElement.dir = savedLang === 'ar' ? 'rtl' : 'ltr';
     document.getElementById('languageSelect').value = savedLang;
     loadLanguageFile(savedLang, () => {
         localStorage.setItem('selectedLanguage', savedLang);

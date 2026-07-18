@@ -323,11 +323,13 @@ divider.addEventListener('mousedown', () => {
 document.addEventListener('mousemove', e => {
     if (!isResizing) return;
     const containerOffsetLeft = container.offsetLeft;
-    let pointerX = e.clientX - containerOffsetLeft;
+    const pointerX = e.clientX - containerOffsetLeft;
     const minWidth = 200;
     const maxWidth = container.clientWidth - 200;
-    pointerX = Math.max(minWidth, Math.min(pointerX, maxWidth));
-    leftPanel.style.width = pointerX + "px";
+    let panelWidth = document.documentElement.dir === 'rtl' ?
+        container.clientWidth - pointerX : pointerX;
+    panelWidth = Math.max(minWidth, Math.min(panelWidth, maxWidth));
+    leftPanel.style.width = panelWidth + "px";
     Blockly.svgResize(workspace);
     updateWebGLCanvas();
 }, {
@@ -380,7 +382,8 @@ function applyLocalizedStrings() {
     document.getElementById('labelAlt').innerText = Blockly.Msg["BKY_STATUS_ALTITUDE"] || 'Altitude:';
     document.getElementById('labelDir').innerText = Blockly.Msg["BKY_STATUS_DIRECTION"] || 'Direction:';
     document.getElementById('labelStatus').innerText = Blockly.Msg["BKY_STATUS_FLIGHT"] || 'Status:';
-    document.getElementById('labelVariables').innerText = (Blockly.Msg["BKY_CATEGORY_VARIABLES"] || 'Variables') + ':';
+    document.getElementById('labelVariables').innerText = Blockly.Msg["BKY_STATUS_VARIABLES"] ||
+        (Blockly.Msg["BKY_CATEGORY_VARIABLES"] || 'Variables') + ':';
 
     // Current flight status
     if (typeof drone !== 'undefined' && drone) {
@@ -431,7 +434,11 @@ document.getElementById('helpBtn').addEventListener('click', function() {
         fr: 'doc/help-fr.html',
         de: 'doc/help-de.html',
         es: 'doc/help-es.html',
-        pt: 'doc/help-pt.html'
+        pt: 'doc/help-pt.html',
+        ar: 'doc/help-ar.html',
+        zh: 'doc/help-zh.html',
+        ko: 'doc/help-ko.html',
+        ja: 'doc/help-ja.html'
     };
     const helpPage = helpFiles[lang] || 'doc/help.html';
     window.open(helpPage, '_blank');

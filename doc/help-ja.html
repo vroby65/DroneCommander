@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Drone Commander - ヘルプ</title>
+  <link rel="stylesheet" href="help.css">
+</head>
+<body>
+
+<h1>Drone Commander</h1>
+<p><strong>Drone Commander</strong> は、Blockly のビジュアルプログラミングでドローン飛行を制御するブラウザーアプリです。ブロックを組み合わせてプログラムを実行すると、ドローンが Three.js のリアルタイム 3D シーンで命令を実行します。</p>
+
+<div class="tip"><strong>クイックスタート：</strong><code>開始</code>ブロックを置き、その下に<code>離陸</code>と<code>着陸</code>ブロックを接続して、緑色の ▶ ボタンをクリックします。</div>
+
+<h2>目次</h2>
+<ol>
+  <li><a href="#interface">画面の概要</a></li>
+  <li><a href="#editor">Blockly エディター</a></li>
+  <li><a href="#drone-blocks">ドローンブロック</a></li>
+  <li><a href="#sensors">センサーとフロー</a></li>
+  <li><a href="#controls">実行とカメラ操作</a></li>
+  <li><a href="#status">状態と変数</a></li>
+  <li><a href="#files">ファイル、シナリオ、グラフィック</a></li>
+  <li><a href="#tips">ヒントとトラブルシューティング</a></li>
+</ol>
+
+<h2 id="interface">画面の概要</h2>
+<p>サイズ変更できる区切り線によって、画面は 2 つのパネルに分かれています。</p>
+<ul>
+  <li><strong>左パネル：</strong>飛行プログラムを作成する Blockly エディターと、言語、ファイル、シナリオ、グラフィックのメニューです。</li>
+  <li><strong>右パネル：</strong>3D ドローン画面です。そのすぐ下に飛行状態とプログラム変数が表示されます。</li>
+</ul>
+<p>右側のツールバーには、全画面、現在のファイル名、▶ 実行、■ 停止があります。全画面表示ではエディターと状態パネルが一時的に非表示になります。</p>
+
+<h2 id="editor">Blockly エディター</h2>
+<ol>
+  <li>ツールボックスから<code>開始</code>ブロックをドラッグします。</li>
+  <li>その下にドローン、論理、ループなどのブロックを接続します。</li>
+  <li>数値、テキスト、センサー、変数のブロックを対応する入力にはめ込みます。</li>
+  <li>▶ 実行をクリックします。プログラムの流れに接続されたブロックだけが順番に実行されます。</li>
+</ol>
+
+<div class="category-section">
+  <span class="category-tag cat-logic">論理</span>
+  <span class="category-tag cat-loops">ループ</span>
+  <span class="category-tag cat-math">数学</span>
+  <span class="category-tag cat-text">テキスト</span>
+  <span class="category-tag cat-lists">リスト</span>
+  <span class="category-tag cat-variables">変数</span>
+  <span class="category-tag cat-functions">関数</span>
+  <span class="category-tag cat-sensors">センサー</span>
+  <span class="category-tag cat-drone">ドローン</span>
+  <span class="category-tag cat-flow">フロー</span>
+</div>
+
+<p>マウスホイールでワークスペースを拡大・縮小し、空白部分をドラッグして移動できます。ブロックを右クリックすると、複製、削除、コメント追加ができます。プログラムとファイル名はブラウザーのローカルストレージに自動保存されます。</p>
+
+<h2 id="drone-blocks">ドローンブロック</h2>
+<p>特に記載がない移動命令は、ドローンが離陸しているときだけ動作します。距離と高度にはシミュレーター単位を使用します。</p>
+
+<table class="block-table">
+  <tr><th>ブロック</th><th>説明</th></tr>
+  <tr><td><code>離陸</code></td><td>プロペラを始動し、標準飛行高度 10 まで上昇します。</td></tr>
+  <tr><td><code>着陸</code></td><td>現在位置の地面まで下降してプロペラを停止します。</td></tr>
+  <tr><td><code>高度を設定 [N]</code></td><td>指定した絶対高度まで滑らかに移動します。</td></tr>
+  <tr><td><code>高度を変更 [N]</code></td><td>相対値だけ上昇または下降します。安全高度より下には移動しません。</td></tr>
+  <tr><td><code>角度を設定 [N]</code></td><td>向きを 0～359 度の絶対角度に設定します。</td></tr>
+  <tr><td><code>角度を変更 [N]</code></td><td>相対角度だけ回転します。90 は右、-90 は左に回転します。</td></tr>
+  <tr><td><code>横移動 [N]</code></td><td>正の値で右、負の値で左に移動します。</td></tr>
+  <tr><td><code>前進 [N]</code></td><td>ドローンが向いている方向へ指定距離だけ進みます。</td></tr>
+  <tr><td><code>前進 [N] 上昇 [N]</code></td><td>前進しながら高度を相対的に変更します。</td></tr>
+  <tr><td><code>移動先 x y z</code></td><td>絶対座標へ移動します。Y は高度です。</td></tr>
+  <tr><td><code>相対移動 x y z</code></td><td>現在の向きを基準に、X は右/左、Y は上/下、Z は前/後です。</td></tr>
+  <tr><td><code>絶対曲線</code></td><td>現在位置から絶対中間点を通り、絶対目的地まで 3D 円弧で飛行します。</td></tr>
+  <tr><td><code>相対曲線</code></td><td>現在の向きを基準にした中間点と目的地のオフセットで 3D 曲線を飛行します。</td></tr>
+  <tr><td><code>基地に戻る</code></td><td>X=0、Z=0、高度 10 の基地へ戻ります。</td></tr>
+  <tr><td><code>待機 [N]</code></td><td>指定秒数だけプログラムを一時停止します。離陸している必要はありません。</td></tr>
+  <tr><td><code>スモーク [真/偽]</code></td><td>飛行経路を表示するスモークをオンまたはオフにします。</td></tr>
+  <tr><td><code>速度 [N]</code></td><td>移動速度を 0～10 に設定します。初期値は 1 です。</td></tr>
+</table>
+
+<div class="note"><strong>座標について：</strong><code>相対移動</code>と<code>相対曲線</code>はドローンの向きに合わせて回転します。Z は常に前/後、X は右/左です。絶対座標は回転しません。</div>
+
+<h2 id="sensors">センサーとフロー</h2>
+<table class="block-table">
+  <tr><th>ブロック</th><th>戻り値</th><th>説明</th></tr>
+  <tr><td><code>キー [KEY] が押された</code></td><td>真偽値</td><td>矢印キー、スペース、Enter、A～Z を検出します。条件やループで使用できます。</td></tr>
+  <tr><td><code>X</code> / <code>Z</code></td><td>数値</td><td>ドローンの現在の水平座標を返します。</td></tr>
+  <tr><td><code>高度</code></td><td>数値</td><td>現在の高度を返します。</td></tr>
+  <tr><td><code>方向</code></td><td>数値</td><td>現在の向きの角度を返します。</td></tr>
+  <tr><td><code>速度</code></td><td>数値</td><td>現在の速度設定を返します。</td></tr>
+  <tr><td><code>開始</code></td><td>フロー</td><td>プログラムの開始点です。命令をこの下に接続します。</td></tr>
+  <tr><td><code>終了</code></td><td>フロー</td><td>任意で追加できるプログラム終了マーカーです。</td></tr>
+</table>
+
+<h2 id="controls">実行とカメラ操作</h2>
+<ul>
+  <li><strong>▶ 実行：</strong>シーンをリセットしてから Blockly プログラムを 1 ステップずつ実行します。実行中は実行ボタンが無効になります。</li>
+  <li><strong>■ 停止：</strong>プログラムと現在の動きをすぐに停止します。もう一度押すとドローンをリセットします。</li>
+  <li><strong>右ボタンドラッグ：</strong>ドローンの周囲でカメラを回転します。</li>
+  <li><strong>マウスホイール：</strong>拡大・縮小します。</li>
+  <li><strong>中ボタン：</strong>ドローン後方の視点に戻します。</li>
+  <li><strong>左ボタン：</strong>標準カメラに戻します。飛行中は追従視点へ切り替えられます。</li>
+</ul>
+<p>「パフォーマンス」と「バランス」では、地面マーカーと青い高度線でドローンの位置と高さを確認できます。</p>
+
+<h2 id="status">状態と変数</h2>
+<p>3D 画面のすぐ下にあるパネルには、次の情報がリアルタイムで表示されます。</p>
+<ul>
+  <li><strong>X、Z、高度、方向：</strong>編集できます。値を変更して Enter を押すと、地形との衝突を確認した上で位置または向きが更新されます。</li>
+  <li><strong>状態：</strong>ドローンが「地上」か「飛行中」かを表示します。</li>
+  <li><strong>変数：</strong>プログラム実行中、すべての Blockly 変数と現在値を 1 行ずつ表示します。初期化前は「—」を表示し、終了後も最後の値を保持します。</li>
+</ul>
+
+<h2 id="files">ファイル、シナリオ、グラフィック</h2>
+<ul>
+  <li><strong>新規：</strong><code>開始</code>ブロックだけの新しいプログラムを作ります。</li>
+  <li><strong>保存：</strong>プログラムを Blockly XML ファイルとしてダウンロードします。</li>
+  <li><strong>読み込む：</strong>XML ファイルで現在のプログラムを置き換えます。</li>
+  <li><strong>自動保存：</strong>変更のたびに現在のブラウザーへ保存します。ローカルストレージを消去するとデータも削除されます。</li>
+</ul>
+<p>シナリオメニューでは、飛行場、市街地コース、大都市、南国の島を選べます。シナリオを変更するとドローンとカメラがリセットされます。</p>
+<table class="block-table">
+  <tr><th>グラフィック</th><th>用途</th></tr>
+  <tr><td>パフォーマンス</td><td>低解像度で影を無効にし、低性能の端末に適しています。</td></tr>
+  <tr><td>バランス</td><td>画質と速度のバランスを取った標準設定です。</td></tr>
+  <tr><td>高品質</td><td>高解像度、影、詳細なスモークを使い、高性能の端末に適しています。</td></tr>
+</table>
+<p>言語、シナリオ、グラフィック設定、ファイル名はブラウザーに保存されます。言語メニューは English、Italiano、Français、Deutsch、Español、Português、العربية、简体中文、한국어、日本語に対応しています。</p>
+
+<h2 id="tips">ヒントとトラブルシューティング</h2>
+<ul>
+  <li>必ず<code>開始</code>からプログラムを始め、移動命令の前に<code>離陸</code>を使ってください。</li>
+  <li><code>スモーク</code>で経路を確認し、<code>速度</code>で移動の速さを調整できます。</li>
+  <li>ドローンは地面やシーンの障害物を通り抜けません。高度は安全な値に自動制限されます。</li>
+  <li>ドローンが動かない場合は、状態が「飛行中」であることと、ブロックがプログラムの流れに接続されていることを確認してください。</li>
+  <li>3D 画面が空の場合は、WebGL 対応の最新版 Chrome、Firefox、Edge を使用してください。</li>
+  <li>動作が遅い場合は「パフォーマンス」を選択してください。</li>
+  <li>音声はブラウザーの自動再生制限により、ユーザーが ▶ をクリックした後に開始します。</li>
+</ul>
+
+<footer>
+  Drone Commander — MIT License。作成者：<a href="https://github.com/vroby65">vroby65</a>。<br>
+  <a href="https://github.com/vroby65/DroneCommander">GitHub リポジトリ</a>
+</footer>
+
+</body>
+</html>

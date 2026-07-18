@@ -1236,6 +1236,7 @@ const initBlockly = () => {
     };
     workspace = Blockly.inject('blocklyDiv', {
         toolbox,
+        rtl: document.documentElement.dir === 'rtl',
         renderer: 'zelos',
         theme: Blockly.Themes.makecode
     });
