@@ -6,8 +6,12 @@ let scene;
 let camera;
 let renderer;
 let droneCamera;
-let droneCameraRenderer;
+let droneCameraRenderTarget;
+let droneCameraPreviewScene;
+let droneCameraPreviewCamera;
+let droneVideoRecording = null;
 let drone;
+const droneVideoFrameRate = 30;
 const defaultFlightAltitude = 10.0;
 const getNumber = (value, fallback = 0) => {
     const number = Number(value);
@@ -277,11 +281,6 @@ const applyGraphicsProfile = profileName => {
         renderer.setPixelRatio(getProfilePixelRatio());
         renderer.shadowMap.enabled = activeGraphicsProfile.shadows;
     }
-    if (droneCameraRenderer) {
-        droneCameraRenderer.setPixelRatio(getProfilePixelRatio());
-        droneCameraRenderer.shadowMap.enabled = activeGraphicsProfile.shadows;
-    }
-
     if (directionalLight) {
         directionalLight.castShadow = activeGraphicsProfile.shadows;
         directionalLight.shadow.mapSize.set(activeGraphicsProfile.shadowMapSize, activeGraphicsProfile.shadowMapSize);
@@ -552,14 +551,22 @@ const initThree = () => {
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     webglContainer.appendChild(renderer.domElement);
     droneCamera = new THREE.PerspectiveCamera(75, 4 / 3, 0.1, 1000000);
-    droneCameraRenderer = new THREE.WebGLRenderer({
-        antialias: true,
-        preserveDrawingBuffer: true
+    droneCameraRenderTarget = new THREE.WebGLRenderTarget(1, 1, {
+        minFilter: THREE.LinearFilter,
+        magFilter: THREE.LinearFilter
     });
-    droneCameraRenderer.setPixelRatio(getProfilePixelRatio());
-    droneCameraRenderer.shadowMap.enabled = activeGraphicsProfile.shadows;
-    droneCameraRenderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    droneCameraContainer.appendChild(droneCameraRenderer.domElement);
+    droneCameraPreviewScene = new THREE.Scene();
+    droneCameraPreviewCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 10);
+    droneCameraPreviewCamera.position.z = 1;
+    const droneCameraPreviewMaterial = new THREE.MeshBasicMaterial({
+        map: droneCameraRenderTarget.texture,
+        depthTest: false,
+        depthWrite: false
+    });
+    droneCameraPreviewScene.add(new THREE.Mesh(
+        new THREE.PlaneGeometry(2, 2),
+        droneCameraPreviewMaterial
+    ));
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
     ambientLight.userData.type = 'keep';
     scene.add(ambientLight);
@@ -725,6 +732,37 @@ const initThree = () => {
         direction: 0,
         smoke: 0,
         speed: 1.0,
+        takePhoto(callback) {
+            return addCommand(next => {
+                downloadDronePhoto()
+                    .catch(error => console.error('Unable to take the drone photo:', error))
+                    .finally(() => {
+                        next();
+                        if (callback) callback();
+                    });
+            });
+        },
+        startRecording(callback) {
+            return addCommand(next => {
+                Promise.resolve()
+                    .then(startDroneVideoRecording)
+                    .catch(error => console.error('Unable to start the drone recording:', error))
+                    .finally(() => {
+                        next();
+                        if (callback) callback();
+                    });
+            });
+        },
+        saveRecording(callback) {
+            return addCommand(next => {
+                stopAndDownloadDroneVideo()
+                    .catch(error => console.error('Unable to save the drone recording:', error))
+                    .finally(() => {
+                        next();
+                        if (callback) callback();
+                    });
+            });
+        },
         takeOff(callback) {
             if (!this.flying) {
                 return addCommand(next => {
@@ -1463,6 +1501,291 @@ function updateDroneGuides() {
     droneGroundMarker.position.set(x, groundY, z);
 }
 
+const updateDroneCameraPose = () => {
+    if (!drone || !drone.mesh || !droneCamera) return;
+
+    // Mount the secondary camera just beyond the drone nose. Local-space
+    // points make the view follow yaw, pitch, and roll during every maneuver.
+    drone.mesh.updateMatrixWorld(true);
+    const droneCameraPosition = drone.mesh.localToWorld(new THREE.Vector3(-700, -20, 0));
+    const droneCameraTarget = drone.mesh.localToWorld(new THREE.Vector3(-1700, -20, 0));
+    const droneCameraUp = drone.mesh.localToWorld(new THREE.Vector3(-700, 980, 0))
+        .sub(droneCameraPosition)
+        .normalize();
+    droneCamera.position.copy(droneCameraPosition);
+    droneCamera.up.copy(droneCameraUp);
+    droneCamera.lookAt(droneCameraTarget);
+};
+
+const renderDroneCameraToTarget = () => {
+    renderer.setRenderTarget(droneCameraRenderTarget);
+    renderer.setScissorTest(false);
+    renderer.setViewport(
+        0,
+        0,
+        droneCameraRenderTarget.width,
+        droneCameraRenderTarget.height
+    );
+    renderer.render(scene, droneCamera);
+};
+
+const canvasToPngBlob = canvas => new Promise((resolve, reject) => {
+    canvas.toBlob(blob => {
+        if (blob) {
+            resolve(blob);
+        } else {
+            reject(new Error('The browser could not encode the camera frame as PNG'));
+        }
+    }, 'image/png');
+});
+
+const downloadBlob = (blob, filePrefix, extension) => {
+    const downloadUrl = URL.createObjectURL(blob);
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.download = `${filePrefix}-${timestamp}.${extension}`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(downloadUrl), 1000);
+};
+
+const downloadDronePhoto = async () => {
+    if (!renderer || !droneCamera || !droneCameraRenderTarget) {
+        throw new Error('The drone camera is not initialized');
+    }
+
+    updateDroneCameraPose();
+
+    const previousTargetWidth = droneCameraRenderTarget.width;
+    const previousTargetHeight = droneCameraRenderTarget.height;
+    const photoWidth = Math.max(1, renderer.domElement.width);
+    const photoHeight = Math.max(1, renderer.domElement.height);
+    const pixels = new Uint8Array(photoWidth * photoHeight * 4);
+
+    try {
+        droneCamera.aspect = photoWidth / photoHeight;
+        droneCamera.updateProjectionMatrix();
+        droneCameraRenderTarget.setSize(photoWidth, photoHeight);
+        renderDroneCameraToTarget();
+        renderer.readRenderTargetPixels(
+            droneCameraRenderTarget,
+            0,
+            0,
+            photoWidth,
+            photoHeight,
+            pixels
+        );
+    } finally {
+        renderer.setRenderTarget(null);
+        renderer.setScissorTest(false);
+        renderer.setViewport(
+            0,
+            0,
+            renderer.domElement.clientWidth,
+            renderer.domElement.clientHeight
+        );
+        droneCameraRenderTarget.setSize(previousTargetWidth, previousTargetHeight);
+
+        const previewWidth = droneCameraPanel.clientWidth;
+        const previewHeight = droneCameraPanel.clientHeight;
+        droneCamera.aspect = previewWidth && previewHeight ? previewWidth / previewHeight : 4 / 3;
+        droneCamera.updateProjectionMatrix();
+    }
+
+    // WebGL pixels start at the bottom-left; PNG rows start at the top-left.
+    const canvas = document.createElement('canvas');
+    canvas.width = photoWidth;
+    canvas.height = photoHeight;
+    const context = canvas.getContext('2d');
+    if (!context) throw new Error('A 2D canvas is unavailable for the camera photo');
+    const imageData = context.createImageData(photoWidth, photoHeight);
+    const rowLength = photoWidth * 4;
+    for (let row = 0; row < photoHeight; row++) {
+        const sourceStart = (photoHeight - row - 1) * rowLength;
+        imageData.data.set(
+            pixels.subarray(sourceStart, sourceStart + rowLength),
+            row * rowLength
+        );
+    }
+    context.putImageData(imageData, 0, 0);
+
+    const blob = await canvasToPngBlob(canvas);
+    downloadBlob(blob, 'drone-photo', 'png');
+};
+
+const getSupportedDroneVideoMimeType = () => {
+    if (!window.MediaRecorder) {
+        throw new Error('This browser does not support video recording');
+    }
+
+    const mimeTypes = [
+        'video/webm;codecs=vp9',
+        'video/webm;codecs=vp8',
+        'video/webm',
+        'video/mp4'
+    ];
+    if (typeof MediaRecorder.isTypeSupported !== 'function') return '';
+    return mimeTypes.find(type => MediaRecorder.isTypeSupported(type)) || '';
+};
+
+const copyDroneCameraFrameToVideo = (force = false) => {
+    const recording = droneVideoRecording;
+    if (!recording) return;
+
+    const now = performance.now();
+    if (!force && now - recording.lastFrameTime < 1000 / droneVideoFrameRate) return;
+
+    renderer.readRenderTargetPixels(
+        droneCameraRenderTarget,
+        0,
+        0,
+        recording.width,
+        recording.height,
+        recording.pixels
+    );
+
+    const rowLength = recording.width * 4;
+    for (let row = 0; row < recording.height; row++) {
+        const sourceStart = (recording.height - row - 1) * rowLength;
+        recording.imageData.data.set(
+            recording.pixels.subarray(sourceStart, sourceStart + rowLength),
+            row * rowLength
+        );
+    }
+    recording.context.putImageData(recording.imageData, 0, 0);
+    recording.lastFrameTime = now;
+};
+
+const startDroneVideoRecording = () => {
+    if (droneVideoRecording) {
+        console.warn('The drone camera is already recording');
+        return;
+    }
+    if (!HTMLCanvasElement.prototype.captureStream) {
+        throw new Error('This browser cannot record a canvas stream');
+    }
+
+    const mimeType = getSupportedDroneVideoMimeType();
+    const availableWidth = Math.min(renderer.domElement.width, 960);
+    const videoWidth = Math.max(8, Math.floor(availableWidth / 8) * 8);
+    const videoHeight = videoWidth * 3 / 4;
+    const canvas = document.createElement('canvas');
+    canvas.width = videoWidth;
+    canvas.height = videoHeight;
+    const context = canvas.getContext('2d');
+    if (!context) throw new Error('A 2D canvas is unavailable for the drone video');
+
+    const recording = {
+        width: videoWidth,
+        height: videoHeight,
+        canvas,
+        context,
+        imageData: context.createImageData(videoWidth, videoHeight),
+        pixels: new Uint8Array(videoWidth * videoHeight * 4),
+        chunks: [],
+        lastFrameTime: -Infinity,
+        stream: null,
+        recorder: null
+    };
+
+    try {
+        droneVideoRecording = recording;
+        droneCameraRenderTarget.setSize(videoWidth, videoHeight);
+        droneCamera.aspect = videoWidth / videoHeight;
+        droneCamera.updateProjectionMatrix();
+        updateDroneCameraPose();
+        renderDroneCameraToTarget();
+        copyDroneCameraFrameToVideo(true);
+        renderer.setRenderTarget(null);
+
+        recording.stream = canvas.captureStream(droneVideoFrameRate);
+        const recorderOptions = mimeType ? {
+            mimeType,
+            videoBitsPerSecond: 2500000
+        } : {
+            videoBitsPerSecond: 2500000
+        };
+        recording.recorder = new MediaRecorder(recording.stream, recorderOptions);
+        recording.recorder.addEventListener('dataavailable', event => {
+            if (event.data && event.data.size) recording.chunks.push(event.data);
+        });
+        recording.recorder.start(250);
+    } catch (error) {
+        droneVideoRecording = null;
+        if (recording.stream) {
+            recording.stream.getTracks().forEach(track => track.stop());
+        }
+        renderer.setRenderTarget(null);
+        updateDroneCameraCanvas();
+        throw error;
+    }
+};
+
+const stopAndDownloadDroneVideo = () => {
+    const recording = droneVideoRecording;
+    if (!recording) {
+        console.warn('No drone camera recording is active');
+        return Promise.resolve();
+    }
+
+    droneVideoRecording = null;
+    updateDroneCameraCanvas();
+
+    return new Promise((resolve, reject) => {
+        const stopTracks = () => {
+            if (recording.stream) {
+                recording.stream.getTracks().forEach(track => track.stop());
+            }
+        };
+        recording.recorder.addEventListener('error', event => {
+            stopTracks();
+            reject(event.error || new Error('The browser could not encode the drone video'));
+        }, {
+            once: true
+        });
+        recording.recorder.addEventListener('stop', () => {
+            stopTracks();
+            try {
+                const mimeType = recording.recorder.mimeType || 'video/webm';
+                const blob = new Blob(recording.chunks, {
+                    type: mimeType
+                });
+                if (!blob.size) throw new Error('The drone video is empty');
+                const extension = mimeType.includes('mp4') ? 'mp4' : 'webm';
+                downloadBlob(blob, 'drone-video', extension);
+                resolve();
+            } catch (error) {
+                reject(error);
+            }
+        }, {
+            once: true
+        });
+
+        if (recording.recorder.state === 'inactive') {
+            stopTracks();
+            reject(new Error('The drone video recorder stopped unexpectedly'));
+        } else {
+            recording.recorder.stop();
+        }
+    });
+};
+
+const cancelDroneVideoRecording = () => {
+    const recording = droneVideoRecording;
+    if (!recording) return;
+
+    droneVideoRecording = null;
+    if (recording.recorder && recording.recorder.state !== 'inactive') {
+        recording.recorder.stop();
+    }
+    if (recording.stream) {
+        recording.stream.getTracks().forEach(track => track.stop());
+    }
+    updateDroneCameraCanvas();
+};
+
 
 // Render loop
 const animate = () => {
@@ -1478,17 +1801,7 @@ const animate = () => {
         camera.position.copy(drone.mesh.position).add(offset);
         camera.lookAt(drone.mesh.position);
 
-        // Mount the secondary camera just beyond the drone nose. Local-space
-        // points make the view follow yaw, pitch, and roll during every maneuver.
-        drone.mesh.updateMatrixWorld(true);
-        const droneCameraPosition = drone.mesh.localToWorld(new THREE.Vector3(-700, -20, 0));
-        const droneCameraTarget = drone.mesh.localToWorld(new THREE.Vector3(-1700, -20, 0));
-        const droneCameraUp = drone.mesh.localToWorld(new THREE.Vector3(-700, 980, 0))
-            .sub(droneCameraPosition)
-            .normalize();
-        droneCamera.position.copy(droneCameraPosition);
-        droneCamera.up.copy(droneCameraUp);
-        droneCamera.lookAt(droneCameraTarget);
+        updateDroneCameraPose();
         updateDroneGuides();
 
         // Keep the directional light and shadow camera centered on the drone.
@@ -1505,9 +1818,46 @@ const animate = () => {
             }
         }
     }
+    const viewportWidth = renderer.domElement.clientWidth;
+    const viewportHeight = renderer.domElement.clientHeight;
+    const showDroneCameraPreview = droneCameraPanel.style.display !== 'none';
+    const shouldRenderDroneCamera = showDroneCameraPreview || !!droneVideoRecording;
+
+    // Render the on-board view offscreen first. The texture is composited after
+    // the main scene, avoiding a second WebGL context and keeping layout clean.
+    if (shouldRenderDroneCamera) {
+        renderDroneCameraToTarget();
+        copyDroneCameraFrameToVideo();
+    }
+
+    renderer.setRenderTarget(null);
+    renderer.setScissorTest(false);
+    renderer.setViewport(0, 0, viewportWidth, viewportHeight);
     renderer.render(scene, camera);
-    if (droneCameraPanel.style.display !== 'none') {
-        droneCameraRenderer.render(scene, droneCamera);
+
+    if (showDroneCameraPreview) {
+        const previewWidth = droneCameraPanel.clientWidth;
+        const previewHeight = droneCameraPanel.clientHeight;
+        const previewInset = 8;
+        renderer.setViewport(
+            previewInset,
+            viewportHeight - previewHeight - previewInset,
+            previewWidth,
+            previewHeight
+        );
+        renderer.setScissor(
+            previewInset,
+            viewportHeight - previewHeight - previewInset,
+            previewWidth,
+            previewHeight
+        );
+        renderer.setScissorTest(true);
+        const autoClear = renderer.autoClear;
+        renderer.autoClear = false;
+        renderer.render(droneCameraPreviewScene, droneCameraPreviewCamera);
+        renderer.autoClear = autoClear;
+        renderer.setScissorTest(false);
+        renderer.setViewport(0, 0, viewportWidth, viewportHeight);
     }
 };
 

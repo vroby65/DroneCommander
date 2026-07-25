@@ -444,6 +444,12 @@ Blockly.Msg["BKY_DRONE_TAKEOFF_TOOLTIP"] = "Fait décoller le drone";
 
 Blockly.Msg["BKY_DRONE_LAND"] = "atterrir";
 Blockly.Msg["BKY_DRONE_LAND_TOOLTIP"] = "Fait atterrir le drone";
+Blockly.Msg["BKY_DRONE_TAKE_PHOTO"] = "prendre une photo";
+Blockly.Msg["BKY_DRONE_TAKE_PHOTO_TOOLTIP"] = "Télécharge une image PNG depuis la caméra du drone";
+Blockly.Msg["BKY_DRONE_START_RECORDING"] = "démarrer l'enregistrement";
+Blockly.Msg["BKY_DRONE_START_RECORDING_TOOLTIP"] = "Démarre l'enregistrement vidéo de la caméra du drone";
+Blockly.Msg["BKY_DRONE_SAVE_RECORDING"] = "sauvegarder l'enregistrement";
+Blockly.Msg["BKY_DRONE_SAVE_RECORDING_TOOLTIP"] = "Arrête l'enregistrement et télécharge la vidéo de la caméra du drone";
 
 Blockly.Msg["BKY_DRONE_SET_ALTITUDE"] = "régler l'altitude %1";
 Blockly.Msg["BKY_DRONE_SET_ALTITUDE_TOOLTIP"] = "Règle l'altitude du drone";
@@ -530,8 +536,7 @@ Blockly.Msg["BKY_FLOW_END"] = "Fin";
 Blockly.Msg.BKY_NEW = "Nouveau";
 Blockly.Msg.BKY_LOAD = "Charger";
 Blockly.Msg.BKY_SAVE = "Enregistrer";
-Blockly.Msg.BKY_DRONE_CAMERA = "Caméra du drone";
-Blockly.Msg.BKY_RESIZE_DRONE_CAMERA = "Redimensionner la caméra du drone";
+Blockly.Msg.BKY_CAMERA_PREVIEW = "Aperçu caméra";
 Blockly.Msg.BKY_DARK_THEME = "Thème sombre";
 
 // Category

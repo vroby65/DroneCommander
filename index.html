@@ -69,45 +69,16 @@
       #statusPanel input {
         width: 50px;
       }
-      #cameraResizeHandle {
-        flex: 0 0 6px;
-        width: 100%;
-        background: #bbb;
-        cursor: ns-resize;
-        touch-action: none;
-      }
-      #cameraResizeHandle:hover {
-        background: #999;
-      }
       #droneCameraPanel {
-        flex: 0 0 400px;
-        min-height: 96px;
-        width: 100%;
-        box-sizing: border-box;
-        display: flex;
-        flex-direction: column;
+        position: absolute;
+        top: 8px;
+        left: 8px;
+        z-index: 5;
         overflow: hidden;
-        background: #fff;
-      }
-      #droneCameraHeader {
-        flex: 0 0 26px;
-        display: flex;
-        align-items: center;
-        padding: 0 8px;
-        box-sizing: border-box;
-        border-bottom: 1px solid #ddd;
-        background: #fff;
-        color: #000;
-        font-size: 13px;
-        font-weight: bold;
-      }
-      #droneCameraContainer {
-        flex: 1;
-        min-height: 0;
-        width: 100%;
-        position: relative;
-        overflow: hidden;
-        background: #fff;
+        outline: 2px solid rgba(255, 255, 255, 0.9);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+        background: transparent;
+        pointer-events: none;
       }
       #variablesRow td {
         padding-top: 4px;
@@ -172,6 +143,21 @@
         padding-left: 6px;
         padding-right: 6px;
         box-sizing: border-box;
+      }
+      #cameraPreviewControl {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        margin-right: 6px;
+        white-space: nowrap;
+        font-size: 12px;
+        cursor: pointer;
+        user-select: none;
+      }
+      #cameraPreviewToggle {
+        margin: 0;
+        accent-color: #4B9CD3;
+        cursor: pointer;
       }
       #fileNameLabel {
         max-width: 180px;
@@ -248,21 +234,6 @@
         background: #26292c;
         color: #f0f0f0;
       }
-      html.dark-theme #cameraResizeHandle {
-        background: #4a4d50;
-      }
-      html.dark-theme #cameraResizeHandle:hover {
-        background: #666a6e;
-      }
-      html.dark-theme #droneCameraPanel,
-      html.dark-theme #droneCameraHeader,
-      html.dark-theme #droneCameraContainer {
-        background: #1d1f21;
-      }
-      html.dark-theme #droneCameraHeader {
-        border-bottom-color: #44484c;
-        color: #f5f5f5;
-      }
       html.dark-theme .blocklyTreeRow:hover {
         background-color: #34383c !important;
       }
@@ -325,10 +296,16 @@
         <div id="viewerToolbar">
           <button id="toggleWebglBtn" >🗖</button>
           <span id="fileNameLabel"></span>
+          <label id="cameraPreviewControl" for="cameraPreviewToggle">
+            <input type="checkbox" id="cameraPreviewToggle" checked>
+            <span id="labelCameraPreview">Camera preview</span>
+          </label>
           <button id="runBtn" ><font color='green'>▶</font></button>
           <button id="stopBtn" disabled ><font color='red'>■</font></button>
         </div>
-        <div id="webglContainer"></div>
+        <div id="webglContainer">
+          <div id="droneCameraPanel"></div>
+        </div>
         <div id="statusPanel">
           <table>
             <tr>
@@ -349,13 +326,6 @@
               </td>
             </tr>
           </table>
-        </div>
-        <div id="cameraResizeHandle" title="Resize drone camera"></div>
-        <div id="droneCameraPanel">
-          <div id="droneCameraHeader">
-            <span id="labelDroneCamera">Drone camera</span>
-          </div>
-          <div id="droneCameraContainer"></div>
         </div>
       </div>
     </div>

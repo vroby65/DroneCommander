@@ -14,17 +14,18 @@ https://vroby65.github.io/DroneCommander/
 
 - **Visual programming** with Blockly blocks for logic, loops, math, variables, functions, flow, sensors, and drone commands.
 - **3D simulation** powered by Three.js, with terrain-aware altitude and landing behavior.
-- **Drone commands** for take off, land, set/change altitude, set/change angle, walk, walk climbing, slide, absolute/relative 3D movement, smooth curved flight, return to base, wait, smoke trail, and speed control.
+- **Drone commands** for take off, land, photos, video recording, set/change altitude, set/change angle, walk, walk climbing, slide, absolute/relative 3D movement, smooth curved flight, return to base, wait, smoke trail, and speed control.
 - **Smooth curve handling** with coordinate-based curved flight that leaves the drone direction unchanged.
 - **Sensor blocks** for keyboard input, X/Z position, altitude, direction, and speed.
 - **Scenarios**: flight field, urban track, metropolis, and tropical island.
 - **Graphics profiles**: Performance, Balanced, and Quality.
-- **On-board drone camera** with a live 4:3 view from the nose of the drone. The camera follows yaw, pitch, and roll and provides the rendering base for future photo and video blocks.
+- **On-board drone camera** with a live picture-in-picture view from the nose of the drone. The camera follows yaw, pitch, and roll and supports timestamped PNG photo and video downloads.
 - **Light and dark themes** for the full interface and Blockly workspace, with the selected theme remembered in browser local storage.
+- **Scratch-style block zoom** with controls to enlarge, reduce, or reset the Blockly workspace, plus mouse-wheel and pinch zoom.
 - **Program management** with New, Save, Load, autosave to browser local storage, and remembered file names.
 - **Ryze/DJI Tello execution** through the companion [Drone Commander Tello Driver](https://github.com/vroby65/DroneCommander-Driver).
 - **Multilingual UI and help** in English, Italian, French, German, Spanish, Portuguese, Arabic, Simplified Chinese, Korean, and Japanese.
-- **Resizable layout** with a Blockly editor, 3D viewer, status panel with live program-variable values, and an independently resizable on-board camera.
+- **Resizable layout** with a Blockly editor, 3D viewer, and status panel with live program-variable values.
 
 ## Screenshots
 
@@ -57,19 +58,24 @@ Using an HTTP server is recommended because the app loads scenarios, textures, m
 ## Usage
 
 1. Drag a **Start** block into the Blockly workspace.
-2. Attach drone blocks such as **take off**, **set altitude**, **walk**, **walk climbing**, **go to**, **move by**, **curve abs**, **curve**, **return to base**, **change angle**, and **land**.
+2. Attach drone blocks such as **take off**, **set altitude**, **walk**, **walk climbing**, **go to**, **move by**, **curve abs**, **curve**, **take a photo**, **start recording**, **save recording**, **return to base**, **change angle**, and **land**.
 3. Click the green play button to run the program in the 3D viewer.
 4. Use the panel directly below the 3D viewer to inspect or adjust X, Z, altitude, direction, and flight status. During execution it also lists every Blockly variable and its current value, one per line.
-5. Watch the on-board camera below the status panel for the view from the nose of the drone. Drag its horizontal separator to change the camera height. The camera and status panel are hidden when the main 3D viewer is fullscreen.
-6. Select **Dark theme** at the top-right of the Blockly panel to switch the entire interface between light and dark modes.
-7. Use **Save** and **Load** to export or import Blockly XML programs.
-8. Switch scenario or graphics profile from the toolbar when needed.
+5. Enable **Camera preview** in the 3D viewer toolbar to show the on-board view in the top-left corner of the main scene. The preview remains available when the viewer is fullscreen.
+6. Add a **take a photo** block to download a timestamped PNG from the on-board camera at that point in the program. This works even when the preview is hidden.
+7. Place **start recording** before the actions to film, then use **save recording** to stop the camera and download the timestamped video. Recording also works with the preview hidden; stopping the program before saving cancels the active recording.
+8. Select **Dark theme** at the top-right of the Blockly panel to switch the entire interface between light and dark modes.
+9. Use the Blockly zoom controls to enlarge, reduce, or reset the block size. You can also zoom with the mouse wheel or a pinch gesture.
+10. Use **Save** and **Load** to export or import Blockly XML programs.
+11. Switch scenario or graphics profile from the toolbar when needed.
 
 ## On-board Camera
 
 The secondary camera renders the same Three.js environment from a mounting point just beyond the drone nose. Because its position and orientation are calculated in the drone's local coordinate space, the image follows turns, climbs, dives, and banking maneuvers.
 
-The view uses the same 4:3 aspect ratio as the main 3D viewer and can be resized vertically with the separator above it. Entering fullscreen hides the camera and pauses its rendering; leaving fullscreen restores it at the selected size. Its dedicated canvas is configured as the foundation for future Blockly photo and video commands.
+The preview is overlaid in the top-left corner of the main 3D canvas and occupies one eighth of its area, so it does not affect panel sizing or the surrounding layout. It can be shown or hidden with the **Camera preview** checkbox in the viewer toolbar, and the selected visibility is remembered in browser local storage. The preview remains visible in fullscreen mode. Its dedicated render target supplies full camera frames to the **take a photo**, **start recording**, and **save recording** blocks.
+
+Video recording targets 30 fps at a 4:3 resolution up to 960×720. Drone Commander selects WebM (VP9 or VP8) or MP4 according to browser support. The **save recording** block terminates the recording and downloads the resulting timestamped file.
 
 ## Fly On A Real Tello
 

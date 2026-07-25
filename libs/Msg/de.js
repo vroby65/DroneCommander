@@ -444,6 +444,12 @@ Blockly.Msg["BKY_DRONE_TAKEOFF_TOOLTIP"] = "Lässt die Drohne abheben";
 
 Blockly.Msg["BKY_DRONE_LAND"] = "landen";
 Blockly.Msg["BKY_DRONE_LAND_TOOLTIP"] = "Lässt die Drohne landen";
+Blockly.Msg["BKY_DRONE_TAKE_PHOTO"] = "Foto aufnehmen";
+Blockly.Msg["BKY_DRONE_TAKE_PHOTO_TOOLTIP"] = "Lädt ein PNG-Bild von der Drohnenkamera herunter";
+Blockly.Msg["BKY_DRONE_START_RECORDING"] = "Aufnahme starten";
+Blockly.Msg["BKY_DRONE_START_RECORDING_TOOLTIP"] = "Startet die Videoaufnahme der Drohnenkamera";
+Blockly.Msg["BKY_DRONE_SAVE_RECORDING"] = "Aufnahme speichern";
+Blockly.Msg["BKY_DRONE_SAVE_RECORDING_TOOLTIP"] = "Beendet die Aufnahme und lädt das Video der Drohnenkamera herunter";
 
 Blockly.Msg["BKY_DRONE_SET_ALTITUDE"] = "Höhe setzen %1";
 Blockly.Msg["BKY_DRONE_SET_ALTITUDE_TOOLTIP"] = "Setze die Höhe der Drohne";
@@ -530,8 +536,7 @@ Blockly.Msg["BKY_FLOW_END"] = "Ende";
 Blockly.Msg.BKY_NEW = "Neu";
 Blockly.Msg.BKY_LOAD = "Laden";
 Blockly.Msg.BKY_SAVE = "Speichern";
-Blockly.Msg.BKY_DRONE_CAMERA = "Drohnenkamera";
-Blockly.Msg.BKY_RESIZE_DRONE_CAMERA = "Drohnenkamera skalieren";
+Blockly.Msg.BKY_CAMERA_PREVIEW = "Kameravorschau";
 Blockly.Msg.BKY_DARK_THEME = "Dunkles Design";
 
 // Category

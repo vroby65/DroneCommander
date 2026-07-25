@@ -5,7 +5,8 @@ let workspace;
 
 // Custom block definitions
 const customBlockTypes = [
-    "take_off", "land", "return_to_base", "set_altitude", "change_altitude", "set_angle",
+    "take_off", "land", "take_photo", "start_recording", "save_recording",
+    "return_to_base", "set_altitude", "change_altitude", "set_angle",
     "change_angle", "slide", "walk", "walk_climbing", "go_to", "move_by", "curve_abs", "curve",
     "wait", "smoke", "set_speed", "sensor_keypressed", "sensor_x",
     "sensor_z", "sensor_altitude", "sensor_direction", "sensor_speed",
@@ -30,6 +31,27 @@ function defineCustomBlocks() {
         "nextStatement": null,
         "colour": 20,
         "tooltip": Blockly.Msg["BKY_DRONE_LAND_TOOLTIP"]
+    }, {
+        "type": "take_photo",
+        "message0": Blockly.Msg["BKY_DRONE_TAKE_PHOTO"],
+        "previousStatement": null,
+        "nextStatement": null,
+        "colour": 20,
+        "tooltip": Blockly.Msg["BKY_DRONE_TAKE_PHOTO_TOOLTIP"]
+    }, {
+        "type": "start_recording",
+        "message0": Blockly.Msg["BKY_DRONE_START_RECORDING"],
+        "previousStatement": null,
+        "nextStatement": null,
+        "colour": 20,
+        "tooltip": Blockly.Msg["BKY_DRONE_START_RECORDING_TOOLTIP"]
+    }, {
+        "type": "save_recording",
+        "message0": Blockly.Msg["BKY_DRONE_SAVE_RECORDING"],
+        "previousStatement": null,
+        "nextStatement": null,
+        "colour": 20,
+        "tooltip": Blockly.Msg["BKY_DRONE_SAVE_RECORDING_TOOLTIP"]
     }, {
         "type": "set_altitude",
         "message0": Blockly.Msg["BKY_DRONE_SET_ALTITUDE"],
@@ -474,6 +496,9 @@ const makecodeDarkTheme = Blockly.Theme.defineTheme('makecodeDark', {
 // JavaScript generators for drone commands
 Blockly.JavaScript.forBlock['take_off'] = block => 'await drone.takeOff();\n';
 Blockly.JavaScript.forBlock['land'] = block => 'await drone.land();\n';
+Blockly.JavaScript.forBlock['take_photo'] = block => 'await drone.takePhoto();\n';
+Blockly.JavaScript.forBlock['start_recording'] = block => 'await drone.startRecording();\n';
+Blockly.JavaScript.forBlock['save_recording'] = block => 'await drone.saveRecording();\n';
 Blockly.JavaScript.forBlock['set_altitude'] = block => {
     var altitude = Blockly.JavaScript.valueToCode(block, 'ALTITUDE', Blockly.JavaScript.ORDER_ATOMIC) || '0';
     return 'await drone.setAltitude(' + altitude + ');\n';
@@ -940,6 +965,15 @@ const initBlockly = () => {
                     "type": "land"
                 }, {
                     "kind": "block",
+                    "type": "take_photo"
+                }, {
+                    "kind": "block",
+                    "type": "start_recording"
+                }, {
+                    "kind": "block",
+                    "type": "save_recording"
+                }, {
+                    "kind": "block",
                     "type": "return_to_base"
                 }, {
                     "kind": "block",
@@ -1255,7 +1289,16 @@ const initBlockly = () => {
         rtl: document.documentElement.dir === 'rtl',
         renderer: 'zelos',
         theme: document.documentElement.classList.contains('dark-theme') ?
-            makecodeDarkTheme : makecodeTheme
+            makecodeDarkTheme : makecodeTheme,
+        zoom: {
+            controls: true,
+            wheel: true,
+            startScale: 1,
+            maxScale: 2,
+            minScale: 0.4,
+            scaleSpeed: 1.2,
+            pinch: true
+        }
     });
     workspace.addChangeListener(scheduleAutosave);
 };
