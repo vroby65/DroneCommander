@@ -19,10 +19,12 @@ https://vroby65.github.io/DroneCommander/
 - **Sensor blocks** for keyboard input, X/Z position, altitude, direction, and speed.
 - **Scenarios**: flight field, urban track, metropolis, and tropical island.
 - **Graphics profiles**: Performance, Balanced, and Quality.
+- **On-board drone camera** with a live 4:3 view from the nose of the drone. The camera follows yaw, pitch, and roll and provides the rendering base for future photo and video blocks.
+- **Light and dark themes** for the full interface and Blockly workspace, with the selected theme remembered in browser local storage.
 - **Program management** with New, Save, Load, autosave to browser local storage, and remembered file names.
 - **Ryze/DJI Tello execution** through the companion [Drone Commander Tello Driver](https://github.com/vroby65/DroneCommander-Driver).
 - **Multilingual UI and help** in English, Italian, French, German, Spanish, Portuguese, Arabic, Simplified Chinese, Korean, and Japanese.
-- **Resizable layout** with a Blockly editor, 3D viewer, and a status panel directly below the viewer with live program-variable values.
+- **Resizable layout** with a Blockly editor, 3D viewer, status panel with live program-variable values, and an independently resizable on-board camera.
 
 ## Screenshots
 
@@ -58,8 +60,16 @@ Using an HTTP server is recommended because the app loads scenarios, textures, m
 2. Attach drone blocks such as **take off**, **set altitude**, **walk**, **walk climbing**, **go to**, **move by**, **curve abs**, **curve**, **return to base**, **change angle**, and **land**.
 3. Click the green play button to run the program in the 3D viewer.
 4. Use the panel directly below the 3D viewer to inspect or adjust X, Z, altitude, direction, and flight status. During execution it also lists every Blockly variable and its current value, one per line.
-5. Use **Save** and **Load** to export or import Blockly XML programs.
-6. Switch scenario or graphics profile from the toolbar when needed.
+5. Watch the on-board camera below the status panel for the view from the nose of the drone. Drag its horizontal separator to change the camera height. The camera and status panel are hidden when the main 3D viewer is fullscreen.
+6. Select **Dark theme** at the top-right of the Blockly panel to switch the entire interface between light and dark modes.
+7. Use **Save** and **Load** to export or import Blockly XML programs.
+8. Switch scenario or graphics profile from the toolbar when needed.
+
+## On-board Camera
+
+The secondary camera renders the same Three.js environment from a mounting point just beyond the drone nose. Because its position and orientation are calculated in the drone's local coordinate space, the image follows turns, climbs, dives, and banking maneuvers.
+
+The view uses the same 4:3 aspect ratio as the main 3D viewer and can be resized vertically with the separator above it. Entering fullscreen hides the camera and pauses its rendering; leaving fullscreen restores it at the selected size. Its dedicated canvas is configured as the foundation for future Blockly photo and video commands.
 
 ## Fly On A Real Tello
 
@@ -82,9 +92,9 @@ For **curve abs**, both the intermediate point and destination use absolute prog
 ## Project Structure
 
 - `index.html` - Application shell, layout, and ordered script loading.
-- `js/blockly.js` - Custom Blockly blocks, JavaScript generators, toolbox setup, and workspace persistence.
-- `js/drone-commands.js` - Three.js simulation, command queue, flight commands, scenarios, collision handling, audio, and rendering.
-- `js/ui.js` - Camera controls, status inputs, live program-variable monitoring, program actions, layout, localization, and selectors.
+- `js/blockly.js` - Custom Blockly blocks, JavaScript generators, light/dark Blockly themes, toolbox setup, and workspace persistence.
+- `js/drone-commands.js` - Three.js simulation, main and on-board cameras, command queue, flight commands, scenarios, collision handling, audio, and rendering.
+- `js/ui.js` - Camera controls, theme switching, status inputs, live program-variable monitoring, program actions, layout, localization, and selectors.
 - `js/app.js` - Startup sequence that initializes localization, Blockly, Three.js, and the render loop.
 - `doc/` - Help pages in supported languages.
 - `backgrounds/` - Scenario definitions.

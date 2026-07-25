@@ -455,6 +455,22 @@ const makecodeTheme = Blockly.Theme.defineTheme('makecode', {
     }
 });
 
+const makecodeDarkTheme = Blockly.Theme.defineTheme('makecodeDark', {
+    base: makecodeTheme,
+    componentStyles: {
+        workspaceBackgroundColour: "#181a1c",
+        toolboxBackgroundColour: "#24272a",
+        toolboxForegroundColour: "#f2f2f2",
+        flyoutBackgroundColour: "#2d3033",
+        flyoutForegroundColour: "#f2f2f2",
+        flyoutOpacity: 1,
+        scrollbarColour: "#686d72",
+        insertionMarkerColour: "#ffffff",
+        insertionMarkerOpacity: 0.35,
+        cursorColour: "#c7ccd1"
+    }
+});
+
 // JavaScript generators for drone commands
 Blockly.JavaScript.forBlock['take_off'] = block => 'await drone.takeOff();\n';
 Blockly.JavaScript.forBlock['land'] = block => 'await drone.land();\n';
@@ -1238,7 +1254,8 @@ const initBlockly = () => {
         toolbox,
         rtl: document.documentElement.dir === 'rtl',
         renderer: 'zelos',
-        theme: Blockly.Themes.makecode
+        theme: document.documentElement.classList.contains('dark-theme') ?
+            makecodeDarkTheme : makecodeTheme
     });
     workspace.addChangeListener(scheduleAutosave);
 };

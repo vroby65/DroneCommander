@@ -16,6 +16,7 @@ window.addEventListener('load', () => {
         document.getElementById('graphicsSelect').value = graphicsProfileName;
         applyGraphicsProfile(graphicsProfileName);
         updateWebGLCanvas();
+        updateDroneCameraCanvas();
         animate();
         loadScenarioList();
     });

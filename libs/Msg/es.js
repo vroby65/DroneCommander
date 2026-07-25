@@ -546,6 +546,9 @@ Blockly.Msg.BKY_STATUS_DIRECTION = "Dirección:";
 Blockly.Msg.BKY_STATUS_FLIGHT = "Estado:";
 Blockly.Msg.BKY_FLIGHT_IN_FLIGHT = "En Vuelo";
 Blockly.Msg.BKY_FLIGHT_ON_GROUND = "En Tierra";
+Blockly.Msg.BKY_DRONE_CAMERA = "Cámara del dron";
+Blockly.Msg.BKY_RESIZE_DRONE_CAMERA = "Redimensionar la cámara del dron";
+Blockly.Msg.BKY_DARK_THEME = "Tema oscuro";
 
 // Category
 Blockly.Msg["BKY_CATEGORY_LOGIC"]="Lógica";

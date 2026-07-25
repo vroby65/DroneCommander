@@ -530,6 +530,9 @@ Blockly.Msg["BKY_FLOW_END"] = "Fin";
 Blockly.Msg.BKY_NEW = "Nouveau";
 Blockly.Msg.BKY_LOAD = "Charger";
 Blockly.Msg.BKY_SAVE = "Enregistrer";
+Blockly.Msg.BKY_DRONE_CAMERA = "Caméra du drone";
+Blockly.Msg.BKY_RESIZE_DRONE_CAMERA = "Redimensionner la caméra du drone";
+Blockly.Msg.BKY_DARK_THEME = "Thème sombre";
 
 // Category
 Blockly.Msg["BKY_CATEGORY_LOGIC"]="Logique";

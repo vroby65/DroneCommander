@@ -5,8 +5,32 @@ const container = document.getElementById('container');
 const leftPanel = document.getElementById('leftPanel');
 const divider = document.getElementById('divider');
 const webglContainer = document.getElementById('webglContainer');
+const rightPanel = document.getElementById('rightPanel');
+const statusPanel = document.getElementById('statusPanel');
+const cameraResizeHandle = document.getElementById('cameraResizeHandle');
+const droneCameraPanel = document.getElementById('droneCameraPanel');
+const droneCameraContainer = document.getElementById('droneCameraContainer');
+const darkThemeToggle = document.getElementById('darkThemeToggle');
+const darkThemeStorageKey = 'darkThemeEnabled';
 let run = false;
 let delay = 100;
+
+const applyDarkTheme = (enabled, persist = true) => {
+    document.documentElement.classList.toggle('dark-theme', enabled);
+    darkThemeToggle.checked = enabled;
+    if (persist) localStorage.setItem(darkThemeStorageKey, String(enabled));
+    if (workspace) {
+        workspace.setTheme(enabled ? makecodeDarkTheme : makecodeTheme);
+        Blockly.svgResize(workspace);
+    }
+};
+
+applyDarkTheme(localStorage.getItem(darkThemeStorageKey) === 'true', false);
+darkThemeToggle.addEventListener('change', event => {
+    applyDarkTheme(event.target.checked);
+}, {
+    passive: true
+});
 
 // Camera pointer and zoom controls
 webglContainer.addEventListener('contextmenu', e => e.preventDefault());
@@ -81,10 +105,46 @@ const updateWebGLCanvas = () => {
     camera.aspect = newWidth / newHeight;
     camera.updateProjectionMatrix();
 };
+
+// Keep the on-board camera at the same 4:3 aspect ratio as the main 3D view.
+const updateDroneCameraCanvas = () => {
+    if (!droneCameraRenderer || !droneCamera) return;
+    const containerWidth = droneCameraContainer.clientWidth;
+    const containerHeight = droneCameraContainer.clientHeight;
+    if (!containerWidth || !containerHeight) return;
+
+    const desiredAspect = 4 / 3;
+    let newWidth;
+    let newHeight;
+    if (containerWidth / containerHeight > desiredAspect) {
+        newHeight = containerHeight;
+        newWidth = containerHeight * desiredAspect;
+    } else {
+        newWidth = containerWidth;
+        newHeight = containerWidth / desiredAspect;
+    }
+
+    droneCameraRenderer.setSize(newWidth, newHeight);
+    droneCameraRenderer.domElement.style.cssText = `
+    width: ${newWidth}px;
+    height: ${newHeight}px;
+    position: absolute;
+    left: ${(containerWidth - newWidth) / 2}px;
+    top: ${(containerHeight - newHeight) / 2}px;
+  `;
+    droneCamera.aspect = newWidth / newHeight;
+    droneCamera.updateProjectionMatrix();
+};
+
+const updateViewerCanvases = () => {
+    updateWebGLCanvas();
+    updateDroneCameraCanvas();
+};
+
 let resizeTimeout;
 window.addEventListener('resize', () => {
     clearTimeout(resizeTimeout);
-    resizeTimeout = setTimeout(updateWebGLCanvas, 100);
+    resizeTimeout = setTimeout(updateViewerCanvases, 100);
 }, {
     passive: true
 });
@@ -293,26 +353,30 @@ document.getElementById('stopBtn').addEventListener('click', () => {
 
 // Resizable editor/viewer layout
 let isResizing = false;
+let isCameraResizing = false;
+let cameraResizeStartY = 0;
+let cameraResizeStartHeight = 0;
 let fullScreen = false;
 document.getElementById('toggleWebglBtn').addEventListener('click', () => {
-    const rightPanel = document.getElementById('rightPanel');
-    const statusPanel = document.getElementById('statusPanel');
-
     if (!fullScreen) {
         leftPanel.style.display = 'none';
         divider.style.display = 'none';
         rightPanel.style.width = '100%';
         statusPanel.style.display = 'none';
+        cameraResizeHandle.style.display = 'none';
+        droneCameraPanel.style.display = 'none';
         document.getElementById('toggleWebglBtn').innerText = "🗗";
     } else {
         leftPanel.style.display = '';
         divider.style.display = '';
         rightPanel.style.width = '';
         statusPanel.style.display = '';
+        cameraResizeHandle.style.display = '';
+        droneCameraPanel.style.display = '';
         document.getElementById('toggleWebglBtn').innerText = "🗖";
     }
     fullScreen = !fullScreen;
-    updateWebGLCanvas();
+    updateViewerCanvases();
 }, {
     passive: true
 });
@@ -320,23 +384,54 @@ document.getElementById('toggleWebglBtn').addEventListener('click', () => {
 divider.addEventListener('mousedown', () => {
     isResizing = true;
 });
+cameraResizeHandle.addEventListener('mousedown', event => {
+    if (fullScreen) return;
+    isCameraResizing = true;
+    cameraResizeStartY = event.clientY;
+    cameraResizeStartHeight = droneCameraPanel.getBoundingClientRect().height;
+    document.body.style.cursor = 'ns-resize';
+    document.body.style.userSelect = 'none';
+    event.preventDefault();
+});
 document.addEventListener('mousemove', e => {
-    if (!isResizing) return;
-    const containerOffsetLeft = container.offsetLeft;
-    const pointerX = e.clientX - containerOffsetLeft;
-    const minWidth = 200;
-    const maxWidth = container.clientWidth - 200;
-    let panelWidth = document.documentElement.dir === 'rtl' ?
-        container.clientWidth - pointerX : pointerX;
-    panelWidth = Math.max(minWidth, Math.min(panelWidth, maxWidth));
-    leftPanel.style.width = panelWidth + "px";
-    Blockly.svgResize(workspace);
-    updateWebGLCanvas();
+    if (isResizing) {
+        const containerOffsetLeft = container.offsetLeft;
+        const pointerX = e.clientX - containerOffsetLeft;
+        const minWidth = 200;
+        const maxWidth = container.clientWidth - 200;
+        let panelWidth = document.documentElement.dir === 'rtl' ?
+            container.clientWidth - pointerX : pointerX;
+        panelWidth = Math.max(minWidth, Math.min(panelWidth, maxWidth));
+        leftPanel.style.width = panelWidth + "px";
+        Blockly.svgResize(workspace);
+        updateViewerCanvases();
+    }
+
+    if (isCameraResizing) {
+        const toolbarHeight = document.getElementById('viewerToolbar').offsetHeight;
+        const minimumMainViewHeight = 120;
+        const minimumCameraHeight = 96;
+        const maximumCameraHeight = Math.max(
+            minimumCameraHeight,
+            rightPanel.clientHeight - toolbarHeight - statusPanel.offsetHeight -
+                cameraResizeHandle.offsetHeight - minimumMainViewHeight
+        );
+        const requestedHeight = cameraResizeStartHeight + cameraResizeStartY - e.clientY;
+        const cameraHeight = Math.max(
+            minimumCameraHeight,
+            Math.min(requestedHeight, maximumCameraHeight)
+        );
+        droneCameraPanel.style.flexBasis = cameraHeight + 'px';
+        updateViewerCanvases();
+    }
 }, {
     passive: true
 });
 document.addEventListener('mouseup', () => {
     isResizing = false;
+    isCameraResizing = false;
+    document.body.style.cursor = '';
+    document.body.style.userSelect = '';
 }, {
     passive: true
 });
@@ -384,6 +479,12 @@ function applyLocalizedStrings() {
     document.getElementById('labelStatus').innerText = Blockly.Msg["BKY_STATUS_FLIGHT"] || 'Status:';
     document.getElementById('labelVariables').innerText = Blockly.Msg["BKY_STATUS_VARIABLES"] ||
         (Blockly.Msg["BKY_CATEGORY_VARIABLES"] || 'Variables') + ':';
+    document.getElementById('labelDroneCamera').innerText =
+        Blockly.Msg["BKY_DRONE_CAMERA"] || 'Drone camera';
+    document.getElementById('cameraResizeHandle').title =
+        Blockly.Msg["BKY_RESIZE_DRONE_CAMERA"] || 'Resize drone camera';
+    document.getElementById('labelDarkTheme').innerText =
+        Blockly.Msg["BKY_DARK_THEME"] || 'Dark theme';
 
     // Current flight status
     if (typeof drone !== 'undefined' && drone) {

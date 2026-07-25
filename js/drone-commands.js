@@ -5,6 +5,8 @@
 let scene;
 let camera;
 let renderer;
+let droneCamera;
+let droneCameraRenderer;
 let drone;
 const defaultFlightAltitude = 10.0;
 const getNumber = (value, fallback = 0) => {
@@ -275,6 +277,10 @@ const applyGraphicsProfile = profileName => {
         renderer.setPixelRatio(getProfilePixelRatio());
         renderer.shadowMap.enabled = activeGraphicsProfile.shadows;
     }
+    if (droneCameraRenderer) {
+        droneCameraRenderer.setPixelRatio(getProfilePixelRatio());
+        droneCameraRenderer.shadowMap.enabled = activeGraphicsProfile.shadows;
+    }
 
     if (directionalLight) {
         directionalLight.castShadow = activeGraphicsProfile.shadows;
@@ -291,7 +297,10 @@ const applyGraphicsProfile = profileName => {
 
     refreshSceneGraphicsProfile();
     updateSmokeLine();
-    if (renderer) updateWebGLCanvas();
+    if (renderer) {
+        updateWebGLCanvas();
+        updateDroneCameraCanvas();
+    }
 };
 
 const enforceTerrainCollision = () => {
@@ -542,6 +551,15 @@ const initThree = () => {
     renderer.shadowMap.enabled = activeGraphicsProfile.shadows;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     webglContainer.appendChild(renderer.domElement);
+    droneCamera = new THREE.PerspectiveCamera(75, 4 / 3, 0.1, 1000000);
+    droneCameraRenderer = new THREE.WebGLRenderer({
+        antialias: true,
+        preserveDrawingBuffer: true
+    });
+    droneCameraRenderer.setPixelRatio(getProfilePixelRatio());
+    droneCameraRenderer.shadowMap.enabled = activeGraphicsProfile.shadows;
+    droneCameraRenderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    droneCameraContainer.appendChild(droneCameraRenderer.domElement);
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
     ambientLight.userData.type = 'keep';
     scene.add(ambientLight);
@@ -1459,6 +1477,18 @@ const animate = () => {
         offset.setFromSpherical(spherical);
         camera.position.copy(drone.mesh.position).add(offset);
         camera.lookAt(drone.mesh.position);
+
+        // Mount the secondary camera just beyond the drone nose. Local-space
+        // points make the view follow yaw, pitch, and roll during every maneuver.
+        drone.mesh.updateMatrixWorld(true);
+        const droneCameraPosition = drone.mesh.localToWorld(new THREE.Vector3(-700, -20, 0));
+        const droneCameraTarget = drone.mesh.localToWorld(new THREE.Vector3(-1700, -20, 0));
+        const droneCameraUp = drone.mesh.localToWorld(new THREE.Vector3(-700, 980, 0))
+            .sub(droneCameraPosition)
+            .normalize();
+        droneCamera.position.copy(droneCameraPosition);
+        droneCamera.up.copy(droneCameraUp);
+        droneCamera.lookAt(droneCameraTarget);
         updateDroneGuides();
 
         // Keep the directional light and shadow camera centered on the drone.
@@ -1476,6 +1506,9 @@ const animate = () => {
         }
     }
     renderer.render(scene, camera);
+    if (droneCameraPanel.style.display !== 'none') {
+        droneCameraRenderer.render(scene, droneCamera);
+    }
 };
 
 // Scene and camera reset

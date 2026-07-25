@@ -69,6 +69,46 @@
       #statusPanel input {
         width: 50px;
       }
+      #cameraResizeHandle {
+        flex: 0 0 6px;
+        width: 100%;
+        background: #bbb;
+        cursor: ns-resize;
+        touch-action: none;
+      }
+      #cameraResizeHandle:hover {
+        background: #999;
+      }
+      #droneCameraPanel {
+        flex: 0 0 400px;
+        min-height: 96px;
+        width: 100%;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        background: #fff;
+      }
+      #droneCameraHeader {
+        flex: 0 0 26px;
+        display: flex;
+        align-items: center;
+        padding: 0 8px;
+        box-sizing: border-box;
+        border-bottom: 1px solid #ddd;
+        background: #fff;
+        color: #000;
+        font-size: 13px;
+        font-weight: bold;
+      }
+      #droneCameraContainer {
+        flex: 1;
+        min-height: 0;
+        width: 100%;
+        position: relative;
+        overflow: hidden;
+        background: #fff;
+      }
       #variablesRow td {
         padding-top: 4px;
       }
@@ -107,6 +147,22 @@
       #scenarioControls select {
         flex: 1;
         min-width: 0;
+      }
+      #darkThemeControl {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        margin-inline-start: auto;
+        padding: 4px 6px;
+        white-space: nowrap;
+        font-size: 13px;
+        cursor: pointer;
+        user-select: none;
+      }
+      #darkThemeToggle {
+        margin: 0;
+        accent-color: #4B9CD3;
+        cursor: pointer;
       }
       #viewerToolbar {
         display: flex;
@@ -157,6 +213,59 @@
       .blocklyToolboxCategory[data-category-id="drone"] > .blocklyTreeRow > .blocklyTreeLabel { color: #20A39E; }
       .blocklyToolboxCategory[data-category-id="sensors"] > .blocklyTreeRow > .blocklyTreeLabel { color: #90BE6D; }
       .blocklyToolboxCategory[data-category-id="flow"] > .blocklyTreeRow > .blocklyTreeLabel { color: #888888; }
+
+      html.dark-theme {
+        color-scheme: dark;
+      }
+      html.dark-theme body {
+        background: #151719;
+        color: #f0f0f0;
+      }
+      html.dark-theme #leftPanel,
+      html.dark-theme #viewerToolbar {
+        background: #1d1f21;
+      }
+      html.dark-theme #rightPanel {
+        background: #151719;
+      }
+      html.dark-theme #divider {
+        background: #4a4d50;
+      }
+      html.dark-theme #blocklyDiv {
+        border-color: #55595d;
+      }
+      html.dark-theme button,
+      html.dark-theme select,
+      html.dark-theme input[type="number"] {
+        border: 1px solid #5c6064;
+        background: #2b2e31;
+        color: #f2f2f2;
+      }
+      html.dark-theme button:disabled {
+        color: #8d9195;
+      }
+      html.dark-theme #statusPanel {
+        background: #26292c;
+        color: #f0f0f0;
+      }
+      html.dark-theme #cameraResizeHandle {
+        background: #4a4d50;
+      }
+      html.dark-theme #cameraResizeHandle:hover {
+        background: #666a6e;
+      }
+      html.dark-theme #droneCameraPanel,
+      html.dark-theme #droneCameraHeader,
+      html.dark-theme #droneCameraContainer {
+        background: #1d1f21;
+      }
+      html.dark-theme #droneCameraHeader {
+        border-bottom-color: #44484c;
+        color: #f5f5f5;
+      }
+      html.dark-theme .blocklyTreeRow:hover {
+        background-color: #34383c !important;
+      }
       
     </style>
     <!-- Include Blockly -->
@@ -202,6 +311,10 @@
             </select>
             <button id="helpBtn"></button>
           </div>
+          <label id="darkThemeControl" for="darkThemeToggle">
+            <input type="checkbox" id="darkThemeToggle">
+            <span id="labelDarkTheme">Dark theme</span>
+          </label>
 
           <input type="file" id="fileInput" style="display:none">
         </div>
@@ -236,6 +349,13 @@
               </td>
             </tr>
           </table>
+        </div>
+        <div id="cameraResizeHandle" title="Resize drone camera"></div>
+        <div id="droneCameraPanel">
+          <div id="droneCameraHeader">
+            <span id="labelDroneCamera">Drone camera</span>
+          </div>
+          <div id="droneCameraContainer"></div>
         </div>
       </div>
     </div>
