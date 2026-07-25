@@ -1,6 +1,7 @@
 # Drone Commander
 
-![Drone Commander overview](screenshots/overview.png)
+<img width="1920" height="1041" alt="immagine" src="https://github.com/user-attachments/assets/f2b1d680-b3b3-4c32-b3ae-24066e83fa8e" />
+
 
 Drone Commander is an interactive browser app for programming and simulating drone flight with Blockly and Three.js. Build a flight plan with blocks, run it, and watch the drone move inside a 3D scene.
 
