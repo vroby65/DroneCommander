@@ -158,39 +158,69 @@ let cameraAngle = {
 
 // Serialized command execution
 const commandQueue = [];
+let activeCommand = null;
+let animationGeneration = 0;
+
+const processQueue = () => {
+    if (activeCommand || !commandQueue.length) return;
+
+    const command = commandQueue.shift();
+    if (command.settled) {
+        processQueue();
+        return;
+    }
+
+    activeCommand = command;
+    try {
+        command.run();
+    } catch (error) {
+        command.reject(error);
+    }
+};
+
 const addCommand = cmdFunction => {
+    let command;
     const commandPromise = new Promise((resolve, reject) => {
-        commandQueue.push(next => {
-            let completed = false;
-            const completeCommand = () => {
-                if (completed) return;
-                completed = true;
+        const settle = (error, cancelled = false) => {
+            if (command.settled) return;
+            command.settled = true;
+
+            if (activeCommand === command) activeCommand = null;
+            if (error && !cancelled) {
+                reject(error);
+            } else {
                 resolve();
-                next();
-            };
-            try {
-                cmdFunction(completeCommand);
-            } catch (error) {
-                if (!completed) {
-                    completed = true;
-                    reject(error);
-                    next();
-                }
             }
-        });
+            processQueue();
+        };
+
+        command = {
+            settled: false,
+            run: () => cmdFunction(() => settle()),
+            reject: error => settle(error),
+            cancel: () => settle(null, true)
+        };
+        commandQueue.push(command);
     });
-    if (commandQueue.length === 1) processQueue();
+    processQueue();
     return commandPromise;
 };
-const processQueue = () => {
-    if (!commandQueue.length) return;
-    const cmd = commandQueue.shift();
-    cmd(processQueue);
+
+// Stop both the current animation and every queued command. Cancelled command
+// promises resolve so the generated program can reach its run-state checkpoint
+// and exit without leaving an orphaned async execution behind.
+const cancelDroneCommands = () => {
+    animationGeneration++;
+
+    const queuedCommands = commandQueue.splice(0);
+    queuedCommands.forEach(command => command.cancel());
+    if (activeCommand) activeCommand.cancel();
 };
 
 // Drive numeric animations with requestAnimationFrame while handling zero-duration
 // commands synchronously. Every flight command completes through the same callback.
 const animateProperty = (setter, from, to, duration, onComplete) => {
+    const generation = animationGeneration;
     const safeDuration = getDuration(duration);
     if (safeDuration === 0) {
         setter(to);
@@ -199,6 +229,8 @@ const animateProperty = (setter, from, to, duration, onComplete) => {
     }
     const startTime = performance.now();
     const step = timestamp => {
+        if (generation !== animationGeneration) return;
+
         const progress = Math.min((timestamp - startTime) / safeDuration, 1);
         setter(from + (to - from) * progress);
         if (progress < 1) {
@@ -1872,12 +1904,13 @@ const resetCameraView = () => {
 const resetScene = () => {
     const startAltitude = getSafeAltitudeAt(0, 0);
     drone.mesh.position.set(0, startAltitude, 0);
-    drone.mesh.rotation.y = 0;
+    drone.mesh.rotation.set(0, 0, 0);
     drone.altitude = startAltitude;
     drone.direction = 0;
     drone.smoke = 0;
     resetCameraView();
     clearInterval(drone.propellerInterval);
+    drone.propellerInterval = null;
     drone.flying = false;
     updateStatus();
 

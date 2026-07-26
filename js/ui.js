@@ -357,16 +357,12 @@ document.getElementById('runBtn').addEventListener('click', () => {
 });
 document.getElementById('stopBtn').addEventListener('click', () => {
     cancelDroneVideoRecording();
-    if (run) {
-        document.getElementById("runBtn").disabled = false;
-        commandQueue.length = 0;
-        run = false;
-        stopDroneSound();
-        clearInterval(drone.propellerInterval);
-    } else {
-        setTimeout(resetScene, delay);
-        document.getElementById("stopBtn").disabled = true;
-    }
+    run = false;
+    cancelDroneCommands();
+    stopDroneSound();
+    resetScene();
+    document.getElementById("runBtn").disabled = false;
+    document.getElementById("stopBtn").disabled = true;
 }, {
     passive: true
 });
