@@ -554,6 +554,13 @@ Blockly.Msg.BKY_FLIGHT_IN_FLIGHT = "In Volo";
 Blockly.Msg.BKY_FLIGHT_ON_GROUND = "A Terra";
 Blockly.Msg.BKY_CAMERA_PREVIEW = "Anteprima videocamera";
 Blockly.Msg.BKY_DARK_THEME = "Tema scuro";
+Blockly.Msg.BKY_MEDIA_SAVE_DIRECTORY = "Cartella foto/video:";
+Blockly.Msg.BKY_MEDIA_SAVE_DIRECTORY_SELECT = "Scegli...";
+Blockly.Msg.BKY_MEDIA_SAVE_DIRECTORY_RESET = "Ripristina";
+Blockly.Msg.BKY_MEDIA_SAVE_DIRECTORY_DEFAULT = "Download predefiniti del browser";
+Blockly.Msg.BKY_MEDIA_SAVE_DIRECTORY_UNSUPPORTED = "Download predefiniti del browser (selezione cartella non supportata)";
+Blockly.Msg.BKY_MEDIA_SAVE_DIRECTORY_PERMISSION_NEEDED = "autorizzazione necessaria";
+Blockly.Msg.BKY_MEDIA_SAVE_DIRECTORY_PRIVACY = "Per privacy, il browser mostra soltanto il nome della cartella selezionata.";
 
 // Category
 Blockly.Msg["BKY_CATEGORY_LOGIC"]="Logica";

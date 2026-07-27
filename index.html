@@ -69,6 +69,27 @@
       #statusPanel input {
         width: 50px;
       }
+      #mediaSaveDirectoryRow td {
+        padding-top: 8px;
+      }
+      #mediaSaveDirectoryFields {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        margin-top: 3px;
+      }
+      #statusPanel #mediaSaveDirectoryPath {
+        flex: 1 1 auto;
+        min-width: 80px;
+        width: auto;
+      }
+      #statusPanel #selectMediaSaveDirectoryBtn,
+      #statusPanel #resetMediaSaveDirectoryBtn {
+        flex: 0 0 auto;
+        margin: 0;
+        font-size: 12px;
+        white-space: nowrap;
+      }
       #droneCameraPanel {
         position: absolute;
         top: 8px;
@@ -222,6 +243,7 @@
       }
       html.dark-theme button,
       html.dark-theme select,
+      html.dark-theme input[type="text"],
       html.dark-theme input[type="number"] {
         border: 1px solid #5c6064;
         background: #2b2e31;
@@ -323,6 +345,18 @@
               <td colspan="4">
                 <div id="labelVariables">Variables:</div>
                 <div id="variableValues">—</div>
+              </td>
+            </tr>
+            <tr id="mediaSaveDirectoryRow">
+              <td colspan="4">
+                <label id="labelMediaSaveDirectory" for="mediaSaveDirectoryPath">
+                  Photo/video folder:
+                </label>
+                <div id="mediaSaveDirectoryFields">
+                  <input type="text" id="mediaSaveDirectoryPath" readonly>
+                  <button type="button" id="selectMediaSaveDirectoryBtn">Choose...</button>
+                  <button type="button" id="resetMediaSaveDirectoryBtn">Reset</button>
+                </div>
               </td>
             </tr>
           </table>

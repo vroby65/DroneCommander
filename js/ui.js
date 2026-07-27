@@ -10,6 +10,9 @@ const statusPanel = document.getElementById('statusPanel');
 const droneCameraPanel = document.getElementById('droneCameraPanel');
 const cameraPreviewToggle = document.getElementById('cameraPreviewToggle');
 const cameraPreviewStorageKey = 'droneCameraPreviewEnabled';
+const mediaSaveDirectoryPath = document.getElementById('mediaSaveDirectoryPath');
+const selectMediaSaveDirectoryBtn = document.getElementById('selectMediaSaveDirectoryBtn');
+const resetMediaSaveDirectoryBtn = document.getElementById('resetMediaSaveDirectoryBtn');
 const darkThemeToggle = document.getElementById('darkThemeToggle');
 const darkThemeStorageKey = 'darkThemeEnabled';
 let run = false;
@@ -45,6 +48,224 @@ cameraPreviewToggle.addEventListener('change', event => {
 }, {
     passive: true
 });
+
+// Browsers do not expose writable absolute paths to web pages. On browsers
+// supporting the File System Access API, keep a user-selected directory handle
+// and write camera media there; otherwise camera media uses normal downloads.
+const mediaDirectoryDatabaseName = 'droneCommanderSettings';
+const mediaDirectoryStoreName = 'directoryHandles';
+const mediaDirectoryHandleKey = 'cameraMedia';
+let mediaSaveDirectoryHandle = null;
+let mediaSaveDirectoryPermission = 'prompt';
+
+const supportsMediaDirectorySelection = () =>
+    typeof window.showDirectoryPicker === 'function';
+
+const openMediaDirectoryDatabase = () => new Promise((resolve, reject) => {
+    if (!window.indexedDB) {
+        reject(new Error('IndexedDB is unavailable'));
+        return;
+    }
+
+    const request = indexedDB.open(mediaDirectoryDatabaseName, 1);
+    request.addEventListener('upgradeneeded', () => {
+        if (!request.result.objectStoreNames.contains(mediaDirectoryStoreName)) {
+            request.result.createObjectStore(mediaDirectoryStoreName);
+        }
+    });
+    request.addEventListener('success', () => resolve(request.result), {
+        once: true
+    });
+    request.addEventListener('error', () => reject(request.error), {
+        once: true
+    });
+});
+
+const readStoredMediaDirectoryHandle = async () => {
+    const database = await openMediaDirectoryDatabase();
+    try {
+        return await new Promise((resolve, reject) => {
+            const request = database
+                .transaction(mediaDirectoryStoreName, 'readonly')
+                .objectStore(mediaDirectoryStoreName)
+                .get(mediaDirectoryHandleKey);
+            request.addEventListener('success', () => resolve(request.result || null), {
+                once: true
+            });
+            request.addEventListener('error', () => reject(request.error), {
+                once: true
+            });
+        });
+    } finally {
+        database.close();
+    }
+};
+
+const storeMediaDirectoryHandle = async handle => {
+    const database = await openMediaDirectoryDatabase();
+    try {
+        await new Promise((resolve, reject) => {
+            const request = database
+                .transaction(mediaDirectoryStoreName, 'readwrite')
+                .objectStore(mediaDirectoryStoreName)
+                .put(handle, mediaDirectoryHandleKey);
+            request.addEventListener('success', resolve, {
+                once: true
+            });
+            request.addEventListener('error', () => reject(request.error), {
+                once: true
+            });
+        });
+    } finally {
+        database.close();
+    }
+};
+
+const removeStoredMediaDirectoryHandle = async () => {
+    const database = await openMediaDirectoryDatabase();
+    try {
+        await new Promise((resolve, reject) => {
+            const request = database
+                .transaction(mediaDirectoryStoreName, 'readwrite')
+                .objectStore(mediaDirectoryStoreName)
+                .delete(mediaDirectoryHandleKey);
+            request.addEventListener('success', resolve, {
+                once: true
+            });
+            request.addEventListener('error', () => reject(request.error), {
+                once: true
+            });
+        });
+    } finally {
+        database.close();
+    }
+};
+
+const queryMediaDirectoryPermission = async handle => {
+    if (!handle || typeof handle.queryPermission !== 'function') return 'prompt';
+    try {
+        return await handle.queryPermission({
+            mode: 'readwrite'
+        });
+    } catch (error) {
+        console.warn('Unable to check the camera media directory permission:', error);
+        return 'prompt';
+    }
+};
+
+const updateMediaSaveDirectoryControl = () => {
+    const supported = supportsMediaDirectorySelection();
+    selectMediaSaveDirectoryBtn.disabled = !supported;
+    resetMediaSaveDirectoryBtn.disabled = !supported || !mediaSaveDirectoryHandle;
+
+    if (!supported) {
+        mediaSaveDirectoryPath.value =
+            Blockly.Msg.BKY_MEDIA_SAVE_DIRECTORY_UNSUPPORTED ||
+            'Default browser downloads (folder selection unsupported)';
+    } else if (!mediaSaveDirectoryHandle) {
+        mediaSaveDirectoryPath.value =
+            Blockly.Msg.BKY_MEDIA_SAVE_DIRECTORY_DEFAULT || 'Default browser downloads';
+    } else {
+        const permissionSuffix = mediaSaveDirectoryPermission === 'granted' ? '' :
+            ` — ${Blockly.Msg.BKY_MEDIA_SAVE_DIRECTORY_PERMISSION_NEEDED || 'permission needed'}`;
+        mediaSaveDirectoryPath.value = mediaSaveDirectoryHandle.name + permissionSuffix;
+    }
+
+    mediaSaveDirectoryPath.title =
+        Blockly.Msg.BKY_MEDIA_SAVE_DIRECTORY_PRIVACY ||
+        'For privacy, the browser displays only the selected folder name.';
+};
+
+selectMediaSaveDirectoryBtn.addEventListener('click', async () => {
+    if (!supportsMediaDirectorySelection()) return;
+
+    try {
+        if (
+            mediaSaveDirectoryHandle &&
+            mediaSaveDirectoryPermission !== 'granted' &&
+            typeof mediaSaveDirectoryHandle.requestPermission === 'function'
+        ) {
+            mediaSaveDirectoryPermission = await mediaSaveDirectoryHandle.requestPermission({
+                mode: 'readwrite'
+            });
+            if (mediaSaveDirectoryPermission === 'granted') {
+                updateMediaSaveDirectoryControl();
+                return;
+            }
+        }
+
+        const pickerOptions = {
+            id: 'drone-commander-camera-media',
+            mode: 'readwrite'
+        };
+        if (mediaSaveDirectoryHandle) pickerOptions.startIn = mediaSaveDirectoryHandle;
+        mediaSaveDirectoryHandle = await window.showDirectoryPicker(pickerOptions);
+        mediaSaveDirectoryPermission = await queryMediaDirectoryPermission(mediaSaveDirectoryHandle);
+        updateMediaSaveDirectoryControl();
+
+        try {
+            await storeMediaDirectoryHandle(mediaSaveDirectoryHandle);
+        } catch (error) {
+            console.warn('Unable to remember the camera media directory:', error);
+        }
+    } catch (error) {
+        if (error.name !== 'AbortError') {
+            console.error('Unable to select the camera media directory:', error);
+        }
+    }
+});
+
+resetMediaSaveDirectoryBtn.addEventListener('click', async () => {
+    mediaSaveDirectoryHandle = null;
+    mediaSaveDirectoryPermission = 'prompt';
+    updateMediaSaveDirectoryControl();
+    try {
+        await removeStoredMediaDirectoryHandle();
+    } catch (error) {
+        console.warn('Unable to forget the camera media directory:', error);
+    }
+});
+
+const restoreMediaSaveDirectory = async () => {
+    if (!supportsMediaDirectorySelection()) {
+        updateMediaSaveDirectoryControl();
+        return;
+    }
+
+    try {
+        mediaSaveDirectoryHandle = await readStoredMediaDirectoryHandle();
+        mediaSaveDirectoryPermission =
+            await queryMediaDirectoryPermission(mediaSaveDirectoryHandle);
+    } catch (error) {
+        console.warn('Unable to restore the camera media directory:', error);
+    }
+    updateMediaSaveDirectoryControl();
+};
+
+window.saveMediaBlobToSelectedDirectory = async (blob, fileName) => {
+    if (!mediaSaveDirectoryHandle) return false;
+
+    mediaSaveDirectoryPermission =
+        await queryMediaDirectoryPermission(mediaSaveDirectoryHandle);
+    updateMediaSaveDirectoryControl();
+    if (mediaSaveDirectoryPermission !== 'granted') return false;
+
+    try {
+        const fileHandle = await mediaSaveDirectoryHandle.getFileHandle(fileName, {
+            create: true
+        });
+        const writable = await fileHandle.createWritable();
+        await writable.write(blob);
+        await writable.close();
+        return true;
+    } catch (error) {
+        console.error('Unable to write camera media to the selected directory:', error);
+        return false;
+    }
+};
+
+updateMediaSaveDirectoryControl();
+restoreMediaSaveDirectory();
 
 // Camera pointer and zoom controls
 webglContainer.addEventListener('contextmenu', e => e.preventDefault());
@@ -462,6 +683,13 @@ function applyLocalizedStrings() {
         Blockly.Msg["BKY_CAMERA_PREVIEW"] || 'Camera preview';
     document.getElementById('labelDarkTheme').innerText =
         Blockly.Msg["BKY_DARK_THEME"] || 'Dark theme';
+    document.getElementById('labelMediaSaveDirectory').innerText =
+        Blockly.Msg.BKY_MEDIA_SAVE_DIRECTORY || 'Photo/video folder:';
+    selectMediaSaveDirectoryBtn.innerText =
+        Blockly.Msg.BKY_MEDIA_SAVE_DIRECTORY_SELECT || 'Choose...';
+    resetMediaSaveDirectoryBtn.innerText =
+        Blockly.Msg.BKY_MEDIA_SAVE_DIRECTORY_RESET || 'Reset';
+    updateMediaSaveDirectoryControl();
 
     // Current flight status
     if (typeof drone !== 'undefined' && drone) {

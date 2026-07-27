@@ -555,6 +555,13 @@ Blockly.Msg.BKY_FLIGHT_IN_FLIGHT = "In Flight";
 Blockly.Msg.BKY_FLIGHT_ON_GROUND = "On Ground";
 Blockly.Msg.BKY_CAMERA_PREVIEW = "Camera preview";
 Blockly.Msg.BKY_DARK_THEME = "Dark theme";
+Blockly.Msg.BKY_MEDIA_SAVE_DIRECTORY = "Photo/video folder:";
+Blockly.Msg.BKY_MEDIA_SAVE_DIRECTORY_SELECT = "Choose...";
+Blockly.Msg.BKY_MEDIA_SAVE_DIRECTORY_RESET = "Reset";
+Blockly.Msg.BKY_MEDIA_SAVE_DIRECTORY_DEFAULT = "Default browser downloads";
+Blockly.Msg.BKY_MEDIA_SAVE_DIRECTORY_UNSUPPORTED = "Default browser downloads (folder selection unsupported)";
+Blockly.Msg.BKY_MEDIA_SAVE_DIRECTORY_PERMISSION_NEEDED = "permission needed";
+Blockly.Msg.BKY_MEDIA_SAVE_DIRECTORY_PRIVACY = "For privacy, the browser displays only the selected folder name.";
 
 
 // Category

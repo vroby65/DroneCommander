@@ -539,6 +539,13 @@ Blockly.Msg.BKY_LOAD = "Carregar";
 Blockly.Msg.BKY_SAVE = "Salvar";
 Blockly.Msg.BKY_CAMERA_PREVIEW = "Pré-visualização da câmara";
 Blockly.Msg.BKY_DARK_THEME = "Tema escuro";
+Blockly.Msg.BKY_MEDIA_SAVE_DIRECTORY = "Pasta de fotos/vídeos:";
+Blockly.Msg.BKY_MEDIA_SAVE_DIRECTORY_SELECT = "Escolher...";
+Blockly.Msg.BKY_MEDIA_SAVE_DIRECTORY_RESET = "Repor";
+Blockly.Msg.BKY_MEDIA_SAVE_DIRECTORY_DEFAULT = "Transferências predefinidas do navegador";
+Blockly.Msg.BKY_MEDIA_SAVE_DIRECTORY_UNSUPPORTED = "Transferências predefinidas (seleção de pasta não suportada)";
+Blockly.Msg.BKY_MEDIA_SAVE_DIRECTORY_PERMISSION_NEEDED = "permissão necessária";
+Blockly.Msg.BKY_MEDIA_SAVE_DIRECTORY_PRIVACY = "Por privacidade, o navegador mostra apenas o nome da pasta selecionada.";
 
 // Category
 Blockly.Msg["BKY_CATEGORY_LOGIC"]="Lógica";

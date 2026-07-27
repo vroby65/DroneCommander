@@ -78,6 +78,10 @@ The preview is overlaid in the top-left corner of the main 3D canvas and occupie
 
 Video recording targets 30 fps at a 4:3 resolution up to 960×720. Drone Commander selects WebM (VP9 or VP8) or MP4 according to browser support. The **save recording** block terminates the recording and downloads the resulting timestamped file.
 
+The telemetry panel includes a **Photo/video folder** setting. In browsers that support writable directory selection, choose a folder once and photos and completed recordings are saved directly into it. The selected directory handle is remembered; the browser may ask for permission again after a restart. For privacy the browser exposes only the folder name, not its absolute path. Unsupported browsers, missing permissions, and write errors safely fall back to the browser's normal download behavior.
+
+Firefox does not currently support the [`showDirectoryPicker()`](https://developer.mozilla.org/en-US/docs/Web/API/Window/showDirectoryPicker) API required by this setting, so Drone Commander disables the folder selector and uses normal downloads there. Firefox users can choose a global download folder, or ask where to save each file, under **Settings → General → Files and Applications → Downloads**. This browser setting applies to all downloads, not only to Drone Commander.
+
 ## Fly On A Real Tello
 
 The companion [Drone Commander Tello Driver](https://github.com/vroby65/DroneCommander-Driver) is a native Go/Fyne application that loads the XML programs saved by Drone Commander and executes them on a Ryze/DJI Tello through Tello SDK 2.0.

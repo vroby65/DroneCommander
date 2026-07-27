@@ -1571,12 +1571,20 @@ const canvasToPngBlob = canvas => new Promise((resolve, reject) => {
     }, 'image/png');
 });
 
-const downloadBlob = (blob, filePrefix, extension) => {
-    const downloadUrl = URL.createObjectURL(blob);
+const downloadBlob = async (blob, filePrefix, extension) => {
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const fileName = `${filePrefix}-${timestamp}.${extension}`;
+    if (
+        typeof window.saveMediaBlobToSelectedDirectory === 'function' &&
+        await window.saveMediaBlobToSelectedDirectory(blob, fileName)
+    ) {
+        return;
+    }
+
+    const downloadUrl = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = downloadUrl;
-    link.download = `${filePrefix}-${timestamp}.${extension}`;
+    link.download = fileName;
     document.body.appendChild(link);
     link.click();
     link.remove();
@@ -1644,7 +1652,7 @@ const downloadDronePhoto = async () => {
     context.putImageData(imageData, 0, 0);
 
     const blob = await canvasToPngBlob(canvas);
-    downloadBlob(blob, 'drone-photo', 'png');
+    await downloadBlob(blob, 'drone-photo', 'png');
 };
 
 const getSupportedDroneVideoMimeType = () => {
@@ -1777,7 +1785,7 @@ const stopAndDownloadDroneVideo = () => {
         }, {
             once: true
         });
-        recording.recorder.addEventListener('stop', () => {
+        recording.recorder.addEventListener('stop', async () => {
             stopTracks();
             try {
                 const mimeType = recording.recorder.mimeType || 'video/webm';
@@ -1786,7 +1794,7 @@ const stopAndDownloadDroneVideo = () => {
                 });
                 if (!blob.size) throw new Error('The drone video is empty');
                 const extension = mimeType.includes('mp4') ? 'mp4' : 'webm';
-                downloadBlob(blob, 'drone-video', extension);
+                await downloadBlob(blob, 'drone-video', extension);
                 resolve();
             } catch (error) {
                 reject(error);
