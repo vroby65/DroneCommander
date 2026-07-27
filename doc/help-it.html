@@ -710,7 +710,7 @@
 <ul>
   <li><strong>Inizia con Avvio:</strong> Inizia sempre il programma con un blocco <code>Avvio</code> per definire chiaramente il punto di ingresso dell'esecuzione.</li>
   <li><strong>Decolla prima:</strong> I comandi di movimento (<code>avanza</code>, <code>avanza salendo</code>, <code>scivola</code>, <code>vai a</code>, <code>spostati</code>, <code>curva abs</code>, <code>curva</code>, <code>torna alla base</code>, ecc.) funzionano solo mentre il drone e' in volo. Includi sempre <code>decolla</code> prima del movimento.</li>
-  <li><strong>Consapevolezza del terreno:</strong> Il drone si adatta automaticamente all'altezza del terreno. Durante l'atterraggio, scende al livello del suolo nella sua posizione corrente, che puo' variare in scenari collinari.</li>
+  <li><strong>Consapevolezza del terreno:</strong> Decollo e atterraggio si adattano all'altezza del terreno nella posizione corrente. Pianifica i movimenti a un'altitudine sufficiente per superare terreno e ostacoli.</li>
   <li><strong>Controllo velocita':</strong> Il blocco <code>velocità</code> influenza la velocita' con cui il drone si muove con <code>avanza</code>, <code>avanza salendo</code>, <code>vai a</code>, <code>spostati</code>, <code>curva abs</code>, <code>curva</code> e <code>torna alla base</code>. L'intervallo di velocita' e' 0–10; il valore predefinito e' 1.0.</li>
   <li><strong>Fumo come strumento di debug:</strong> Attiva il fumo per visualizzare il percorso di volo del drone.</li>
 </ul>
@@ -718,7 +718,7 @@
 <h3>Comportamenti noti</h3>
 <ul>
   <li><strong>Reset del drone:</strong> Quando esegui un programma, il drone si resetta automaticamente alla posizione iniziale (centro della mappa) prima dell'esecuzione.</li>
-  <li><strong>Rilevamento collisioni:</strong> Il drone non attraversa il terreno o gli oggetti del paesaggio. L'altitudine viene automaticamente limitata per rimanere sopra il terreno.</li>
+  <li><strong>Rilevamento collisioni:</strong> Se il drone urta il terreno o un oggetto del paesaggio, il programma viene interrotto immediatamente e il drone torna all'ultima posizione sicura per eseguire un atterraggio rapido.</li>
   <li><strong>Salvataggio automatico:</strong> Funziona in tutti i browser moderni. Cancellare la memoria locale del browser eliminera' i programmi salvati e le preferenze.</li>
   <li><strong>Nessuna connessione Internet richiesta:</strong> Dopo il caricamento iniziale della pagina, Drone Commander funziona interamente nel browser. Tutte le librerie sono caricate localmente.</li>
 </ul>

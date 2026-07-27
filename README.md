@@ -14,7 +14,8 @@ https://vroby65.github.io/DroneCommander/
 ## Features
 
 - **Visual programming** with Blockly blocks for logic, loops, math, variables, functions, flow, sensors, and drone commands.
-- **3D simulation** powered by Three.js, with terrain-aware altitude and landing behavior.
+- **3D simulation** powered by Three.js, with terrain-aware takeoff and landing behavior.
+- **Collision emergency handling** that stops the Blockly program and rapidly lands the drone at its last safe position.
 - **Drone commands** for take off, land, photos, video recording, set/change altitude, set/change angle, walk, walk climbing, slide, absolute/relative 3D movement, smooth curved flight, return to base, wait, smoke trail, and speed control.
 - **Smooth curve handling** with coordinate-based curved flight that leaves the drone direction unchanged.
 - **Sensor blocks** for keyboard input, X/Z position, altitude, direction, and speed.
@@ -80,7 +81,13 @@ Video recording targets 30 fps at a 4:3 resolution up to 960×720. Drone Command
 
 The telemetry panel includes a **Photo/video folder** setting. In browsers that support writable directory selection, choose a folder once and photos and completed recordings are saved directly into it. The selected directory handle is remembered; the browser may ask for permission again after a restart. For privacy the browser exposes only the folder name, not its absolute path. Unsupported browsers, missing permissions, and write errors safely fall back to the browser's normal download behavior.
 
-Firefox does not currently support the [`showDirectoryPicker()`](https://developer.mozilla.org/en-US/docs/Web/API/Window/showDirectoryPicker) API required by this setting, so Drone Commander disables the folder selector and uses normal downloads there. Firefox users can choose a global download folder, or ask where to save each file, under **Settings → General → Files and Applications → Downloads**. This browser setting applies to all downloads, not only to Drone Commander.
+Firefox does not currently support the [`showDirectoryPicker()`](https://developer.mozilla.org/en-US/docs/Web/API/Window/showDirectoryPicker) API required by this setting, so Drone Commander hides the folder selector and uses normal downloads there. Firefox users can choose a global download folder, or ask where to save each file, under **Settings → General → Files and Applications → Downloads**. This browser setting applies to all downloads, not only to Drone Commander.
+
+## Collision Emergency Handling
+
+Every commanded flight position is checked against the terrain and scenery objects. If a trajectory would place the drone inside either one, Drone Commander immediately cancels the active command and command queue, stops the Blockly program, and discards any active camera recording.
+
+The drone returns to its last collision-free position and performs a 300 ms emergency landing onto the surface below it. Pitch and roll are leveled, the propellers and engine sound stop at touchdown, and the **Run** button becomes available again. Normal takeoff and landing use terrain-aware safe altitudes and do not trigger the collision emergency.
 
 ## Fly On A Real Tello
 

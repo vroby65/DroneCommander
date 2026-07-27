@@ -133,10 +133,14 @@ const graphicsProfiles = {
 let graphicsProfileName = localStorage.getItem('graphicsProfile') || 'balanced';
 let activeGraphicsProfile = graphicsProfiles[graphicsProfileName] || graphicsProfiles.balanced;
 const collisionPadding = 1.4;
+const collisionEpsilon = 0.01;
+const collisionLandingDuration = 300;
 const collisionRayStartHeight = 10000;
 const collisionRaycaster = new THREE.Raycaster();
 let collisionMeshes = [];
 let groundMeshes = [];
+let collisionEmergencyActive = false;
+let lastSafeDronePosition = null;
 let directionalLight;
 let droneGroundMarker;
 let lastSmokeTime = 0;
@@ -224,6 +228,7 @@ const animateProperty = (setter, from, to, duration, onComplete) => {
     const safeDuration = getDuration(duration);
     if (safeDuration === 0) {
         setter(to);
+        if (generation !== animationGeneration) return;
         if (onComplete) onComplete();
         return;
     }
@@ -233,6 +238,7 @@ const animateProperty = (setter, from, to, duration, onComplete) => {
 
         const progress = Math.min((timestamp - startTime) / safeDuration, 1);
         setter(from + (to - from) * progress);
+        if (generation !== animationGeneration) return;
         if (progress < 1) {
             requestAnimationFrame(step);
         } else if (onComplete) {
@@ -272,6 +278,83 @@ const getSurfaceHeightAt = (x, z) => getHeightAt(collisionMeshes, x, z);
 const getGroundHeightAt = (x, z) => getHeightAt(groundMeshes, x, z);
 
 const getSafeAltitudeAt = (x, z) => getSurfaceHeightAt(x, z) + collisionPadding;
+
+const rememberSafeDronePosition = () => {
+    if (!drone || !drone.mesh || collisionEmergencyActive) return;
+    if (!lastSafeDronePosition) lastSafeDronePosition = new THREE.Vector3();
+    lastSafeDronePosition.copy(drone.mesh.position);
+};
+
+const finishCollisionEmergencyLanding = () => {
+    drone.flying = false;
+    drone.mesh.rotation.x = 0;
+    drone.mesh.rotation.z = 0;
+    clearInterval(drone.propellerInterval);
+    drone.propellerInterval = null;
+    stopDroneSound();
+    collisionEmergencyActive = false;
+    rememberSafeDronePosition();
+    updateStatus();
+    if (typeof window.finishDroneCollisionEmergency === 'function') {
+        window.finishDroneCollisionEmergency();
+    }
+};
+
+const triggerCollisionEmergency = () => {
+    if (!drone || !drone.mesh || !drone.flying || collisionEmergencyActive) return;
+
+    collisionEmergencyActive = true;
+    cancelDroneCommands();
+    if (typeof window.handleDroneCollisionEmergency === 'function') {
+        window.handleDroneCollisionEmergency();
+    }
+
+    if (lastSafeDronePosition) {
+        drone.mesh.position.copy(lastSafeDronePosition);
+    }
+    drone.mesh.rotation.x = 0;
+    drone.mesh.rotation.z = 0;
+
+    const targetAltitude = getSafeAltitudeAt(
+        drone.mesh.position.x,
+        drone.mesh.position.z
+    );
+    const startAltitude = Math.max(drone.mesh.position.y, targetAltitude);
+    drone.mesh.position.y = startAltitude;
+    drone.altitude = startAltitude;
+    updateStatus();
+
+    console.warn('Drone collision detected: program stopped and emergency landing started');
+    animateProperty(
+        altitude => {
+            drone.mesh.position.y = altitude;
+            drone.altitude = altitude;
+            updateStatus();
+        },
+        startAltitude,
+        targetAltitude,
+        collisionLandingDuration,
+        finishCollisionEmergencyLanding
+    );
+};
+
+const setDroneFlightPosition = (x, y, z) => {
+    const minAltitude = getSafeAltitudeAt(x, z);
+    if (
+        drone.flying &&
+        !collisionEmergencyActive &&
+        y < minAltitude - collisionEpsilon
+    ) {
+        triggerCollisionEmergency();
+        return false;
+    }
+
+    const safeY = Math.max(y, minAltitude);
+    drone.mesh.position.set(x, safeY, z);
+    drone.altitude = safeY;
+    rememberSafeDronePosition();
+    return true;
+};
 
 const getProfilePixelRatio = () => Math.min(window.devicePixelRatio || 1, activeGraphicsProfile.pixelRatio);
 
@@ -339,11 +422,20 @@ const enforceTerrainCollision = () => {
     const minAltitude = drone.flying ?
         getSafeAltitudeAt(drone.mesh.position.x, drone.mesh.position.z) :
         getGroundHeightAt(drone.mesh.position.x, drone.mesh.position.z) + collisionPadding;
+    if (
+        drone.flying &&
+        !collisionEmergencyActive &&
+        drone.mesh.position.y < minAltitude - collisionEpsilon
+    ) {
+        triggerCollisionEmergency();
+        return;
+    }
     if (drone.mesh.position.y < minAltitude) {
         drone.mesh.position.y = minAltitude;
         drone.altitude = minAltitude;
         updateStatus();
     }
+    rememberSafeDronePosition();
 };
 
 
@@ -814,11 +906,20 @@ const initThree = () => {
                     );
                     animateProperty(
                         val => {
-                            this.mesh.position.y = val;
-                            this.altitude = val;
-                            updateStatus();
+                            if (setDroneFlightPosition(
+                                this.mesh.position.x,
+                                val,
+                                this.mesh.position.z
+                            )) {
+                                updateStatus();
+                            }
                         },
-                        startAltitude, defaultFlightAltitude, 500,
+                        startAltitude,
+                        Math.max(
+                            defaultFlightAltitude,
+                            getSafeAltitudeAt(this.mesh.position.x, this.mesh.position.z)
+                        ),
+                        500,
                         () => {
                             updateStatus();
                             next();
@@ -863,14 +964,16 @@ const initThree = () => {
                 return addCommand(next => {
                     updateDroneSound(basePlaybackRate + 1.0);
                     const startAltitude = this.altitude;
-                    const minAltitude = getSafeAltitudeAt(this.mesh.position.x, this.mesh.position.z);
-                    const targetAltitude = Math.max(value, minAltitude);
+                    const targetAltitude = value;
                     animateProperty(
                         val => {
-                            const clampedAltitude = Math.max(val, minAltitude);
-                            this.mesh.position.y = clampedAltitude;
-                            this.altitude = clampedAltitude;
-                            updateStatus();
+                            if (setDroneFlightPosition(
+                                this.mesh.position.x,
+                                val,
+                                this.mesh.position.z
+                            )) {
+                                updateStatus();
+                            }
                         },
                         startAltitude, targetAltitude, Math.abs(targetAltitude - startAltitude) * 50,
                         () => {
@@ -889,14 +992,16 @@ const initThree = () => {
                 return addCommand(next => {
                     updateDroneSound(basePlaybackRate + 1.0);
                     const startAltitude = this.altitude;
-                    const minAltitude = getSafeAltitudeAt(this.mesh.position.x, this.mesh.position.z);
-                    const targetAltitude = Math.max(startAltitude + value, minAltitude);
+                    const targetAltitude = startAltitude + value;
                     animateProperty(
                         val => {
-                            const clampedAltitude = Math.max(val, minAltitude);
-                            this.mesh.position.y = clampedAltitude;
-                            this.altitude = clampedAltitude;
-                            updateStatus();
+                            if (setDroneFlightPosition(
+                                this.mesh.position.x,
+                                val,
+                                this.mesh.position.z
+                            )) {
+                                updateStatus();
+                            }
                         },
                         startAltitude, targetAltitude, Math.abs(targetAltitude - startAltitude) * 50,
                         () => {
@@ -1003,9 +1108,11 @@ const initThree = () => {
                         () => {
                             animateProperty(
                                 val => {
-                                    this.mesh.position.x = startX - Math.sin(rad) * distance * val;
-                                    this.mesh.position.z = startZ - Math.cos(rad) * distance * val;
-                                    updateStatus();
+                                    const currentX = startX - Math.sin(rad) * distance * val;
+                                    const currentZ = startZ - Math.cos(rad) * distance * val;
+                                    if (setDroneFlightPosition(currentX, this.altitude, currentZ)) {
+                                        updateStatus();
+                                    }
                                 },
                                 0, 1, Math.abs(distance) * 50,
                                 () => {
@@ -1059,9 +1166,11 @@ const initThree = () => {
                         () => {
                             animateProperty(
                                 val => {
-                                    this.mesh.position.x = startX + Math.sin(rad) * distance * val;
-                                    this.mesh.position.z = startZ + Math.cos(rad) * distance * val;
-                                    updateStatus();
+                                    const currentX = startX + Math.sin(rad) * distance * val;
+                                    const currentZ = startZ + Math.cos(rad) * distance * val;
+                                    if (setDroneFlightPosition(currentX, this.altitude, currentZ)) {
+                                        updateStatus();
+                                    }
                                 },
                                 0, 1, Math.abs(distance) * 50 / this.speed,
                                 () => {
@@ -1104,9 +1213,9 @@ const initThree = () => {
                     const rad = THREE.MathUtils.degToRad(this.direction - 90);
                     const targetX = startX + Math.sin(rad) * distance;
                     const targetZ = startZ + Math.cos(rad) * distance;
-                    const safeTargetY = Math.max(startY + climb, getSafeAltitudeAt(targetX, targetZ));
+                    const targetY = startY + climb;
                     const deltaX = targetX - startX;
-                    const deltaY = safeTargetY - startY;
+                    const deltaY = targetY - startY;
                     const deltaZ = targetZ - startZ;
                     const moveDistance = Math.sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ);
                     const leanAngle = distance === 0 ? 0 : 10 * Math.sign(distance);
@@ -1128,20 +1237,16 @@ const initThree = () => {
                                 val => {
                                     const currentX = startX + deltaX * val;
                                     const currentZ = startZ + deltaZ * val;
-                                    const minAltitude = getSafeAltitudeAt(currentX, currentZ);
-                                    const currentY = Math.max(startY + deltaY * val, minAltitude);
-                                    this.mesh.position.x = currentX;
-                                    this.mesh.position.y = currentY;
-                                    this.mesh.position.z = currentZ;
-                                    this.altitude = currentY;
-                                    updateStatus();
+                                    const currentY = startY + deltaY * val;
+                                    if (setDroneFlightPosition(currentX, currentY, currentZ)) {
+                                        updateStatus();
+                                    }
                                 },
                                 0, 1, moveDistance * 50 / this.speed,
                                 () => {
-                                    this.mesh.position.x = targetX;
-                                    this.mesh.position.y = Math.max(safeTargetY, getSafeAltitudeAt(targetX, targetZ));
-                                    this.mesh.position.z = targetZ;
-                                    this.altitude = this.mesh.position.y;
+                                    if (!setDroneFlightPosition(targetX, targetY, targetZ)) {
+                                        return;
+                                    }
                                     animateProperty(
                                         val => {
                                             this.mesh.rotation.z = THREE.MathUtils.degToRad(-2 * leanAngle) * val;
@@ -1237,12 +1342,12 @@ const initThree = () => {
                     const resolvedTargetZ = useRelativeOffsets ? resolvedViaZ + targetOffset.z : targetZ;
                     const viaPoint = new THREE.Vector3(
                         resolvedViaX,
-                        Math.max(resolvedViaY, getSafeAltitudeAt(resolvedViaX, resolvedViaZ)),
+                        resolvedViaY,
                         resolvedViaZ
                     );
                     const targetPoint = new THREE.Vector3(
                         resolvedTargetX,
-                        Math.max(resolvedTargetY, getSafeAltitudeAt(resolvedTargetX, resolvedTargetZ)),
+                        resolvedTargetY,
                         resolvedTargetZ
                     );
                     const computeInterpolatingControls = () => {
@@ -1297,20 +1402,23 @@ const initThree = () => {
                                 );
                                 this.mesh.rotation.z = THREE.MathUtils.degToRad(leanAngle * leanProgress);
                                 const currentPoint = curvePath.getPoint(val);
-                                const minAltitude = getSafeAltitudeAt(currentPoint.x, currentPoint.z);
-                                const currentY = Math.max(currentPoint.y, minAltitude);
-                                this.mesh.position.x = currentPoint.x;
-                                this.mesh.position.y = currentY;
-                                this.mesh.position.z = currentPoint.z;
-                                this.altitude = currentY;
-                                updateStatus();
+                                if (setDroneFlightPosition(
+                                    currentPoint.x,
+                                    currentPoint.y,
+                                    currentPoint.z
+                                )) {
+                                    updateStatus();
+                                }
                             },
                             0, 1, moveDuration,
                             () => {
-                                this.mesh.position.x = targetPoint.x;
-                                this.mesh.position.y = Math.max(targetPoint.y, getSafeAltitudeAt(targetPoint.x, targetPoint.z));
-                                this.mesh.position.z = targetPoint.z;
-                                this.altitude = this.mesh.position.y;
+                                if (!setDroneFlightPosition(
+                                    targetPoint.x,
+                                    targetPoint.y,
+                                    targetPoint.z
+                                )) {
+                                    return;
+                                }
                                 this.mesh.rotation.z = 0;
                                 updateDroneSound(basePlaybackRate);
                                 updateStatus();
@@ -1336,9 +1444,8 @@ const initThree = () => {
                     const startX = this.mesh.position.x;
                     const startY = this.altitude;
                     const startZ = this.mesh.position.z;
-                    const safeTargetY = Math.max(targetY, getSafeAltitudeAt(targetX, targetZ));
                     const deltaX = targetX - startX;
-                    const deltaY = safeTargetY - startY;
+                    const deltaY = targetY - startY;
                     const deltaZ = targetZ - startZ;
                     const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ);
                     const horizontalDistance = Math.sqrt(deltaX * deltaX + deltaZ * deltaZ);
@@ -1370,20 +1477,16 @@ const initThree = () => {
                                     val => {
                                         const currentX = startX + deltaX * val;
                                         const currentZ = startZ + deltaZ * val;
-                                        const minAltitude = getSafeAltitudeAt(currentX, currentZ);
-                                        const currentY = Math.max(startY + deltaY * val, minAltitude);
-                                        this.mesh.position.x = currentX;
-                                        this.mesh.position.y = currentY;
-                                        this.mesh.position.z = currentZ;
-                                        this.altitude = currentY;
-                                        updateStatus();
+                                        const currentY = startY + deltaY * val;
+                                        if (setDroneFlightPosition(currentX, currentY, currentZ)) {
+                                            updateStatus();
+                                        }
                                     },
                                     0, 1, moveDuration,
                                     () => {
-                                        this.mesh.position.x = targetX;
-                                        this.mesh.position.y = Math.max(safeTargetY, getSafeAltitudeAt(targetX, targetZ));
-                                        this.mesh.position.z = targetZ;
-                                        this.altitude = this.mesh.position.y;
+                                        if (!setDroneFlightPosition(targetX, targetY, targetZ)) {
+                                            return;
+                                        }
                                         animateProperty(
                                             val => {
                                                 this.mesh.rotation.z = THREE.MathUtils.degToRad(leanAngle * (1 - val));
@@ -1910,6 +2013,10 @@ const resetCameraView = () => {
 };
 
 const resetScene = () => {
+    if (collisionEmergencyActive) {
+        animationGeneration++;
+        collisionEmergencyActive = false;
+    }
     const startAltitude = getSafeAltitudeAt(0, 0);
     drone.mesh.position.set(0, startAltitude, 0);
     drone.mesh.rotation.set(0, 0, 0);
@@ -1920,6 +2027,7 @@ const resetScene = () => {
     clearInterval(drone.propellerInterval);
     drone.propellerInterval = null;
     drone.flying = false;
+    rememberSafeDronePosition();
     updateStatus();
 
     clearSmokeTrail();

@@ -10,6 +10,7 @@ const statusPanel = document.getElementById('statusPanel');
 const droneCameraPanel = document.getElementById('droneCameraPanel');
 const cameraPreviewToggle = document.getElementById('cameraPreviewToggle');
 const cameraPreviewStorageKey = 'droneCameraPreviewEnabled';
+const mediaSaveDirectoryRow = document.getElementById('mediaSaveDirectoryRow');
 const mediaSaveDirectoryPath = document.getElementById('mediaSaveDirectoryPath');
 const selectMediaSaveDirectoryBtn = document.getElementById('selectMediaSaveDirectoryBtn');
 const resetMediaSaveDirectoryBtn = document.getElementById('resetMediaSaveDirectoryBtn');
@@ -155,6 +156,7 @@ const queryMediaDirectoryPermission = async handle => {
 
 const updateMediaSaveDirectoryControl = () => {
     const supported = supportsMediaDirectorySelection();
+    mediaSaveDirectoryRow.hidden = !supported;
     selectMediaSaveDirectoryBtn.disabled = !supported;
     resetMediaSaveDirectoryBtn.disabled = !supported || !mediaSaveDirectoryHandle;
 
@@ -576,6 +578,19 @@ document.getElementById('runBtn').addEventListener('click', () => {
 }, {
     passive: true
 });
+
+window.handleDroneCollisionEmergency = () => {
+    cancelDroneVideoRecording();
+    run = false;
+    document.getElementById("runBtn").disabled = true;
+    document.getElementById("stopBtn").disabled = false;
+};
+
+window.finishDroneCollisionEmergency = () => {
+    document.getElementById("runBtn").disabled = false;
+    document.getElementById("stopBtn").disabled = true;
+};
+
 document.getElementById('stopBtn').addEventListener('click', () => {
     cancelDroneVideoRecording();
     run = false;
