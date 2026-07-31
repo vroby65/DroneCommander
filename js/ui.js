@@ -502,6 +502,16 @@ const getGeneratedProgramVariables = () => {
     return variables;
 };
 
+const finishProgramExecution = () => {
+    cancelDroneVideoRecording();
+    run = false;
+    stopDroneSound();
+    clearInterval(drone.propellerInterval);
+    drone.propellerInterval = null;
+    document.getElementById("runBtn").disabled = false;
+    document.getElementById("stopBtn").disabled = false;
+};
+
 // Program file actions and generated-code execution
 document.getElementById('newBtn').addEventListener('click', () => {
     setProgramName(defaultProgramName);
@@ -570,7 +580,7 @@ document.getElementById('runBtn').addEventListener('click', () => {
     const wrappedCode = `
       async function _run() {
         ${code}
-        document.getElementById('stopBtn').click();
+        finishProgramExecution();
       }
       _run();
     `;

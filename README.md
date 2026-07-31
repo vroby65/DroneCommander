@@ -61,7 +61,7 @@ Using an HTTP server is recommended because the app loads scenarios, textures, m
 
 1. Drag a **Start** block into the Blockly workspace.
 2. Attach drone blocks such as **take off**, **set altitude**, **walk**, **walk climbing**, **go to**, **move by**, **curve abs**, **curve**, **take a photo**, **start recording**, **save recording**, **return to base**, **change angle**, and **land**.
-3. Click the green play button to run the program in the 3D viewer.
+3. Click the green play button to run the program in the 3D viewer. When the program finishes, the drone remains at its final position; click play again to reset and rerun it, or click stop to reset it without starting a new run.
 4. Use the panel directly below the 3D viewer to inspect or adjust X, Z, altitude, direction, and flight status. During execution it also lists every Blockly variable and its current value, one per line.
 5. Enable **Camera preview** in the 3D viewer toolbar to show the on-board view in the top-left corner of the main scene. The preview remains available when the viewer is fullscreen.
 6. Add a **take a photo** block to download a timestamped PNG from the on-board camera at that point in the program. This works even when the preview is hidden.
