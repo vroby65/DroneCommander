@@ -236,7 +236,7 @@ const animateProperty = (setter, from, to, duration, onComplete) => {
     const step = timestamp => {
         if (generation !== animationGeneration) return;
 
-        const progress = Math.min((timestamp - startTime) / safeDuration, 1);
+        const progress = Math.max(0, Math.min((timestamp - startTime) / safeDuration, 1));
         setter(from + (to - from) * progress);
         if (generation !== animationGeneration) return;
         if (progress < 1) {
