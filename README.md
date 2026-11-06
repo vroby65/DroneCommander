@@ -19,7 +19,8 @@ https://vroby65.github.io/DroneCommander/
 - **Drone commands** for take off, land, photos, video recording, set/change altitude, set/change angle, walk, walk climbing, slide, absolute/relative 3D movement, smooth curved flight, return to base, wait, smoke trail, and speed control.
 - **Smooth curve handling** with coordinate-based curved flight that leaves the drone direction unchanged.
 - **Sensor blocks** for keyboard input, X/Z position, altitude, direction, and speed.
-- **Scenarios**: flight field, urban track, metropolis, and tropical island.
+- **Scenarios**: flight field with a marked runway, training gates, hangar, windsock, control cabin and picnic tables; urban track with crossings, streetlights, a bus shelter, fountain and striped kiosk; metropolis with a landscaped plaza, pergola, kiosk and public sculpture; tropical island with a timber dock, lighthouse, navigation buoys and a moored sailing dinghy.
+- **Extended scenery areas**: longer runways and boulevards, outer gardens and rest areas, and an extended dock and buoy route. The central 500-unit terrain radius stays flat to support scenery.
 - **Graphics profiles**: Performance, Balanced, and Quality.
 - **On-board drone camera** with a live picture-in-picture view from the nose of the drone. The camera follows yaw, pitch, and roll and supports timestamped PNG photo and video downloads.
 - **Light and dark themes** for the full interface and Blockly workspace, with the selected theme remembered in browser local storage.

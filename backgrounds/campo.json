@@ -99,6 +99,7 @@
       "position": { "x": 290, "y": 0, "z": -610 },
       "rotation": { "x": 0, "y": 25, "z": 0 },
       "scale": 4.0
-    }    
+    },
+    { "model": "details-campo.obj", "material": "scenery.mtl", "position": { "x": 0, "y": 0, "z": 0 }, "scale": 1 }
   ]
 }

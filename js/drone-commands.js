@@ -572,7 +572,7 @@ function loadScenario(file) {
                     const geometry = new THREE.PlaneGeometry(planeSize, planeSize, 32, 32);
 
                     const vertices = geometry.vertices;
-                    const radius = 200; // Keep a flat take-off area around the origin.
+                    const radius = 500; // Keep the expanded scenery area flat around the origin.
 
                     for (let i = 0; i < vertices.length; i++) {
                         const v = vertices[i];

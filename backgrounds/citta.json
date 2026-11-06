@@ -57,6 +57,7 @@
       "position": { "x": -50, "y": 6, "z": 20 },
       "rotation": { "x": 0, "y": -90, "z": 0 },
       "scale": 15
-    }
+    },
+    { "model": "details-citta.obj", "material": "scenery.mtl", "position": { "x": 0, "y": 0, "z": 0 }, "scale": 1 }
   ]
 }

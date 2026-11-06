@@ -1,0 +1,72 @@
+# Original Drone Commander scenery palette
+newmtl asphalt
+Ka 0.15 0.15 0.15
+Kd 0.16 0.20 0.24
+Ks 0.05 0.05 0.05
+Ns 12
+
+newmtl white
+Ka 0.15 0.15 0.15
+Kd 0.93 0.92 0.83
+Ks 0.05 0.05 0.05
+Ns 12
+
+newmtl orange
+Ka 0.15 0.15 0.15
+Kd 0.96 0.32 0.08
+Ks 0.05 0.05 0.05
+Ns 12
+
+newmtl metal
+Ka 0.15 0.15 0.15
+Kd 0.22 0.29 0.33
+Ks 0.05 0.05 0.05
+Ns 12
+
+newmtl wood
+Ka 0.15 0.15 0.15
+Kd 0.48 0.28 0.13
+Ks 0.05 0.05 0.05
+Ns 12
+
+newmtl sand
+Ka 0.15 0.15 0.15
+Kd 0.70 0.65 0.52
+Ks 0.05 0.05 0.05
+Ns 12
+
+newmtl green
+Ka 0.15 0.15 0.15
+Kd 0.18 0.40 0.22
+Ks 0.05 0.05 0.05
+Ns 12
+
+newmtl leaf
+Ka 0.15 0.15 0.15
+Kd 0.32 0.55 0.25
+Ks 0.05 0.05 0.05
+Ns 12
+
+newmtl blue
+Ka 0.15 0.15 0.15
+Kd 0.13 0.43 0.57
+Ks 0.05 0.05 0.05
+Ns 12
+
+newmtl red
+Ka 0.15 0.15 0.15
+Kd 0.75 0.16 0.12
+Ks 0.05 0.05 0.05
+Ns 12
+
+newmtl light
+Ka 0.15 0.15 0.15
+Kd 1.00 0.83 0.42
+Ks 0.05 0.05 0.05
+Ns 12
+
+newmtl rock
+Ka 0.15 0.15 0.15
+Kd 0.39 0.44 0.43
+Ks 0.05 0.05 0.05
+Ns 12
