@@ -70,7 +70,7 @@ Using an HTTP server is recommended because the app loads scenarios, textures, m
 8. Select **Dark theme** at the top-right of the Blockly panel to switch the entire interface between light and dark modes.
 9. Use the Blockly zoom controls to enlarge, reduce, or reset the block size. You can also zoom with the mouse wheel or a pinch gesture.
 10. Use **Save** and **Load** to export or import Blockly XML programs.
-11. Switch scenario or graphics profile from the toolbar when needed.
+11. Switch scenario or graphics profile from the toolbar. Both selections are restored when you reload the page.
 
 To fly the complete training course, select **Campo di volo** and open [the training program](examples/campo-di-volo.xml) with **Load**. It passes through the gates and tunnel, weaves around the pylons, and lands on the marked pad.
 

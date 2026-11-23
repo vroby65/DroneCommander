@@ -549,10 +549,13 @@ function updateDroneSound(newPlaybackRate) {
 }
 
 // Scenario loading
+let scenarioLoadId = 0;
+
 function loadScenario(file) {
     if (!file) {
         return;
     }
+    const loadId = ++scenarioLoadId;
 
     // Preserve infrastructure objects such as the drone, lights, and sky.
     scene.children = scene.children.filter(child => child.userData.type === 'keep');
@@ -567,6 +570,8 @@ function loadScenario(file) {
             return response.json();
         })
         .then(data => {
+            if (loadId !== scenarioLoadId) return;
+
             // Terrain
             const textureName = data.groundTexture || 'grass.jpg';
             const hillHeight = data.hillHeight || 25;
@@ -575,6 +580,10 @@ function loadScenario(file) {
             textureLoader.load(
                 'textures/' + textureName,
                 function(texture) {
+                    if (loadId !== scenarioLoadId) {
+                        texture.dispose();
+                        return;
+                    }
                     texture.wrapS = THREE.RepeatWrapping;
                     texture.wrapT = THREE.RepeatWrapping;
                     applyTextureQuality(texture);
@@ -641,7 +650,7 @@ function loadScenario(file) {
                     scene.add(plane);
                     registerCollisionMesh(plane);
                     registerGroundMesh(plane);
-                    resetScene();
+                    if (drone.mesh) resetScene();
                     enforceTerrainCollision();
                 },
                 undefined,
@@ -657,12 +666,14 @@ function loadScenario(file) {
                 const mtlLoader = new THREE.MTLLoader();
                 mtlLoader.setPath('models/');
                 mtlLoader.load(obj.material, materials => {
+                        if (loadId !== scenarioLoadId) return;
                         materials.preload();
 
                         const objLoader = new THREE.OBJLoader();
                         objLoader.setMaterials(materials);
                         objLoader.setPath('models/');
                         objLoader.load(obj.model, object => {
+                                if (loadId !== scenarioLoadId) return;
                                 object.traverse(child => {
                                     if (child.isMesh) {
                                         child.castShadow = activeGraphicsProfile.shadows;
@@ -768,6 +779,10 @@ const initThree = () => {
     textureLoader.load(
         'textures/grass.jpg',
         function(texture) {
+            if (scene.children.some(child => child.userData.ground)) {
+                texture.dispose();
+                return;
+            }
             texture.wrapS = THREE.RepeatWrapping;
             texture.wrapT = THREE.RepeatWrapping;
             applyTextureQuality(texture);
@@ -885,6 +900,7 @@ const initThree = () => {
         drone.mesh.userData.type = 'keep';
         addPropellers();
         createDroneGuides();
+        resetScene();
     });
 
     // Generated Blockly programs call this controller. Each asynchronous method

@@ -663,6 +663,7 @@ document.addEventListener('mouseup', () => {
 
 // Localization and application selectors
 const loadedLanguageFiles = new Set(['en']);
+const scenarioStorageKey = 'selectedScenario';
 
 function loadLanguageFile(lang, callback) {
     if (loadedLanguageFiles.has(lang)) {
@@ -744,11 +745,9 @@ document.getElementById('languageSelect').addEventListener('change', function() 
 
 document.getElementById('scenarioSelect').addEventListener('change', function() {
     const selectedScenario = this.value;
+    if (!selectedScenario) return;
+    localStorage.setItem(scenarioStorageKey, selectedScenario);
     loadScenario(selectedScenario);
-    setTimeout(() => {
-        resetCameraView();
-        resetScene();
-    }, 500);
 });
 
 document.getElementById('graphicsSelect').addEventListener('change', function() {
@@ -780,7 +779,7 @@ function loadScenarioList() {
         .then(response => response.json())
         .then(data => {
             const scenarioSelect = document.getElementById('scenarioSelect');
-            scenarioSelect.innerHTML = '<option value=""></option>';
+            scenarioSelect.innerHTML = '<option value="" disabled></option>';
             if (scenarioSelect.options[0]) scenarioSelect.options[0].text = Blockly.Msg.BKY_SCENARIO || 'Scenario';
             data.forEach(scenario => {
                 const option = document.createElement('option');
@@ -788,6 +787,9 @@ function loadScenarioList() {
                 option.text = scenario.name;
                 scenarioSelect.appendChild(option);
             });
+            const savedScenario = localStorage.getItem(scenarioStorageKey);
+            scenarioSelect.value = data.some(scenario => scenario.file === savedScenario) ? savedScenario : '';
+            loadScenario(scenarioSelect.value);
         })
         .catch(err => console.error('Unable to load the scenario list:', err));
 }
