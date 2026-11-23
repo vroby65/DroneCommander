@@ -75,6 +75,10 @@ Using an HTTP server is recommended because the app loads scenarios, textures, m
 
 To fly the complete training course, select **Campo di volo** and open [the training program](examples/campo-di-volo.xml) with **Load**. It passes through the gates and tunnel, weaves around the pylons, and lands on the marked pad.
 
+## Tutorials
+
+The project tutorials cover getting started, flying around the metropolis, using XYZ coordinates, and programming curved flights. [Browse the Italian PDF tutorials](tutorial/).
+
 ## On-board Camera
 
 The secondary camera renders the same Three.js environment from a mounting point just beyond the drone nose. Because its position and orientation are calculated in the drone's local coordinate space, the image follows turns, climbs, dives, and banking maneuvers.
@@ -125,6 +129,10 @@ For **curve abs**, both the intermediate point and destination use absolute prog
 - `sounds/` - Drone audio assets.
 - `libs/` - Vendored Blockly and Three.js libraries.
 - `screenshots/` - README screenshots generated from the current app.
+
+## Acknowledgments
+
+Thanks to Luigi Torelli for his contributions to the development of Drone Commander.
 
 ## License
 
