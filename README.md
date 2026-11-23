@@ -19,7 +19,7 @@ https://vroby65.github.io/DroneCommander/
 - **Drone commands** for take off, land, photos, video recording, set/change altitude, set/change angle, walk, walk climbing, slide, absolute/relative 3D movement, smooth curved flight, return to base, wait, smoke trail, and speed control.
 - **Smooth curve handling** with coordinate-based curved flight that leaves the drone direction unchanged.
 - **Sensor blocks** for keyboard input, X/Z position, altitude, direction, and speed.
-- **Scenarios**: flight field with a marked runway, training gates, hangar, windsock, control cabin and picnic tables; urban track with crossings, streetlights, a bus shelter, fountain and striped kiosk; metropolis with a landscaped plaza, pergola, kiosk and public sculpture; tropical island with a timber dock, lighthouse, navigation buoys and a moored sailing dinghy.
+- **Scenarios**: flight field with a marked runway, training gates at different heights, a low tunnel, a pylon slalom and a precision landing pad; urban track with crossings, streetlights, a bus shelter, fountain and striped kiosk; metropolis with a landscaped plaza, pergola, kiosk and public sculpture; tropical island with a timber dock, lighthouse, navigation buoys and a moored sailing dinghy.
 - **Extended scenery areas**: longer runways and boulevards, outer gardens and rest areas, and an extended dock and buoy route. The central 500-unit terrain radius stays flat to support scenery.
 - **Graphics profiles**: Performance, Balanced, and Quality.
 - **On-board drone camera** with a live picture-in-picture view from the nose of the drone. The camera follows yaw, pitch, and roll and supports timestamped PNG photo and video downloads.
@@ -71,6 +71,8 @@ Using an HTTP server is recommended because the app loads scenarios, textures, m
 9. Use the Blockly zoom controls to enlarge, reduce, or reset the block size. You can also zoom with the mouse wheel or a pinch gesture.
 10. Use **Save** and **Load** to export or import Blockly XML programs.
 11. Switch scenario or graphics profile from the toolbar when needed.
+
+To fly the complete training course, select **Campo di volo** and open [the training program](examples/campo-di-volo.xml) with **Load**. It passes through the gates and tunnel, weaves around the pylons, and lands on the marked pad.
 
 ## On-board Camera
 

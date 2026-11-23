@@ -526,7 +526,7 @@
   </tr>
   <tr>
     <td><strong>Campo di volo</strong></td>
-    <td>Un aeroporto erboso con alberi, panchine e colline moderatamente ondulate. L'ambiente predefinito.</td>
+    <td>Un campo erboso con pista, porte a diverse altezze, tunnel basso, slalom e piazzola di atterraggio. È l'ambiente predefinito.</td>
   </tr>
   <tr>
     <td><strong>Pista urbana</strong></td>
@@ -542,7 +542,16 @@
   </tr>
 </table>
 
-<p>Quando cambi scenario, il drone viene resettato al centro del nuovo ambiente e la camera torna alla posizione predefinita. Il sistema di collisione con il terreno si adatta a ogni scenario in modo che il drone voli sopra il suolo e gli ostacoli.</p>
+<p>Quando cambi scenario, il drone viene resettato al centro del nuovo ambiente e la camera torna alla posizione predefinita.</p>
+
+<h3>Circuito del Campo di volo</h3>
+<p>Dopo il decollo, usa un blocco <strong>vai a</strong> per ciascun punto, nell'ordine indicato. Le coordinate sono nell'ordine X, Y, Z. Puoi anche <a href="../examples/campo-di-volo.xml" download>scaricare il programma Blockly del circuito</a> e aprirlo con <strong>Carica</strong>.</p>
+<ol>
+  <li><strong>Porte.</strong> Allineati a (24, 10, 65) e raggiungi (300, 10, 65) per attraversare tutte e cinque le porte.</li>
+  <li><strong>Tunnel.</strong> Per vedere l'uscita, usa <strong>imposta angolo 90</strong> e attiva <strong>Anteprima videocamera</strong>. Mantieni la quota 10 fino a (370, 10, 65), poi spostati a (370, 10, 135).</li>
+  <li><strong>Slalom.</strong> Alterna i lati dei piloni passando per (305, 10, 135), (252, 10, 175), (199, 10, 135), (146, 10, 175) e (93, 10, 135).</li>
+  <li><strong>Atterraggio di precisione.</strong> Raggiungi (47, 10, 155) sopra la H e usa <strong>atterra</strong>.</li>
+</ol>
 
 <hr>
 

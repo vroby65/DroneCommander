@@ -137,8 +137,15 @@ const collisionEpsilon = 0.01;
 const collisionLandingDuration = 300;
 const collisionRayStartHeight = 10000;
 const collisionRaycaster = new THREE.Raycaster();
+const flightObstacleRay = new THREE.Ray();
+const flightObstacleHit = new THREE.Vector3();
+const flightPosition = new THREE.Vector3();
+// Clearance for the spinning propellers, including while the drone banks.
+const flightObstacleSidePadding = 6.5;
+const flightObstacleOverheadPadding = 3.5;
 let collisionMeshes = [];
 let groundMeshes = [];
+let flightObstacleBounds = [];
 let collisionEmergencyActive = false;
 let lastSafeDronePosition = null;
 let directionalLight;
@@ -251,6 +258,14 @@ const animateProperty = (setter, from, to, duration, onComplete) => {
 // Terrain collision and graphics profiles
 const registerCollisionMesh = mesh => {
     if (!mesh || !mesh.isMesh || mesh.userData.noCollision) return;
+    if (mesh.name === 'flight-obstacle') {
+        const bounds = new THREE.Box3().setFromObject(mesh);
+        bounds.expandByVector(new THREE.Vector3(flightObstacleSidePadding, 0, flightObstacleSidePadding));
+        bounds.min.y -= flightObstacleOverheadPadding;
+        bounds.max.y += collisionPadding - collisionEpsilon;
+        flightObstacleBounds.push(bounds);
+        return;
+    }
     collisionMeshes.push(mesh);
 };
 
@@ -277,7 +292,28 @@ const getHeightAt = (meshes, x, z) => {
 const getSurfaceHeightAt = (x, z) => getHeightAt(collisionMeshes, x, z);
 const getGroundHeightAt = (x, z) => getHeightAt(groundMeshes, x, z);
 
-const getSafeAltitudeAt = (x, z) => getSurfaceHeightAt(x, z) + collisionPadding;
+const getSafeAltitudeAt = (x, z, altitude = Infinity) => {
+    let safeAltitude = getSurfaceHeightAt(x, z) + collisionPadding;
+    // A crossbar or roof can support a landing when the drone is already above it.
+    for (const { min, max } of flightObstacleBounds) {
+        if (altitude >= max.y && x >= min.x && x <= max.x && z >= min.z && z <= max.z) {
+            safeAltitude = Math.max(safeAltitude, max.y + collisionEpsilon);
+        }
+    }
+    return safeAltitude;
+};
+
+const hitsFlightObstacle = (start, end) => {
+    // Sweep the frame's movement so thin obstacles also work at high speed.
+    flightObstacleRay.origin.copy(start);
+    const distanceSquared = flightObstacleRay.direction.subVectors(end, start).lengthSq();
+    return flightObstacleBounds.some(bounds => (
+        bounds.containsPoint(start) || bounds.containsPoint(end) ||
+        (distanceSquared > 0 &&
+            flightObstacleRay.intersectBox(bounds, flightObstacleHit) &&
+            flightObstacleHit.distanceToSquared(start) <= distanceSquared)
+    ));
+};
 
 const rememberSafeDronePosition = () => {
     if (!drone || !drone.mesh || collisionEmergencyActive) return;
@@ -315,10 +351,8 @@ const triggerCollisionEmergency = () => {
     drone.mesh.rotation.x = 0;
     drone.mesh.rotation.z = 0;
 
-    const targetAltitude = getSafeAltitudeAt(
-        drone.mesh.position.x,
-        drone.mesh.position.z
-    );
+    const { x, y, z } = drone.mesh.position;
+    const targetAltitude = getSafeAltitudeAt(x, z, y);
     const startAltitude = Math.max(drone.mesh.position.y, targetAltitude);
     drone.mesh.position.y = startAltitude;
     drone.altitude = startAltitude;
@@ -339,17 +373,19 @@ const triggerCollisionEmergency = () => {
 };
 
 const setDroneFlightPosition = (x, y, z) => {
-    const minAltitude = getSafeAltitudeAt(x, z);
+    const minAltitude = getSafeAltitudeAt(x, z, y);
+    const safeY = Math.max(y, minAltitude);
     if (
         drone.flying &&
         !collisionEmergencyActive &&
-        y < minAltitude - collisionEpsilon
+        (y < minAltitude - collisionEpsilon ||
+            (flightObstacleBounds.length &&
+                hitsFlightObstacle(drone.mesh.position, flightPosition.set(x, safeY, z))))
     ) {
         triggerCollisionEmergency();
         return false;
     }
 
-    const safeY = Math.max(y, minAltitude);
     drone.mesh.position.set(x, safeY, z);
     drone.altitude = safeY;
     rememberSafeDronePosition();
@@ -419,13 +455,15 @@ const applyGraphicsProfile = profileName => {
 
 const enforceTerrainCollision = () => {
     if (!drone || !drone.mesh || !collisionMeshes.length) return;
+    const position = drone.mesh.position;
     const minAltitude = drone.flying ?
-        getSafeAltitudeAt(drone.mesh.position.x, drone.mesh.position.z) :
-        getGroundHeightAt(drone.mesh.position.x, drone.mesh.position.z) + collisionPadding;
+        getSafeAltitudeAt(position.x, position.z, position.y) :
+        getGroundHeightAt(position.x, position.z) + collisionPadding;
     if (
         drone.flying &&
         !collisionEmergencyActive &&
-        drone.mesh.position.y < minAltitude - collisionEpsilon
+        (position.y < minAltitude - collisionEpsilon ||
+            flightObstacleBounds.some(bounds => bounds.containsPoint(position)))
     ) {
         triggerCollisionEmergency();
         return;
@@ -520,6 +558,7 @@ function loadScenario(file) {
     scene.children = scene.children.filter(child => child.userData.type === 'keep');
     collisionMeshes = [];
     groundMeshes = [];
+    flightObstacleBounds = [];
     collectCollisionMeshes(scene);
 
     fetch('backgrounds/' + file)
@@ -553,6 +592,7 @@ function loadScenario(file) {
                     });
                     collisionMeshes = [];
                     groundMeshes = [];
+                    flightObstacleBounds = [];
                     collectCollisionMeshes(scene);
 
                     // Scenario-specific fog, with the flight-field defaults as fallback.
@@ -628,7 +668,6 @@ function loadScenario(file) {
                                         child.castShadow = activeGraphicsProfile.shadows;
                                         child.receiveShadow = activeGraphicsProfile.shadows;
                                         child.userData.type = 'scenario';
-                                        registerCollisionMesh(child);
                                     }
                                 });
 
@@ -648,6 +687,8 @@ function loadScenario(file) {
                                 }
 
                                 scene.add(object);
+                                object.updateMatrixWorld(true);
+                                collectCollisionMeshes(object);
                             },
                             undefined,
                             err => console.warn(`Unable to load OBJ "${obj.model}":`, err));
@@ -917,7 +958,7 @@ const initThree = () => {
                         startAltitude,
                         Math.max(
                             defaultFlightAltitude,
-                            getSafeAltitudeAt(this.mesh.position.x, this.mesh.position.z)
+                            getSafeAltitudeAt(this.mesh.position.x, this.mesh.position.z, startAltitude)
                         ),
                         500,
                         () => {
@@ -935,7 +976,7 @@ const initThree = () => {
                 return addCommand(
                     next => {
                         const startAltitude = this.altitude;
-                        const targetAltitude = getSafeAltitudeAt(this.mesh.position.x, this.mesh.position.z);
+                        const targetAltitude = getSafeAltitudeAt(this.mesh.position.x, this.mesh.position.z, startAltitude);
                         animateProperty(
                             val => {
                                 const clampedAltitude = Math.max(val, targetAltitude);

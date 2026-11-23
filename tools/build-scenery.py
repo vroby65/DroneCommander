@@ -33,6 +33,11 @@ class Model:
         self.mesh(vertices, [(0,3,2,1), (4,5,6,7), (0,1,5,4),
                              (3,7,6,2), (0,4,7,3), (1,2,6,5)], material)
 
+    def flight_obstacle(self, x, y, z, w, h, d, material):
+        self.lines.append('o flight-obstacle')
+        self.box(x, y, z, w, h, d, material)
+        self.lines.append('o scenery')
+
     def taper(self, x, y, z, bottom, top, h, material, sides=12):
         vertices = [(x + radius*math.cos(i*2*math.pi/sides), height,
                      z + radius*math.sin(i*2*math.pi/sides))
@@ -114,6 +119,7 @@ def bin(m, x, z):
 
 m = Model()
 # Flight field: marked runway, cones, training gates and a service hangar.
+m.lines.append('o scenery')
 m.box(80, 0.15, -80, 28, 0.3, 280, 'asphalt')
 for x in [67, 93]:
     m.box(x, 0.34, -80, 0.6, 0.08, 274, 'white')
@@ -127,12 +133,12 @@ for x in [60, 100]:
         m.box(x, 0.4, z, 3.8, 0.8, 3.8, 'metal')
         m.taper(x, 0.8, z, 1.5, 0.3, 4, 'orange')
         m.taper(x, 2.6, z, 0.95, 0.7, 0.8, 'white')
-for z in [-35, -85, -135, -205, -275]:
+for z, height in [(-35, 30), (-85, 24), (-135, 18), (-205, 26), (-275, 30)]:
     for x in [-81, -49]:
-        m.box(x, 15, z, 2, 30, 2, 'orange')
-        m.box(x, 17, z, 2.1, 5, 2.1, 'white')
-        m.box(x, 0.6, z, 7, 1.2, 7, 'metal')
-    m.box(-65, 30, z, 34, 2, 2, 'white')
+        m.flight_obstacle(x, 0.6, z, 7, 1.2, 7, 'metal')
+        m.flight_obstacle(x, (height-4)/2, z, 2, height-4, 2, 'orange')
+        m.flight_obstacle(x, height-2, z, 2, 4, 2, 'blue')
+    m.flight_obstacle(-65, height, z, 34, 2, 2, 'white')
 m.box(115, 0.5, 100, 58, 1, 54, 'sand')
 m.box(115, 17, 118, 54, 34, 2, 'blue')
 for x in [89, 141]:
@@ -180,6 +186,34 @@ for x in [-240, -200]:
 for x, z in [(-230, -170), (-230, -130), (-230, 40),
              (190, -200), (220, -170), (210, 60)]:
     planter(m, x, z)
+
+for z in [-23, -59, -109, -169, -239, -303]:
+    for x in [-76, -54]:
+        m.box(x, 0.04, z, 1.2, 0.08, 10, 'white')
+
+# Low tunnel follows the gates. Separate walls and roof leave both mouths open.
+for x in [-81, -49]:
+    m.flight_obstacle(x, 7.5, -333, 2, 15, 48, 'metal')
+    for z in [-358, -308]:
+        m.flight_obstacle(x, 7.5, z, 2, 15, 2, 'orange')
+m.flight_obstacle(-65, 16, -333, 34, 2, 48, 'blue')
+for z in range(-351, -310, 8):
+    m.box(-65, 0.04, z, 1.2, 0.08, 5, 'white')
+
+# Alternating sides through the pylon slalom lead back to the landing pad.
+for i, z in enumerate([-305, -252, -199, -146, -93]):
+    height = 25 + (i % 2)*10
+    m.flight_obstacle(-155, (height-5)/2, z, 6, height-5, 6, 'orange')
+    m.flight_obstacle(-155, height-2.5, z, 6, 5, 6, 'white')
+    m.box(-135 if i % 2 == 0 else -175, 0.04, z, 7, 0.08, 2, 'white')
+
+m.lines.append('o flight-obstacle')
+m.box(-155, 1.5, -47, 30, 3, 30, 'blue')
+for x in [-159, -151]:
+    m.box(x, 3.06, -47, 1.6, 0.12, 13, 'white')
+for z in [-60, -34]:
+    m.box(-155, 3.06, z, 27, 0.12, 1.2, 'white')
+m.box(-155, 3.06, -47, 8, 0.12, 1.6, 'white')
 m.save('campo')
 
 m = Model()

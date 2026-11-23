@@ -9,6 +9,16 @@ for (const file of ['three.min.js', 'OBJLoader.js', 'MTLLoader.js']) {
     vm.runInContext(fs.readFileSync(path.join(root, 'libs', file), 'utf8'), context);
 }
 const THREE = context.THREE;
+
+function loadScenery(detail) {
+    const materials = new THREE.MTLLoader().parse(
+        fs.readFileSync(path.join(root, 'models', detail.material), 'utf8'), '');
+    const model = new THREE.OBJLoader().setMaterials(materials).parse(
+        fs.readFileSync(path.join(root, 'models', detail.model), 'utf8'));
+    model.updateMatrixWorld(true);
+    return { model, materials };
+}
+
 for (const name of ['campo', 'citta', 'metropoli', 'isola']) {
     test(`${name}: scenery loads with local materials and a clear take-off area`, () => {
         const data = JSON.parse(fs.readFileSync(path.join(root, 'backgrounds', `${name}.json`)));
@@ -20,10 +30,7 @@ for (const name of ['campo', 'citta', 'metropoli', 'isola']) {
                 assert.ok(fs.existsSync(path.join(root, 'models', item[key])), item[key]);
             }
         }
-        const materials = new THREE.MTLLoader().parse(
-            fs.readFileSync(path.join(root, 'models', detail.material), 'utf8'), '');
-        const model = new THREE.OBJLoader().setMaterials(materials).parse(
-            fs.readFileSync(path.join(root, 'models', detail.model), 'utf8'));
+        const { model, materials } = loadScenery(detail);
         let vertices = 0;
         model.traverse(mesh => {
             if (!mesh.isMesh) return;
@@ -33,7 +40,6 @@ for (const name of ['campo', 'citta', 'metropoli', 'isola']) {
             assert.ok(mats.every(mat => mat && mat.name && materials.materialsInfo[mat.name]));
         });
         assert.ok(vertices > 300 && vertices < 45000, `lightweight scenery: ${vertices} vertices`);
-        model.updateMatrixWorld(true);
         const ray = new THREE.Raycaster();
         const landmarks = {
             campo: [-125, 15, 38],
@@ -64,3 +70,67 @@ for (const name of ['campo', 'citta', 'metropoli', 'isola']) {
         }
     });
 }
+
+test('campo: fly through the training course and land under a gate or on the pad', () => {
+    const { model } = loadScenery({ model: 'details-campo.obj', material: 'scenery.mtl' });
+    const frames = [];
+    Object.assign(context, {
+        model,
+        localStorage: { getItem: () => null },
+        window: {},
+        performance: { now: () => 0 },
+        requestAnimationFrame: callback => frames.push(callback),
+        clearInterval: () => {},
+        updateStatus: () => {},
+        console: { warn: () => {} }
+    });
+    vm.runInContext(fs.readFileSync(path.join(root, 'js', 'drone-commands.js'), 'utf8'), context);
+    const run = code => vm.runInContext(code, context);
+    run(`
+        const ground = new THREE.Mesh(new THREE.PlaneGeometry(1000, 1000));
+        ground.rotation.x = -Math.PI / 2;
+        ground.updateMatrixWorld(true);
+        registerCollisionMesh(ground);
+        registerGroundMesh(ground);
+        collectCollisionMeshes(model);
+        drone = { mesh: new THREE.Object3D(), flying: true, altitude: 10 };
+        drone.mesh.position.set(0, 10, 0);
+        rememberSafeDronePosition();
+    `);
+
+    for (const [x, y, z] of [
+        [-65, 10, -24], [-65, 10, -35], [-65, 10, -300],
+        [-65, 10, -333], [-65, 10, -370], [-135, 10, -370], [-135, 10, -305],
+        [-175, 10, -252], [-135, 10, -199], [-175, 10, -146],
+        [-135, 10, -93], [-155, 10, -47]
+    ]) {
+        assert.equal(run(`setDroneFlightPosition(${x}, ${y}, ${z})`), true,
+            `clear waypoint ${x},${y},${z}`);
+        run('enforceTerrainCollision()');
+        assert.equal(run('drone.mesh.position.y'), y);
+    }
+    assert.ok(Math.abs(run('getSafeAltitudeAt(-155, -47, 10)') - 4.52) < 0.001);
+    assert.ok(Math.abs(run('getSafeAltitudeAt(-65, -35, 10)') - 1.4) < 0.001);
+    assert.equal(run('getSafeAltitudeAt(-65, -35, 40)'), 32.4);
+
+    for (const [start, end] of [
+        [[-81, 10, -20], [-81, 10, -50]], // a frame that crosses a post
+        [[-65, 30, -20], [-65, 30, -50]], // a frame that crosses the crossbar
+        [[-65, 10, -331], [-65, 23, -331]], // climb through the tunnel roof
+        [[-189, 10, -252], [-125, 10, -252]] // cross a slalom pylon
+    ]) {
+        run(`
+            drone.mesh.position.set(${start.join(',')});
+            drone.altitude = ${start[1]};
+            drone.flying = true;
+            rememberSafeDronePosition();
+        `);
+        assert.equal(run(`setDroneFlightPosition(${end.join(',')})`), false);
+        assert.deepEqual(Array.from(run('drone.mesh.position.toArray()')), start);
+        assert.equal(run('collisionEmergencyActive'), true);
+        assert.equal(frames.length, 1);
+        frames.shift()(300);
+        assert.equal(run('drone.flying'), false);
+        assert.ok(Math.abs(run('drone.altitude') - 1.4) < 0.001);
+    }
+});

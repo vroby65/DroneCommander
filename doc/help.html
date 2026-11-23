@@ -522,7 +522,7 @@
   </tr>
   <tr>
     <td><strong>Campo di volo</strong> (Flight Field)</td>
-    <td>A grassy airfield with trees, benches, and moderate rolling hills. The default environment.</td>
+    <td>A grassy airfield with a runway, gates at different heights, a low tunnel, a pylon slalom, and a landing pad. The default environment.</td>
   </tr>
   <tr>
     <td><strong>Pista urbana</strong> (Urban Track)</td>
@@ -538,7 +538,16 @@
   </tr>
 </table>
 
-<p>When you switch scenarios, the drone resets to the center of the new environment and the camera returns to its default position. The terrain collision system adapts to each scenario so the drone flies above the ground and obstacles.</p>
+<p>When you switch scenarios, the drone resets to the center of the new environment and the camera returns to its default position.</p>
+
+<h3>Flight Field Training Course</h3>
+<p>After takeoff, use one <strong>go to</strong> block per waypoint, in the order below. Coordinates are listed as X, Y, Z. You can also <a href="../examples/campo-di-volo.xml" download>download the Blockly program</a> and open it with <strong>Load</strong>.</p>
+<ol>
+  <li><strong>Gates.</strong> Line up at (24, 10, 65) and fly to (300, 10, 65) to pass through all five gates.</li>
+  <li><strong>Tunnel.</strong> To see the exit, use <strong>set angle 90</strong> and enable <strong>Camera preview</strong>. Hold altitude 10 until (370, 10, 65), then fly to (370, 10, 135).</li>
+  <li><strong>Slalom.</strong> Alternate sides of the pylons via (305, 10, 135), (252, 10, 175), (199, 10, 135), (146, 10, 175), and (93, 10, 135).</li>
+  <li><strong>Precision landing.</strong> Fly to (47, 10, 155) above the H and use <strong>land</strong>.</li>
+</ol>
 
 <hr>
 
