@@ -16,6 +16,7 @@ https://vroby65.github.io/DroneCommander/
 - **Visual programming** with Blockly blocks for logic, loops, math, variables, functions, flow, sensors, and drone commands.
 - **3D simulation** powered by Three.js, with terrain-aware takeoff and landing behavior.
 - **Collision emergency handling** that stops the Blockly program and rapidly lands the drone at its last safe position.
+- **Return to base** that climbs over obstacles when the direct route is blocked and descends to the usual hover height above the launch point.
 - **Drone commands** for take off, land, photos, video recording, set/change altitude, set/change angle, walk, walk climbing, slide, absolute/relative 3D movement, smooth curved flight, return to base, wait, smoke trail, and speed control.
 - **Smooth curve handling** with coordinate-based curved flight that leaves the drone direction unchanged.
 - **Sensor blocks** for keyboard input, X/Z position, altitude, direction, and speed.

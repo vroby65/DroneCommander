@@ -271,6 +271,8 @@ const registerCollisionMesh = mesh => {
 
 const registerGroundMesh = mesh => {
     if (!mesh || !mesh.isMesh || mesh.userData.noCollision) return;
+    // The scene reset raycasts against the terrain before the next render.
+    mesh.updateMatrixWorld(true);
     groundMeshes.push(mesh);
 };
 
@@ -313,6 +315,79 @@ const hitsFlightObstacle = (start, end) => {
             flightObstacleRay.intersectBox(bounds, flightObstacleHit) &&
             flightObstacleHit.distanceToSquared(start) <= distanceSquared)
     ));
+};
+
+const isClearFlightPath = (start, end) => {
+    if (hitsFlightObstacle(start, end)) return false;
+    const steps = Math.min(256, Math.max(1, Math.ceil(start.distanceTo(end) / 4)));
+    const point = new THREE.Vector3();
+    for (let step = 1; step <= steps; step++) {
+        point.lerpVectors(start, end, step / steps);
+        if (point.y < getSurfaceHeightAt(point.x, point.z) + collisionPadding - collisionEpsilon) {
+            return false;
+        }
+    }
+    return true;
+};
+
+const getReturnPath = position => {
+    const target = new THREE.Vector3(0, Math.max(defaultFlightAltitude, getSafeAltitudeAt(0, 0)), 0);
+    if (isClearFlightPath(position, target)) return [target];
+
+    const { x, y, z } = position;
+    const overhead = new THREE.Box3();
+    for (const bounds of flightObstacleBounds) {
+        const { min, max } = bounds;
+        if (min.y > y && x >= min.x && x <= max.x && z >= min.z && z <= max.z) {
+            overhead.union(bounds);
+        }
+    }
+
+    const path = [];
+    let departure = position;
+    if (!overhead.isEmpty()) {
+        // Leave a gate or tunnel at the current altitude before climbing.
+        const exits = [
+            new THREE.Vector3(overhead.min.x - 1, y, z),
+            new THREE.Vector3(overhead.max.x + 1, y, z),
+            new THREE.Vector3(x, y, overhead.min.z - 1),
+            new THREE.Vector3(x, y, overhead.max.z + 1)
+        ];
+        exits.sort((a, b) => a.distanceToSquared(position) - b.distanceToSquared(position) ||
+            a.distanceToSquared(target) - b.distanceToSquared(target));
+        departure = exits.find(exit => getSafeAltitudeAt(exit.x, exit.z) <= exit.y &&
+            isClearFlightPath(position, exit));
+        if (!departure) return [target];
+        path.push(departure);
+    }
+
+    // Use the horizontal route to find which scenery needs to be cleared.
+    const route = new THREE.Ray(departure.clone(), target.clone().sub(departure).setY(0));
+    const routeLengthSquared = route.direction.lengthSq();
+    const footprint = new THREE.Box3();
+    const crossesRoute = bounds => {
+        footprint.copy(bounds);
+        footprint.min.y = departure.y - 1;
+        footprint.max.y = departure.y + 1;
+        if (footprint.containsPoint(departure)) return true;
+        const hit = route.intersectBox(footprint, flightObstacleHit);
+        return hit && hit.distanceToSquared(departure) <= routeLengthSquared;
+    };
+    let cruiseAltitude = Math.max(departure.y, target.y);
+    const meshBounds = new THREE.Box3();
+    for (const mesh of collisionMeshes) {
+        meshBounds.setFromObject(mesh);
+        if (crossesRoute(meshBounds)) {
+            cruiseAltitude = Math.max(cruiseAltitude, meshBounds.max.y + collisionPadding);
+        }
+    }
+    for (const bounds of flightObstacleBounds) {
+        if (crossesRoute(bounds)) {
+            cruiseAltitude = Math.max(cruiseAltitude, bounds.max.y + collisionEpsilon);
+        }
+    }
+    path.push(departure.clone().setY(cruiseAltitude), target.clone().setY(cruiseAltitude), target);
+    return path;
 };
 
 const rememberSafeDronePosition = () => {
@@ -1371,7 +1446,7 @@ const initThree = () => {
             return this.curveToInternal(x, y, z, xd, yd, zd, callback, true);
         },
         returnToBase(callback) {
-            return this.moveToInternal(0, defaultFlightAltitude, 0, callback);
+            return this.moveAlongPath(() => getReturnPath(this.mesh.position), callback);
         },
         curveToInternal(viaX, viaY, viaZ, targetX, targetY, targetZ, callback, useRelativeOffsets = false) {
             viaX = getNumber(viaX, this.mesh.position.x);
@@ -1491,98 +1566,112 @@ const initThree = () => {
             return Promise.resolve();
         },
         moveToInternal(targetX, targetY, targetZ, callback, updateDirection = true) {
-            targetX = getNumber(targetX, this.mesh.position.x);
-            targetY = getNumber(targetY, this.altitude);
-            targetZ = getNumber(targetZ, this.mesh.position.z);
+            return this.moveAlongPath(() => [new THREE.Vector3(
+                getNumber(targetX, this.mesh.position.x),
+                getNumber(targetY, this.altitude),
+                getNumber(targetZ, this.mesh.position.z)
+            )], callback, updateDirection);
+        },
+        moveAlongPath(getPath, callback, updateDirection = true) {
             if (this.flying) {
                 return addCommand(next => {
+                    const path = getPath();
                     updateDroneSound(basePlaybackRate + 1.0);
-
-                    const startX = this.mesh.position.x;
-                    const startY = this.altitude;
-                    const startZ = this.mesh.position.z;
-                    const deltaX = targetX - startX;
-                    const deltaY = targetY - startY;
-                    const deltaZ = targetZ - startZ;
-                    const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ);
-                    const horizontalDistance = Math.sqrt(deltaX * deltaX + deltaZ * deltaZ);
-
                     this.speed = Math.min(Math.max(getNumber(this.speed, 1.0), 0.0), 10.0);
-                    if (distance === 0 || this.speed === 0) {
+                    const advance = () => {
+                        const target = path.shift();
+                        if (target && this.speed > 0) {
+                            this.animateFlightLeg(target, updateDirection, advance);
+                            return;
+                        }
                         updateDroneSound(basePlaybackRate);
                         next();
                         if (callback) callback();
-                        return;
-                    }
+                    };
+                    advance();
+                });
+            } else if (callback) callback();
+            return Promise.resolve();
+        },
+        animateFlightLeg(target, updateDirection, complete) {
+            const { x: targetX, y: targetY, z: targetZ } = target;
+            const startX = this.mesh.position.x;
+            const startY = this.altitude;
+            const startZ = this.mesh.position.z;
+            const deltaX = targetX - startX;
+            const deltaY = targetY - startY;
+            const deltaZ = targetZ - startZ;
+            const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ);
+            const horizontalDistance = Math.sqrt(deltaX * deltaX + deltaZ * deltaZ);
 
-                    const startDirection = normalizeDegrees(this.direction);
-                    const targetDirection = updateDirection && horizontalDistance > 0 ?
-                        normalizeDegrees(THREE.MathUtils.radToDeg(Math.atan2(deltaX, deltaZ)) + 90) :
-                        startDirection;
-                    const yawDelta = getShortestAngleDelta(startDirection, targetDirection);
-                    const moveDuration = distance * 50 / this.speed;
-                    const leanAngle = horizontalDistance > 0 ? 10 : 0;
+            if (distance === 0) {
+                complete();
+                return;
+            }
 
-                    const move = () => {
+            const startDirection = normalizeDegrees(this.direction);
+            const targetDirection = updateDirection && horizontalDistance > 0 ?
+                normalizeDegrees(THREE.MathUtils.radToDeg(Math.atan2(deltaX, deltaZ)) + 90) :
+                startDirection;
+            const yawDelta = getShortestAngleDelta(startDirection, targetDirection);
+            const moveDuration = distance * 50 / this.speed;
+            const leanAngle = horizontalDistance > 0 ? 10 : 0;
+
+            const move = () => {
+                animateProperty(
+                    val => {
+                        this.mesh.rotation.z = THREE.MathUtils.degToRad(leanAngle * val);
+                    },
+                    0, 1, 100,
+                    () => {
                         animateProperty(
                             val => {
-                                this.mesh.rotation.z = THREE.MathUtils.degToRad(leanAngle * val);
+                                const currentX = startX + deltaX * val;
+                                const currentZ = startZ + deltaZ * val;
+                                const currentY = startY + deltaY * val;
+                                if (setDroneFlightPosition(currentX, currentY, currentZ)) {
+                                    updateStatus();
+                                }
                             },
-                            0, 1, 100,
+                            0, 1, moveDuration,
                             () => {
+                                if (!setDroneFlightPosition(targetX, targetY, targetZ)) {
+                                    return;
+                                }
                                 animateProperty(
                                     val => {
-                                        const currentX = startX + deltaX * val;
-                                        const currentZ = startZ + deltaZ * val;
-                                        const currentY = startY + deltaY * val;
-                                        if (setDroneFlightPosition(currentX, currentY, currentZ)) {
-                                            updateStatus();
-                                        }
+                                        this.mesh.rotation.z = THREE.MathUtils.degToRad(leanAngle * (1 - val));
                                     },
-                                    0, 1, moveDuration,
+                                    0, 1, 100,
                                     () => {
-                                        if (!setDroneFlightPosition(targetX, targetY, targetZ)) {
-                                            return;
+                                        if (updateDirection) {
+                                            this.direction = targetDirection;
+                                            this.mesh.rotation.y = THREE.MathUtils.degToRad(this.direction);
                                         }
-                                        animateProperty(
-                                            val => {
-                                                this.mesh.rotation.z = THREE.MathUtils.degToRad(leanAngle * (1 - val));
-                                            },
-                                            0, 1, 100,
-                                            () => {
-                                                if (updateDirection) {
-                                                    this.direction = targetDirection;
-                                                    this.mesh.rotation.y = THREE.MathUtils.degToRad(this.direction);
-                                                }
-                                                this.mesh.rotation.z = 0;
-                                                updateDroneSound(basePlaybackRate);
-                                                updateStatus();
-                                                next();
-                                                if (callback) callback();
-                                            }
-                                        );
+                                        this.mesh.rotation.z = 0;
+                                        updateStatus();
+                                        complete();
                                     }
                                 );
                             }
                         );
-                    };
-
-                    if (updateDirection && horizontalDistance > 0) {
-                        animateProperty(
-                            val => {
-                                this.direction = normalizeDegrees(startDirection + yawDelta * val);
-                                this.mesh.rotation.y = THREE.MathUtils.degToRad(this.direction);
-                                updateStatus();
-                            },
-                            0, 1, 250,
-                            move
-                        );
-                    } else {
-                        move();
                     }
-                });
-            } else if (callback) callback();
-            return Promise.resolve();
+                );
+            };
+
+            if (updateDirection && horizontalDistance > 0) {
+                animateProperty(
+                    val => {
+                        this.direction = normalizeDegrees(startDirection + yawDelta * val);
+                        this.mesh.rotation.y = THREE.MathUtils.degToRad(this.direction);
+                        updateStatus();
+                    },
+                    0, 1, 250,
+                    move
+                );
+            } else {
+                move();
+            }
         }
     };
     setupStatusInputs();

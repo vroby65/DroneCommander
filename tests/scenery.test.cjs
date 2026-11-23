@@ -89,9 +89,15 @@ test('campo: fly through the training course and land under a gate or on the pad
     run(`
         const ground = new THREE.Mesh(new THREE.PlaneGeometry(1000, 1000));
         ground.rotation.x = -Math.PI / 2;
-        ground.updateMatrixWorld(true);
+        ground.position.y = 2;
         registerCollisionMesh(ground);
         registerGroundMesh(ground);
+    `);
+    assert.ok(Math.abs(run('getSafeAltitudeAt(0, 0)') - 3.4) < 0.001,
+        'the terrain transform is applied before the first collision check');
+    run(`
+        ground.position.y = 0;
+        ground.updateMatrixWorld(true);
         collectCollisionMeshes(model);
         drone = { mesh: new THREE.Object3D(), flying: true, altitude: 10 };
         drone.mesh.position.set(0, 10, 0);
@@ -112,6 +118,23 @@ test('campo: fly through the training course and land under a gate or on the pad
     assert.ok(Math.abs(run('getSafeAltitudeAt(-155, -47, 10)') - 4.52) < 0.001);
     assert.ok(Math.abs(run('getSafeAltitudeAt(-65, -35, 10)') - 1.4) < 0.001);
     assert.equal(run('getSafeAltitudeAt(-65, -35, 40)'), 32.4);
+
+    assert.equal(run('getReturnPath(new THREE.Vector3(15, 10, 15)).length'), 1,
+        'the return uses a straight route when it is clear');
+    for (const start of [[-65, 10, -333], [-65, 10, -370], [-140, 10, -199]]) {
+        run(`
+            drone.mesh.position.set(${start.join(',')});
+            drone.altitude = ${start[1]};
+            rememberSafeDronePosition();
+        `);
+        const path = run('getReturnPath(drone.mesh.position).map(point => point.toArray())');
+        assert.ok(path.length > 1, `return from ${start} avoids the obstacles on the direct route`);
+        for (const point of path) {
+            assert.equal(run(`setDroneFlightPosition(${point.join(',')})`), true,
+                `return from ${start} via ${point}`);
+        }
+        assert.deepEqual(Array.from(run('drone.mesh.position.toArray()')), [0, 10, 0]);
+    }
 
     for (const [start, end] of [
         [[-81, 10, -20], [-81, 10, -50]], // a frame that crosses a post
